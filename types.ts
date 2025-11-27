@@ -1,3 +1,4 @@
+
 export enum PieceType {
   KING = 'KING',
   QUEEN = 'QUEEN',
@@ -53,7 +54,7 @@ export interface Card {
   type: CardType;
   title: string;
   description: string;
-  cost?: number; // Potential future feature
+  cost: number; 
 }
 
 export interface GameSettings {
@@ -62,4 +63,11 @@ export interface GameSettings {
   playerCount: number;
 }
 
-export type GamePhase = 'SETTINGS' | 'PLAYING' | 'GAME_OVER_WIN' | 'GAME_OVER_LOSS';
+export type GamePhase = 
+  | 'SETTINGS' 
+  | 'DECK_SELECTION'
+  | 'PLAYING' 
+  | 'GAME_OVER_WIN' 
+  | 'GAME_OVER_LOSS'
+  | 'REWARD'
+  | 'SHOP';
