@@ -29,7 +29,8 @@ export const getValidMoves = (
   board: Cell[][],
   piece: Piece,
   currentPos: Position,
-  ignoreCheck: boolean = false // Simplified: we won't strictly enforce 'cannot move into check' for this arcade version to keep flow fast
+  enPassantTarget: Position | null = null,
+  ignoreCheck: boolean = false 
 ): Position[] => {
   if (piece.isFrozen) return [];
 
@@ -61,13 +62,29 @@ export const getValidMoves = (
     const fwdR = currentPos.row + direction;
     if (isValidPos({ row: fwdR, col: currentPos.col }, size) && !board[fwdR][currentPos.col].piece) {
       moves.push({ row: fwdR, col: currentPos.col });
+      
+      // Forward 2 (Initial move)
+      const startRow = piece.side === Side.WHITE ? size - 2 : 1; // Correct start row based on board generation logic (spawns in top/bottom 2 rows usually, but standard chess is specific. We allow 2-step from "start" position if hasn't moved)
+      if (!piece.hasMoved && currentPos.row === startRow) {
+          const fwd2R = currentPos.row + (direction * 2);
+          if (isValidPos({ row: fwd2R, col: currentPos.col }, size) && !board[fwd2R][currentPos.col].piece) {
+             moves.push({ row: fwd2R, col: currentPos.col });
+          }
+      }
     }
-    // Capture
+
+    // Capture (Diagonal) including En Passant
     [[fwdR, currentPos.col - 1], [fwdR, currentPos.col + 1]].forEach(([r, c]) => {
       if (isValidPos({ row: r, col: c }, size)) {
         const target = board[r][c].piece;
+        
+        // Normal Capture
         if (target && target.side !== piece.side) {
           moves.push({ row: r, col: c });
+        } 
+        // En Passant Capture
+        else if (enPassantTarget && enPassantTarget.row === r && enPassantTarget.col === c) {
+           moves.push({ row: r, col: c });
         }
       }
     });
@@ -81,8 +98,6 @@ export const getValidMoves = (
     directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
   }
   if (effectiveType === PieceType.KING) {
-    // King acts like Queen but distance 1
-    // We treat King separately below, but if borrowed type is King (unlikely), handle normally
     [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => {
       addMove(currentPos.row + dr, currentPos.col + dc);
     });
@@ -105,7 +120,6 @@ export const getValidMoves = (
     jumps.forEach(([dr, dc]) => addMove(currentPos.row + dr, currentPos.col + dc));
   }
   
-  // Original King Type Logic (moves 1 in any direction) - Redundant if covered above, but safe to keep specific logic if needed
   if (piece.type === PieceType.KING && !piece.tempMoveOverride) {
      [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => {
        addMove(currentPos.row + dr, currentPos.col + dc);

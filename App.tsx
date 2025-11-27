@@ -84,6 +84,7 @@ export default function App() {
   const [lastMoveFrom, setLastMoveFrom] = useState<Position | null>(null);
   const [lastMoveTo, setLastMoveTo] = useState<Position | null>(null);
   const [isEnemyMoveLimited, setIsEnemyMoveLimited] = useState(false);
+  const [enPassantTarget, setEnPassantTarget] = useState<Position | null>(null);
 
   // Card State
   const [deck, setDeck] = useState<Card[]>([]);
@@ -229,6 +230,7 @@ export default function App() {
     setLastMoveFrom(null);
     setLastMoveTo(null);
     setIsEnemyMoveLimited(false);
+    setEnPassantTarget(null);
   };
 
   const drawCard = useCallback(() => {
@@ -240,6 +242,40 @@ export default function App() {
       if (card) setHand(prev => [...prev, card]);
     }
   }, [deck, hand]);
+
+  // Check loss condition immediately if state changes (useEffect might lag, so we check in actions)
+  // But we need a robust check.
+  const checkLossCondition = (currentBoard: Cell[][], currentDeck: Card[], currentHand: Card[]) => {
+      let whitePieces = 0;
+      let whiteKing = false;
+      currentBoard.forEach(row => row.forEach(cell => {
+          if (cell.piece?.side === Side.WHITE) {
+              if (cell.piece.type === PieceType.KING) whiteKing = true;
+              else whitePieces++;
+          }
+      }));
+
+      // Lose if King dead OR (No cards in deck/hand AND No pieces except King)
+      if (!whiteKing) return true;
+      if (currentDeck.length === 0 && currentHand.length === 0 && whitePieces === 0) return true;
+      return false;
+  };
+
+  const checkWinCondition = (currentBoard: Cell[][]) => {
+      let blackPieces = 0;
+      let blackKing = false;
+      currentBoard.forEach(row => row.forEach(cell => {
+          if (cell.piece?.side === Side.BLACK) {
+              if (cell.piece.type === PieceType.KING) blackKing = true;
+              else blackPieces++;
+          }
+      }));
+
+      // Win if King dead OR All other enemies dead
+      if (!blackKing) return true;
+      if (blackPieces === 0) return true;
+      return false;
+  };
 
   const handleSquareClick = (r: number, c: number) => {
     if (turn !== Side.WHITE) return;
@@ -260,7 +296,7 @@ export default function App() {
         setValidMoves([]);
       } else {
         setSelectedPiecePos({ row: r, col: c });
-        const moves = getValidMoves(board, clickedPiece!, { row: r, col: c });
+        const moves = getValidMoves(board, clickedPiece!, { row: r, col: c }, enPassantTarget);
         setValidMoves(moves);
       }
       return;
@@ -273,30 +309,69 @@ export default function App() {
   };
 
   const executeMove = (from: Position, to: Position) => {
-    const newBoard = [...board.map(row => [...row])];
+    const newBoard = [...board.map(row => row.map(cell => ({...cell})))];
     const piece = newBoard[from.row][from.col].piece!;
-    const target = newBoard[to.row][to.col].piece;
+    let target = newBoard[to.row][to.col].piece;
+    let nextEnPassantTarget: Position | null = null;
 
+    // Handle En Passant Capture
+    if (piece.type === PieceType.PAWN && !target && from.col !== to.col && enPassantTarget) {
+        if (to.row === enPassantTarget.row && to.col === enPassantTarget.col) {
+            // Captured the pawn behind the target square
+            const captureRow = from.row; // The pawn being captured is on the same row as 'from' for horizontal capture logic, but En Passant technically moves into the empty square behind.
+            // Actually, if White (moving up, row decreases) captures En Passant at (r-1, c), the victim is at (r, c).
+            // Logic: The target square is empty. The victim is at [from.row][to.col] or [to.row - dir][to.col] depending on perspective.
+            // Simplified: The victim is 'behind' the movement direction.
+            const direction = piece.side === Side.WHITE ? -1 : 1;
+            const victimRow = to.row - direction; // e.g. White moves 6->5. Victim at 6.
+            const victimPiece = newBoard[victimRow][to.col].piece;
+            if (victimPiece && victimPiece.side !== Side.WHITE) {
+                target = victimPiece; // Set target for gold logic
+                newBoard[victimRow][to.col].piece = null; // Remove victim
+            }
+        }
+    }
+
+    // Handle Double Push (Set En Passant Target)
+    if (piece.type === PieceType.PAWN && Math.abs(from.row - to.row) === 2) {
+        nextEnPassantTarget = { row: (from.row + to.row) / 2, col: from.col };
+    }
+
+    // Gold Logic
     if (target && target.side === Side.BLACK) {
-        const goldReward = PIECE_GOLD_VALUES[target.type];
+        const goldReward = PIECE_GOLD_VALUES[target.type] || 10;
         setGold(prev => prev + goldReward);
     }
 
+    // Move Piece
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined };
     newBoard[from.row][from.col].piece = null;
+
+    // Pawn Promotion
+    if (piece.type === PieceType.PAWN && to.row === 0) {
+        newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
+    }
 
     setBoard(newBoard);
     setLastMoveFrom(from);
     setLastMoveTo(to);
     setSelectedPiecePos(null);
     setValidMoves([]);
+    setEnPassantTarget(nextEnPassantTarget);
 
-    if (target?.type === PieceType.KING && target.side === Side.BLACK) {
+    // Check Win
+    if (checkWinCondition(newBoard)) {
         handleWin();
         return;
     }
 
-    endPlayerTurn();
+    // Check Loss (Edge case: suicidal move? Usually not possible in strict chess but arcade allows it)
+    if (checkLossCondition(newBoard, deck, hand)) {
+        setPhase('GAME_OVER_LOSS');
+        return;
+    }
+
+    endPlayerTurn(newBoard, nextEnPassantTarget);
   };
 
   const handleWin = () => {
@@ -339,46 +414,50 @@ export default function App() {
       initGame(true, masterDeck, nextLvl);
   };
 
-  const endPlayerTurn = () => {
+  const endPlayerTurn = (currentBoard: Cell[][], currentEnPassantTarget: Position | null) => {
     setTurn(Side.BLACK);
-    setTimeout(executeEnemyTurn, 800);
+    setTimeout(() => executeEnemyTurn(currentBoard, currentEnPassantTarget), 800);
   };
 
-  const executeEnemyTurn = () => {
+  const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null) => {
     setBoard(prevBoard => {
-      const size = prevBoard.length;
+      // Use the board passed from player turn which has latest state
       const boardCopy = prevBoard.map(row => row.map(cell => ({
         ...cell,
         piece: cell.piece ? { ...cell.piece, isFrozen: false } : null
       })));
 
+      const size = boardCopy.length;
       const enemies: { pos: Position, piece: Piece, moves: Position[] }[] = [];
-      let playerKingPos: Position | null = null;
 
+      // Identify all enemy moves
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const p = boardCopy[r][c].piece;
           if (p?.side === Side.BLACK && !p.isFrozen) {
-            let moves = getValidMoves(boardCopy, p, { row: r, col: c });
+            let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget);
             if (isEnemyMoveLimited) {
                 moves = moves.filter(m => Math.abs(m.row - r) <= 1 && Math.abs(m.col - c) <= 1);
             }
             if (moves.length > 0) enemies.push({ pos: { row: r, col: c }, piece: p, moves });
           }
-          if (p?.side === Side.WHITE && p.type === PieceType.KING) playerKingPos = { row: r, col: c };
         }
       }
 
+      // If no moves, pass turn back or check stalemates (ignoring stalemate for arcade flow)
       if (enemies.length === 0) {
         setTurn(Side.WHITE);
-        setCardsPlayed(0); // Reset cards played
+        setCardsPlayed(0);
         drawCard();
         setIsEnemyMoveLimited(false);
+        setEnPassantTarget(null); // Clear en passant for player's turn if enemy didn't double push
         return boardCopy;
       }
 
+      // AI Decision Making
       let bestMove: { from: Position, to: Position } | null = null;
       
+      // 1. Try to kill King
       for (const e of enemies) {
         const kingKill = e.moves.find(m => boardCopy[m.row][m.col].piece?.type === PieceType.KING);
         if (kingKill) {
@@ -387,14 +466,24 @@ export default function App() {
         }
       }
 
+      // 2. Try to capture high value targets
       if (!bestMove) {
         const captures: { from: Position, to: Position, value: number }[] = [];
         enemies.forEach(e => {
           e.moves.forEach(m => {
             const target = boardCopy[m.row][m.col].piece;
-            if (target?.side === Side.WHITE) {
+            // Also value En Passant captures
+            const isEP = e.piece.type === PieceType.PAWN && playerEnPassantTarget && m.row === playerEnPassantTarget.row && m.col === playerEnPassantTarget.col;
+            
+            if (target?.side === Side.WHITE || isEP) {
                let val = 1;
-               if (target.type === PieceType.QUEEN) val = 5;
+               if (target) {
+                   if (target.type === PieceType.QUEEN) val = 9;
+                   else if (target.type === PieceType.ROOK) val = 5;
+                   else if (target.type === PieceType.BISHOP || target.type === PieceType.KNIGHT) val = 3;
+               } else if (isEP) {
+                   val = 1; // Killing a pawn via EP
+               }
                captures.push({ from: e.pos, to: m, value: val });
             }
           });
@@ -405,19 +494,53 @@ export default function App() {
         }
       }
 
+      // 3. Random move
       if (!bestMove) {
          const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
          const randomMove = randomEnemy.moves[Math.floor(Math.random() * randomEnemy.moves.length)];
          bestMove = { from: randomEnemy.pos, to: randomMove };
       }
 
+      let nextEnPassantTarget: Position | null = null;
+
       if (bestMove) {
-        const captured = boardCopy[bestMove.to.row][bestMove.to.col].piece;
-        boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...boardCopy[bestMove.from.row][bestMove.from.col].piece!, hasMoved: true };
+        const movingPiece = boardCopy[bestMove.from.row][bestMove.from.col].piece!;
+        
+        // Handle En Passant Capture (Enemy)
+        if (movingPiece.type === PieceType.PAWN && playerEnPassantTarget && bestMove.to.row === playerEnPassantTarget.row && bestMove.to.col === playerEnPassantTarget.col) {
+             const direction = 1; // Black moves DOWN (+1)
+             const victimRow = bestMove.to.row - direction; // Victim is UP from the target square
+             boardCopy[victimRow][bestMove.to.col].piece = null;
+        }
+
+        // Handle Double Push (Set En Passant Target for Player)
+        if (movingPiece.type === PieceType.PAWN && Math.abs(bestMove.from.row - bestMove.to.row) === 2) {
+            nextEnPassantTarget = { row: (bestMove.from.row + bestMove.to.row) / 2, col: bestMove.from.col };
+        }
+
+        boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
         boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
+
+        // Promotion (Enemy reaches size-1)
+        if (movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
+            boardCopy[bestMove.to.row][bestMove.to.col].piece!.type = PieceType.QUEEN;
+        }
+
         setLastMoveFrom(bestMove.from);
         setLastMoveTo(bestMove.to);
-        if (captured?.type === PieceType.KING) setPhase('GAME_OVER_LOSS');
+      }
+
+      // Update State
+      setEnPassantTarget(nextEnPassantTarget);
+      
+      // Check Loss Condition
+      if (checkLossCondition(boardCopy, deck, hand)) {
+          setPhase('GAME_OVER_LOSS');
+      }
+
+      // Check Win Condition (Unlikely in enemy turn, but if enemy kills own king?? Arcade weirdness)
+      if (checkWinCondition(boardCopy)) {
+          handleWin();
       }
 
       setTurn(Side.WHITE);
@@ -553,10 +676,18 @@ export default function App() {
   };
 
   const consumeCard = (id: string) => {
-    setHand(prev => prev.filter(c => c.id !== id));
+    // Check loss state after card is consumed (hand decreases)
+    // We need to use the updater function to ensure we check state *after* update, but React is async.
+    // So we manually calculate next state for check.
+    const nextHand = hand.filter(c => c.id !== id);
+    setHand(nextHand);
     setSelectedCardId(null);
     setCardTargetMode(null);
-    setCardsPlayed(prev => prev + 1); // Increment count
+    setCardsPlayed(prev => prev + 1);
+
+    if (checkLossCondition(board, deck, nextHand)) {
+        setPhase('GAME_OVER_LOSS');
+    }
   };
 
   const getCellSizeClass = () => {
@@ -732,7 +863,7 @@ export default function App() {
                  {phase === 'GAME_OVER_WIN' ? 'VICTORY' : 'DEFEAT'}
                </h2>
                <p className="text-slate-300 mb-8 text-xl">
-                 {phase === 'GAME_OVER_WIN' ? 'The Enemy King has fallen.' : 'Your campaign ends here.'}
+                 {phase === 'GAME_OVER_WIN' ? (isCampaign ? 'The enemy army has been annihilated!' : 'You have won!') : (isCampaign ? 'Your army is depleted.' : 'You have lost.')}
                </p>
                <div className="flex gap-4 justify-center">
                  <Button onClick={() => setPhase('SETTINGS')} className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-xl">
