@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { 
   GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position 
 } from './types';
-import { PIECE_ICONS, DECK_TEMPLATE } from './constants';
+import { PIECE_ICONS, DECK_TEMPLATE, PIECE_GOLD_VALUES } from './constants';
 import { generateBoard, getValidMoves, isValidPos } from './utils/gameLogic';
 
 // --- Components ---
@@ -64,6 +64,7 @@ export default function App() {
   const [board, setBoard] = useState<Cell[][]>([]);
   const [turn, setTurn] = useState<Side>(Side.WHITE);
   const [turnCount, setTurnCount] = useState(1);
+  const [gold, setGold] = useState(0);
   const [selectedPiecePos, setSelectedPiecePos] = useState<Position | null>(null);
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [lastMoveFrom, setLastMoveFrom] = useState<Position | null>(null);
@@ -161,6 +162,7 @@ export default function App() {
     setTurn(Side.WHITE);
     setPhase('PLAYING');
     setTurnCount(1);
+    setGold(0);
     setSelectedPiecePos(null);
     setValidMoves([]);
     setIsEnemyMoveLimited(false);
@@ -218,6 +220,12 @@ export default function App() {
     const newBoard = [...board.map(row => [...row])]; // Deep copy
     const piece = newBoard[from.row][from.col].piece!;
     const target = newBoard[to.row][to.col].piece;
+
+    // Check Capture & Gold (before overwrite)
+    if (target && target.side === Side.BLACK) {
+        const goldReward = PIECE_GOLD_VALUES[target.type];
+        setGold(prev => prev + goldReward);
+    }
 
     // Move logic
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined }; // Clear temp moves
@@ -529,6 +537,10 @@ export default function App() {
         </div>
         {phase === 'PLAYING' && (
           <div className="flex gap-4 items-center">
+            <div className="text-center">
+               <span className="block text-xs uppercase text-slate-500">Gold</span>
+               <span className="font-bold text-yellow-400">💰 {gold}</span>
+            </div>
             <div className="text-center">
                <span className="block text-xs uppercase text-slate-500">Turn</span>
                <span className={`font-bold ${turn === Side.WHITE ? 'text-green-400' : 'text-red-400'}`}>

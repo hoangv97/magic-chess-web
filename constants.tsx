@@ -50,3 +50,12 @@ export const DECK_TEMPLATE: Omit<Card, 'id'>[] = [
   { type: CardType.EFFECT_BORROW_BISHOP, title: "Bishop's Sight", description: "Target piece moves like a Bishop this turn." },
   { type: CardType.EFFECT_BACK_BASE, title: "Recall", description: "Return one of your pieces to the base row." },
 ];
+
+export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
+  [PieceType.KING]: 100,
+  [PieceType.QUEEN]: 50,
+  [PieceType.BISHOP]: 25,
+  [PieceType.KNIGHT]: 20,
+  [PieceType.ROOK]: 15,
+  [PieceType.PAWN]: 10,
+};
