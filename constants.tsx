@@ -4,37 +4,33 @@ import { PieceType, CardType, Card } from './types';
 export const PIECE_ICONS: Record<PieceType, React.ReactNode> = {
   [PieceType.KING]: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-      <path d="M12 2l1.5 3h3l-1.5 3 1.5 4h-9l1.5-4-1.5-3h3z" opacity="0.4"/>
-      <path d="M12 .75a1 1 0 0 1 1 1v2.5h2.5a1 1 0 1 1 0 2h-1.3l.8 2.2a1 1 0 0 1-.94 1.35H9.94a1 1 0 0 1-.94-1.35l.8-2.2h-1.3a1 1 0 1 1 0-2H11V1.75a1 1 0 0 1 1-1zM16 19v-2H8v2h8zm2 2H6v2h12v-2z" />
+      <path d="M12 2c-.5 0-1 .4-1 1v2H9c-.6 0-1 .4-1 1v1h2v1.5c-2.3.5-4.2 2.4-4.8 5.1h13.6c-.6-2.7-2.5-4.6-4.8-5.1V7h2V6c0-.6-.4-1-1-1h-2V3c0-.6-.4-1-1-1zM7 16v2h10v-2H7zm-2 3v2h14v-2H5z"/>
     </svg>
   ),
   [PieceType.QUEEN]: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-      <path d="M12 2l2.5 4h3.5l-2 3 2 5h-12l2-5-2-3h3.5z"/>
-      <circle cx="12" cy="4" r="1.5" />
-      <path d="M7 19v-2h10v2H7zm-2 2h14v2H5v-2z" />
+      <path d="M12 2l2.5 5h4L17 11l1.5 4h-13l1.5-4-1.5-4h4L12 2zm-5 14h10v2H7v-2zm-1 3h12v2H6v-2z"/>
+      <circle cx="12" cy="7.5" r="1" />
     </svg>
   ),
   [PieceType.ROOK]: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-      <path d="M6 4v4h3v-2h2v2h2v-2h2v2h3V4H6zm0 13v-9h12v9H6zm-1 2h14v2H5v-2zm-1 2h16v2H4v-2z" />
+      <path d="M5 5v4h2v7H5v2h14v-2h-2V9h2V5h-3v2h-2V5h-2v2H9V5H5zm-1 14v2h16v-2H4z"/>
     </svg>
   ),
   [PieceType.BISHOP]: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-      <path d="M12 2c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-      <path d="M8 10l-1 9h10l-1-9H8zm-2 11h12v2H6v-2z" />
+      <path d="M12 2c-1.9 0-3.5 1.6-3.5 3.5 0 1.4.8 2.6 2 3.2V15h3V8.7c1.2-.6 2-1.8 2-3.2C15.5 3.6 13.9 2 12 2zm0 2l1 2h-2l1-2zm-3 12v2h6v-2H9zm-2 3v2h10v-2H7z"/>
     </svg>
   ),
   [PieceType.KNIGHT]: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-      <path d="M17 5c0-1.7-1.3-3-3-3h-2l-1 3-3 .5V9h2v3l-2 2v2h6v-2h2V9h2V5h-1zm-4 4h-2V7h2v2zM6 21v-2h12v2H6z" />
+      <path d="M14.5 5c0-1.7-1.3-3-3-3h-2l-1 3-2 1v3h2v4l-2 1v2h5v-2h2v-4h1V5h-.5zm-3.5 2c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zM6 19v2h12v-2H6z"/>
     </svg>
   ),
   [PieceType.PAWN]: (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-      <circle cx="12" cy="6" r="3" />
-      <path d="M12 10c-2.7 0-5 2-5 5v2h10v-2c0-3-2.3-5-5-5zm-5 9h10v2H7v-2z" />
+      <path d="M12 4c-1.4 0-2.5 1.1-2.5 2.5S10.6 9 12 9s2.5-1.1 2.5-2.5S13.4 4 12 4zm-1.5 6v5H9v2h6v-2h-1.5v-5h-3zm-3 8v2h10v-2H7z"/>
     </svg>
   ),
 };
