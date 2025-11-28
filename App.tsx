@@ -1,67 +1,22 @@
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType 
 } from './types';
-import { PIECE_ICONS, DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELIC_LEVEL_REWARDS } from './constants';
-import { generateBoard, getValidMoves, isValidPos } from './utils/gameLogic';
+import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELIC_LEVEL_REWARDS } from './constants';
+import { generateBoard, getValidMoves } from './utils/gameLogic';
 
-// --- Components ---
-
-const Button = ({ children, onClick, className = "", disabled = false }: any) => (
-  <button
-    disabled={disabled}
-    onClick={onClick}
-    className={`px-4 py-2 rounded font-bold transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-  >
-    {children}
-  </button>
-);
-
-interface CardComponentProps {
-  card: Card;
-  selected: boolean;
-  onClick: () => void;
-  disabled: boolean;
-  showCost?: boolean;
-}
-
-const CardComponent: React.FC<CardComponentProps> = ({ card, selected, onClick, disabled, showCost = false }) => (
-  <div 
-    onClick={() => !disabled && onClick()}
-    className={`
-      flex-shrink-0 w-32 h-44 border-2 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-all duration-200 relative
-      ${selected ? 'border-yellow-400 bg-yellow-50 -translate-y-4 shadow-xl ring-2 ring-yellow-400 text-black' : 'border-gray-600 bg-slate-800 text-white hover:-translate-y-2 hover:shadow-lg'}
-      ${disabled ? 'opacity-50 grayscale cursor-not-allowed' : ''}
-    `}
-  >
-    <div className="text-[10px] font-bold uppercase tracking-wider text-center border-b border-gray-500 pb-1 mb-1 truncate">
-      {card.title}
-    </div>
-    <div className="flex-grow flex items-center justify-center text-center">
-      {/* Icon placeholder based on type */}
-      <span className="text-3xl">
-        {card.type.includes('SPAWN') && '⚔️'}
-        {card.type.includes('SWITCH') && '🔄'}
-        {card.type.includes('FREEZE') && '❄️'}
-        {card.type.includes('LIMIT') && '🐌'}
-        {card.type.includes('BORROW') && '🎭'}
-        {card.type.includes('BACK') && '↩️'}
-      </span>
-    </div>
-    <div className="text-[9px] text-center leading-tight opacity-90 mb-1">
-      {card.description}
-    </div>
-    {showCost && (
-      <div className="absolute -top-2 -right-2 bg-yellow-400 text-black font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-white shadow-sm text-xs z-10">
-        ${card.cost}
-      </div>
-    )}
-  </div>
-);
-
-// --- Main App ---
+// Component Imports
+import { MainMenu } from './components/screens/MainMenu';
+import { DeckSelection } from './components/screens/DeckSelection';
+import { Reward } from './components/screens/Reward';
+import { Shop } from './components/screens/Shop';
+import { GameOver } from './components/screens/GameOver';
+import { GameHeader } from './components/game/GameHeader';
+import { GameBoard } from './components/game/GameBoard';
+import { PlayerHand } from './components/game/PlayerHand';
+import { DeckModal } from './components/modals/DeckModal';
+import { RelicDetailModal } from './components/modals/RelicDetailModal';
 
 export default function App() {
   const [phase, setPhase] = useState<GamePhase>('SETTINGS');
@@ -492,6 +447,7 @@ export default function App() {
 
   const endPlayerTurn = (currentBoard: Cell[][], currentEnPassantTarget: Position | null) => {
     setTurn(Side.BLACK);
+    setTurnCount(c => c + 1);
     setTimeout(() => executeEnemyTurn(currentBoard, currentEnPassantTarget), 800);
   };
 
@@ -520,6 +476,7 @@ export default function App() {
 
       if (enemies.length === 0) {
         setTurn(Side.WHITE);
+        setTurnCount(1);
         setCardsPlayed(0);
         drawCard();
         setIsEnemyMoveLimited(false);
@@ -768,392 +725,95 @@ export default function App() {
     }
   };
 
-  const getCellSizeClass = () => {
-     const size = board.length;
-     if (size >= 10) return "w-10 h-10 sm:w-12 sm:h-12";
-     return "w-12 h-12 sm:w-16 sm:h-16";
-  };
-
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col overflow-hidden">
       
       {/* Header */}
-      <header className="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center shadow-lg z-10 shrink-0">
-        <div>
-           <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-             CHESS EVOLUTION
-           </h1>
-           {isCampaign && <p className="text-xs text-yellow-500 font-bold tracking-widest">CAMPAIGN LEVEL {campaignLevel}</p>}
-        </div>
-        
-        {phase === 'PLAYING' || phase === 'SHOP' || phase === 'REWARD' ? (
-          <div className="flex gap-4 items-center">
-            {/* Relics Bar */}
-            {relics.length > 0 && (
-                <div className="flex items-center gap-2 bg-slate-700/50 px-2 py-1 rounded-lg border border-slate-600">
-                    {relics.map((r, i) => (
-                        <div key={i} className="relative cursor-pointer hover:scale-110 transition-transform" onClick={() => setSelectedRelic(r)}>
-                            <span className="text-2xl">{RELIC_INFO[r.type].icon}</span>
-                            <span className="absolute -bottom-1 -right-1 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-gray-500 font-bold">
-                                {r.level}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            <div className="text-center px-4 py-1 bg-slate-700 rounded-lg border border-slate-600">
-               <span className="block text-[10px] uppercase text-slate-400">Treasury</span>
-               <span className="font-bold text-yellow-400 text-lg">💰 {gold}</span>
-            </div>
-            {phase === 'PLAYING' && (
-              <>
-                <div className="text-center">
-                   <span className="block text-[10px] uppercase text-slate-500">Played</span>
-                   <span className={`font-bold ${cardsPlayed >= 3 ? 'text-red-500' : 'text-white'}`}>{cardsPlayed}/3</span>
-                </div>
-                <Button className="bg-red-900/50 hover:bg-red-800 text-xs border border-red-700" onClick={() => setPhase('SETTINGS')}>Resign</Button>
-              </>
-            )}
-          </div>
-        ) : null}
-      </header>
+      <GameHeader 
+        phase={phase}
+        isCampaign={isCampaign}
+        campaignLevel={campaignLevel}
+        relics={relics}
+        gold={gold}
+        turnCount={turnCount}
+        cardsPlayed={cardsPlayed}
+        onResign={() => setPhase('SETTINGS')}
+        onRelicClick={setSelectedRelic}
+      />
 
       {/* Main Content */}
       <main className="flex-grow flex relative overflow-hidden">
         
-        {/* SETTINGS MENU */}
         {phase === 'SETTINGS' && (
-           <div className="m-auto bg-slate-800 p-8 rounded-xl shadow-2xl max-w-md w-full border border-slate-700">
-             <h2 className="text-3xl font-black mb-8 text-white text-center tracking-tighter">NEW GAME</h2>
-             
-             <Button 
-                onClick={startCampaign}
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-4 text-xl mb-6 shadow-purple-900/50"
-             >
-               👑 Start Campaign
-             </Button>
-             
-             <div className="border-t border-slate-700 my-6"></div>
-             
-             <h3 className="text-sm uppercase text-slate-500 font-bold mb-4 text-center">Custom Game</h3>
-
-             <div className="mb-4">
-               <label className="block text-sm font-bold mb-2 text-slate-300">Board Size: {settings.boardSize}</label>
-               <input 
-                 type="range" min="6" max="12" value={settings.boardSize}
-                 onChange={(e) => setSettings({...settings, boardSize: parseInt(e.target.value)})}
-                 className="w-full accent-yellow-500 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
-               />
-             </div>
-             <div className="mb-6">
-               <label className="block text-sm font-bold mb-2 text-slate-300">Enemies: {settings.enemyCount}</label>
-               <input 
-                 type="range" min="1" max="10" value={settings.enemyCount}
-                 onChange={(e) => setSettings({...settings, enemyCount: parseInt(e.target.value)})}
-                 className="w-full accent-red-500 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
-               />
-             </div>
-
-             <Button 
-               onClick={() => initGame(false)} 
-               className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 py-3"
-             >
-               Start Custom Game
-             </Button>
-           </div>
+           <MainMenu 
+             settings={settings}
+             setSettings={setSettings}
+             startCampaign={startCampaign}
+             initGame={initGame}
+           />
         )}
 
-        {/* DECK SELECTION */}
         {phase === 'DECK_SELECTION' && (
-          <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-900">
-             <h2 className="text-3xl font-bold mb-2 text-white">Choose Your Army</h2>
-             <p className="text-slate-400 mb-8">Select a starter deck to begin your campaign.</p>
-             <div className="flex flex-wrap gap-6 justify-center">
-                {STARTER_DECKS.map((starter, idx) => (
-                  <div key={idx} 
-                       onClick={() => selectStarterDeck(idx)}
-                       className="w-64 bg-slate-800 border-2 border-slate-600 hover:border-yellow-400 hover:scale-105 transition-all cursor-pointer rounded-xl p-6 flex flex-col shadow-xl">
-                      <h3 className="text-xl font-bold text-yellow-400 mb-2">{starter.name}</h3>
-                      <p className="text-sm text-slate-300 mb-4 h-10">{starter.description}</p>
-                      <div className="space-y-1 bg-slate-900/50 p-2 rounded">
-                        {starter.cards.map((c, i) => (
-                           <div key={i} className="text-xs text-slate-400 flex items-center">
-                              <span className="mr-2 text-yellow-600">▪</span> 
-                              {DECK_TEMPLATE.find(t => t.type === c)?.title}
-                           </div>
-                        ))}
-                      </div>
-                  </div>
-                ))}
-             </div>
-          </div>
+          <DeckSelection onSelectDeck={selectStarterDeck} />
         )}
 
-        {/* REWARD SCREEN */}
         {phase === 'REWARD' && (
-           <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center">
-              <h2 className="text-4xl font-black text-yellow-400 mb-4 animate-bounce">VICTORY!</h2>
-              <p className="text-xl text-white mb-8">Choose a card to add to your deck</p>
-              <div className="flex gap-6 mb-12">
-                 {rewardCards.map(card => (
-                   <div key={card.id} className="scale-125">
-                     <CardComponent 
-                       card={card} 
-                       selected={false} 
-                       disabled={false} 
-                       onClick={() => selectReward(card)} 
-                     />
-                   </div>
-                 ))}
-              </div>
-           </div>
+           <Reward rewardCards={rewardCards} onSelectReward={selectReward} />
         )}
 
-        {/* SHOP SCREEN */}
         {phase === 'SHOP' && (
-           <div className="w-full h-full flex flex-col items-center p-8 bg-slate-900 overflow-y-auto">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-white mb-2">Merchant's Camp</h2>
-                <p className="text-slate-400">Spend your gold to reinforce your army.</p>
-              </div>
-              
-              {/* Relic Shop Section */}
-              {shopRelics.length > 0 && (
-                <div className="mb-12 w-full max-w-4xl">
-                    <h3 className="text-xl font-bold text-purple-400 mb-4 border-b border-purple-500/30 pb-2">Ancient Relics</h3>
-                    <div className="flex gap-6 justify-center">
-                        {shopRelics.map((relic, idx) => {
-                             const info = RELIC_INFO[relic.type];
-                             const existing = relics.find(r => r.type === relic.type);
-                             const level = existing ? existing.level : 0;
-                             const cost = info.basePrice * (level + 1);
-                             
-                             return (
-                                <div key={idx} className="bg-slate-800 border border-purple-500/50 rounded-lg p-4 w-64 flex flex-col items-center hover:bg-slate-800/80 transition-colors shadow-lg shadow-purple-900/20">
-                                    <div className="text-5xl mb-2">{info.icon}</div>
-                                    <div className="font-bold text-white">{info.name}</div>
-                                    <div className="text-xs text-purple-300 uppercase font-bold mb-2">{existing ? `Upgrade to Lvl ${level + 1}` : "New Artifact"}</div>
-                                    <p className="text-xs text-slate-400 text-center mb-4 h-12 flex items-center justify-center">
-                                        {info.description(level + 1)}
-                                    </p>
-                                    <Button 
-                                        disabled={gold < cost}
-                                        onClick={() => buyRelic(relic, idx)}
-                                        className={`w-full ${gold >= cost ? 'bg-purple-600 hover:bg-purple-500' : 'bg-slate-700'}`}
-                                    >
-                                        Buy {cost}g
-                                    </Button>
-                                </div>
-                             );
-                        })}
-                    </div>
-                </div>
-              )}
-
-              {/* Cards Shop Section */}
-              <div className="w-full max-w-4xl mb-12">
-                 <h3 className="text-xl font-bold text-yellow-400 mb-4 border-b border-yellow-500/30 pb-2">Battle Cards</h3>
-                 <div className="flex flex-wrap gap-8 justify-center">
-                    {shopCards.map(card => (
-                    <div key={card.id} className="relative group">
-                        <CardComponent 
-                        card={card} 
-                        selected={false} 
-                        disabled={gold < card.cost} 
-                        onClick={() => buyCard(card)}
-                        showCost={true}
-                        />
-                        {gold < card.cost && (
-                        <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-red-500 font-bold rotate-12 border-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            TOO EXPENSIVE
-                        </div>
-                        )}
-                    </div>
-                    ))}
-                    {shopCards.length === 0 && <div className="text-slate-500 italic">Sold Out</div>}
-                 </div>
-              </div>
-
-              <Button 
-                onClick={nextLevel} 
-                className="bg-green-600 hover:bg-green-500 text-white px-12 py-4 text-xl shadow-lg shadow-green-900/50"
-              >
-                Next Battle &rarr;
-              </Button>
-           </div>
+           <Shop 
+             gold={gold}
+             shopCards={shopCards}
+             shopRelics={shopRelics}
+             relics={relics}
+             onBuyCard={buyCard}
+             onBuyRelic={buyRelic}
+             onNextLevel={nextLevel}
+           />
         )}
 
-        {/* GAME OVER */}
-        {(phase === 'GAME_OVER_WIN' || phase === 'GAME_OVER_LOSS') && (
-           <div className="absolute inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm">
-             <div className="text-center p-8 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl">
-               <h2 className={`text-6xl font-black mb-4 ${phase === 'GAME_OVER_WIN' ? 'text-green-400' : 'text-red-500'}`}>
-                 {phase === 'GAME_OVER_WIN' ? 'VICTORY' : 'DEFEAT'}
-               </h2>
-               <p className="text-slate-300 mb-8 text-xl">
-                 {phase === 'GAME_OVER_WIN' ? (isCampaign ? 'The enemy army has been annihilated!' : 'You have won!') : (isCampaign ? 'Your army is depleted.' : 'You have lost.')}
-               </p>
-               <div className="flex gap-4 justify-center">
-                 <Button onClick={() => setPhase('SETTINGS')} className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-xl">
-                   Main Menu
-                 </Button>
-                 {phase === 'GAME_OVER_LOSS' && isCampaign && (
-                    <Button onClick={startCampaign} className="bg-purple-600 hover:bg-purple-500 px-8 py-3 text-xl">
-                      Restart Campaign
-                    </Button>
-                 )}
-               </div>
-             </div>
-           </div>
-        )}
+        <GameOver 
+          phase={phase}
+          isCampaign={isCampaign}
+          onMainMenu={() => setPhase('SETTINGS')}
+          onRestartCampaign={startCampaign}
+        />
 
-        {/* PLAYING BOARD */}
         {phase === 'PLAYING' && (
           <div className="flex flex-col w-full h-full">
             
-            {/* Board Area */}
-            <div className="flex-grow flex items-center justify-center p-4 bg-[#1a1c23] overflow-auto">
-               <div 
-                 className="grid bg-[#3d2e23] p-2 rounded shadow-2xl border-4 border-[#2a2018]"
-                 style={{ 
-                   gridTemplateColumns: `repeat(${board.length}, minmax(0, 1fr))` 
-                 }}
-               >
-                 {board.map((row, r) => (
-                   row.map((cell, c) => {
-                     const isDark = (r + c) % 2 === 1;
-                     const isSelected = selectedPiecePos?.row === r && selectedPiecePos?.col === c;
-                     const isValid = validMoves.some(m => m.row === r && m.col === c);
-                     const isLastFrom = lastMoveFrom?.row === r && lastMoveFrom?.col === c;
-                     const isLastTo = lastMoveTo?.row === r && lastMoveTo?.col === c;
-                     const size = board.length;
+            <GameBoard 
+              board={board}
+              selectedPiecePos={selectedPiecePos}
+              validMoves={validMoves}
+              lastMoveFrom={lastMoveFrom}
+              lastMoveTo={lastMoveTo}
+              onSquareClick={handleSquareClick}
+              selectedCardId={selectedCardId}
+              cardTargetMode={cardTargetMode}
+            />
 
-                     // Card Targeting Highlight
-                     const isCardTarget = selectedCardId && cardTargetMode && (
-                        (cardTargetMode.type.includes('SPAWN') && r >= size - 2 && !cell.piece) ||
-                        (cardTargetMode.type.includes('SWITCH') && cell.piece?.side === Side.WHITE) ||
-                        (cardTargetMode.type.includes('BORROW') && cell.piece?.side === Side.WHITE) ||
-                        (cardTargetMode.type.includes('BACK') && cell.piece?.side === Side.WHITE && cell.piece.type !== PieceType.KING)
-                     );
+            <PlayerHand 
+              hand={hand}
+              deckCount={deck.length}
+              selectedCardId={selectedCardId}
+              turn={turn}
+              cardsPlayed={cardsPlayed}
+              onCardClick={handleCardClick}
+              onDeckClick={() => setShowDeckModal(true)}
+            />
 
-                     return (
-                       <div 
-                         key={`${r}-${c}`}
-                         onClick={() => handleSquareClick(r, c)}
-                         className={`
-                           ${getCellSizeClass()} flex items-center justify-center relative select-none
-                           ${isDark ? 'bg-[#b58863]' : 'bg-[#f0d9b5]'}
-                           ${isSelected ? 'ring-inset ring-4 ring-yellow-400' : ''}
-                           ${isCardTarget ? 'ring-inset ring-4 ring-blue-500 cursor-copy' : ''}
-                           ${(isLastFrom || isLastTo) ? 'after:absolute after:inset-0 after:bg-yellow-500/30' : ''}
-                           ${isValid ? 'cursor-pointer' : ''}
-                         `}
-                       >
-                         {(c === 0) && <span className={`absolute left-0.5 top-0.5 text-[8px] ${isDark ? 'text-[#f0d9b5]' : 'text-[#b58863]'}`}>{size - r}</span>}
-                         {(r === size - 1) && <span className={`absolute right-0.5 bottom-0 text-[8px] ${isDark ? 'text-[#f0d9b5]' : 'text-[#b58863]'}`}>{String.fromCharCode(97 + c)}</span>}
-
-                         {isValid && !cell.piece && <div className="w-3 h-3 rounded-full bg-black/20" />}
-                         {isValid && cell.piece && <div className="absolute inset-0 border-4 border-red-500/50 rounded-full animate-pulse" />}
-
-                         {cell.piece && (
-                           <div className={`
-                             w-4/5 h-4/5 transition-transform duration-200
-                             ${cell.piece.side === Side.WHITE ? 'text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.8)]' : 'text-black drop-shadow-[0_1px_0px_rgba(255,255,255,0.5)]'}
-                             ${cell.piece.isFrozen ? 'brightness-50 grayscale opacity-80' : ''}
-                           `}>
-                             {PIECE_ICONS[cell.piece.type]}
-                             {cell.piece.isFrozen && <div className="absolute -top-1 -right-1 text-base">❄️</div>}
-                             {cell.piece.tempMoveOverride && <div className="absolute -bottom-1 -right-1 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center border border-white">✨</div>}
-                           </div>
-                         )}
-                       </div>
-                     );
-                   })
-                 ))}
-               </div>
-            </div>
-
-            {/* Hand Area */}
-            <div className="h-56 bg-slate-900 border-t border-slate-700 flex flex-col relative z-20 shrink-0">
-               <div className="flex-grow flex items-center px-4 space-x-4">
-                  
-                  {/* Cards Container */}
-                  <div className="flex-grow flex items-center overflow-x-auto hide-scrollbar space-x-4 h-full">
-                      {hand.length === 0 && (
-                        <div className="w-full text-center text-slate-500 italic">
-                          Your hand is empty.
-                        </div>
-                      )}
-                      {hand.map((card) => (
-                        <CardComponent 
-                          key={card.id} 
-                          card={card} 
-                          selected={selectedCardId === card.id} 
-                          onClick={() => handleCardClick(card)}
-                          disabled={turn !== Side.WHITE}
-                        />
-                      ))}
-                  </div>
-
-                  {/* Deck Pile Button */}
-                  <div 
-                    onClick={() => setShowDeckModal(true)}
-                    className="w-24 h-40 border-2 border-slate-600 bg-slate-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 hover:-translate-y-1 transition-all shadow-lg shrink-0 ml-4 group"
-                  >
-                     <div className="text-3xl mb-1 group-hover:scale-110 transition-transform">🎴</div>
-                     <div className="font-bold text-lg text-white">{deck.length}</div>
-                     <div className="text-[10px] text-slate-400 uppercase tracking-wider">Deck</div>
-                  </div>
-
-               </div>
-               
-               <div className="h-8 bg-slate-800 text-center text-xs text-slate-400 flex items-center justify-center border-t border-slate-700">
-                  {selectedCardId 
-                    ? <span className="text-yellow-400 animate-pulse">Select a target on the board to cast spell</span> 
-                    : turn === Side.WHITE ? `Your Turn: Play cards (${3 - cardsPlayed} left) or move a piece.` : "Enemy Turn..."}
-               </div>
-            </div>
-
-            {/* Deck Modal */}
             {showDeckModal && (
-               <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col p-8">
-                  <div className="flex justify-between items-center mb-8">
-                     <h2 className="text-2xl font-bold text-white">Your Remaining Deck ({deck.length})</h2>
-                     <Button onClick={() => setShowDeckModal(false)} className="bg-slate-700 hover:bg-slate-600 text-white">Close</Button>
-                  </div>
-                  <div className="flex-grow overflow-y-auto">
-                    <div className="flex flex-wrap gap-4 justify-center">
-                       {deck.length === 0 && <p className="text-slate-500 italic">Deck is empty.</p>}
-                       {deck.map((card, i) => (
-                          <div key={i} className="opacity-80 hover:opacity-100 transition-opacity">
-                             <CardComponent card={card} selected={false} onClick={() => {}} disabled={false} />
-                          </div>
-                       ))}
-                    </div>
-                  </div>
-               </div>
+               <DeckModal deck={deck} onClose={() => setShowDeckModal(false)} />
             )}
 
-            {/* Relic Dialog */}
             {selectedRelic && (
-                <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center">
-                     <div className="bg-slate-800 p-8 rounded-lg border border-slate-600 max-w-sm w-full shadow-2xl relative">
-                         <div className="text-6xl text-center mb-4">{RELIC_INFO[selectedRelic.type].icon}</div>
-                         <h3 className="text-2xl font-bold text-center text-white mb-1">{RELIC_INFO[selectedRelic.type].name}</h3>
-                         <p className="text-purple-400 text-center font-bold mb-4">Level {selectedRelic.level}</p>
-                         <p className="text-slate-300 text-center mb-8">
-                             {RELIC_INFO[selectedRelic.type].description(selectedRelic.level)}
-                         </p>
-                         
-                         <div className="flex gap-4">
-                             <Button onClick={() => setSelectedRelic(null)} className="flex-1 bg-slate-600 hover:bg-slate-500">Close</Button>
-                             <Button onClick={() => sellRelic(selectedRelic)} className="flex-1 bg-red-600 hover:bg-red-500">
-                                 Sell (+{Math.floor(RELIC_INFO[selectedRelic.type].basePrice * selectedRelic.level * 0.5)}g)
-                             </Button>
-                         </div>
-                     </div>
-                </div>
+                <RelicDetailModal 
+                  relic={selectedRelic} 
+                  onClose={() => setSelectedRelic(null)}
+                  onSell={sellRelic}
+                />
             )}
 
           </div>
