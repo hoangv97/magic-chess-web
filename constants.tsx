@@ -104,6 +104,11 @@ export const STARTER_DECKS = [
   }
 ];
 
+export const MAX_CARDS_IN_HAND = 7;
+export const MAX_CARDS_PLAYED_PER_TURN = 3;
+export const REWARD_CARDS = 3;
+export const CARDS_IN_SHOP = 5;
+
 export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.KING]: 100,
   [PieceType.QUEEN]: 50,

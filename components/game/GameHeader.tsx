@@ -1,6 +1,6 @@
 import React from 'react';
 import { GamePhase, Relic } from '../../types';
-import { RELIC_INFO } from '../../constants';
+import { RELIC_INFO, MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { Button } from '../ui/Button';
 
 interface GameHeaderProps {
@@ -51,7 +51,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
             <>
               <div className="text-center">
                  <span className="block text-[10px] uppercase text-slate-500">Played</span>
-                 <span className={`font-bold ${cardsPlayed >= 3 ? 'text-red-500' : 'text-white'}`}>{cardsPlayed}/3</span>
+                 <span className={`font-bold ${cardsPlayed >= MAX_CARDS_PLAYED_PER_TURN ? 'text-red-500' : 'text-white'}`}>{cardsPlayed}/{MAX_CARDS_PLAYED_PER_TURN}</span>
               </div>
               <div className="text-center">
                  <span className="block text-[10px] uppercase text-slate-500">Turns</span>

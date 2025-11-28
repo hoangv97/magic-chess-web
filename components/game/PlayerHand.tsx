@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Side } from '../../types';
+import { MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { CardComponent } from '../ui/CardComponent';
 
 interface PlayerHandProps {
@@ -52,7 +53,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
        <div className="h-8 bg-slate-800 text-center text-xs text-slate-400 flex items-center justify-center border-t border-slate-700">
           {selectedCardId 
             ? <span className="text-yellow-400 animate-pulse">Select a target on the board to cast spell</span> 
-            : turn === Side.WHITE ? `Your Turn: Play cards (${3 - cardsPlayed} left) or move a piece.` : "Enemy Turn..."}
+            : turn === Side.WHITE ? `Your Turn: Play cards (${MAX_CARDS_PLAYED_PER_TURN - cardsPlayed} left) or move a piece.` : "Enemy Turn..."}
        </div>
     </div>
   );

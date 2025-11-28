@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { 
   GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType 
 } from './types';
-import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELIC_LEVEL_REWARDS } from './constants';
+import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN } from './constants';
 import { generateBoard, getValidMoves } from './utils/gameLogic';
 
 // Component Imports
@@ -195,8 +195,8 @@ export default function App() {
   };
 
   const drawCard = useCallback(() => {
-    // Only draw if hand size < 7
-    if (deck.length > 0 && hand.length < 7) {
+    // Only draw if hand size < max cards in hand
+    if (deck.length > 0 && hand.length < MAX_CARDS_IN_HAND) {
       const newDeck = [...deck];
       const card = newDeck.pop();
       setDeck(newDeck);
@@ -365,7 +365,7 @@ export default function App() {
   const handleWin = () => {
     if (isCampaign) {
         // Generate Rewards
-        const rewards = Array.from({length: 3}).map(() => {
+        const rewards = Array.from({length: REWARD_CARDS}).map(() => {
             const t = DECK_TEMPLATE[Math.floor(Math.random() * DECK_TEMPLATE.length)];
             return { ...t, id: uuidv4() };
         });
@@ -380,7 +380,7 @@ export default function App() {
       setMasterDeck(prev => [...prev, card]);
       
       // Generate Shop
-      const shop = Array.from({length: 5}).map(() => {
+      const shop = Array.from({length: CARDS_IN_SHOP}).map(() => {
           const t = DECK_TEMPLATE[Math.floor(Math.random() * DECK_TEMPLATE.length)];
           return { ...t, id: uuidv4() };
       });
@@ -599,8 +599,8 @@ export default function App() {
     }
 
     // Limit check
-    if (cardsPlayed >= 3) {
-      alert("You have reached the maximum of 3 cards played this turn.");
+    if (cardsPlayed >= MAX_CARDS_PLAYED_PER_TURN) {
+      alert(`You have reached the maximum of ${MAX_CARDS_PLAYED_PER_TURN} cards played this turn.`);
       return;
     }
 
