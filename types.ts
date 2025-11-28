@@ -67,6 +67,15 @@ export interface Relic {
   level: number;
 }
 
+export interface MapNode {
+  id: string;
+  level: number;
+  x: number; // Percentage 0-100
+  y: number; // Percentage 0-100
+  next: string[];
+  name?: string;
+}
+
 export interface GameSettings {
   boardSize: number;
   enemyCount: number;
@@ -76,6 +85,7 @@ export interface GameSettings {
 export type GamePhase = 
   | 'SETTINGS' 
   | 'DECK_SELECTION'
+  | 'MAP'
   | 'PLAYING' 
   | 'GAME_OVER_WIN' 
   | 'GAME_OVER_LOSS'

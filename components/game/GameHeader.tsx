@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { GamePhase, Relic } from '../../types';
 import { RELIC_INFO, MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
@@ -13,10 +14,11 @@ interface GameHeaderProps {
   cardsPlayed: number;
   onResign: () => void;
   onRelicClick: (relic: Relic) => void;
+  onOpenMap: () => void;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({ 
-  phase, isCampaign, campaignLevel, relics, gold, turnCount, cardsPlayed, onResign, onRelicClick 
+  phase, isCampaign, campaignLevel, relics, gold, turnCount, cardsPlayed, onResign, onRelicClick, onOpenMap 
 }) => {
   return (
     <header className="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center shadow-lg z-10 shrink-0">
@@ -57,6 +59,13 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                  <span className="block text-[10px] uppercase text-slate-500">Turns</span>
                  <span className={`font-bold text-white`}>{turnCount}</span>
               </div>
+              
+              {isCampaign && (
+                <Button className="bg-slate-700 hover:bg-slate-600 text-xs px-3" onClick={onOpenMap}>
+                   🗺️
+                </Button>
+              )}
+              
               <Button className="bg-red-900/50 hover:bg-red-800 text-xs border border-red-700" onClick={onResign}>Resign</Button>
             </>
           )}

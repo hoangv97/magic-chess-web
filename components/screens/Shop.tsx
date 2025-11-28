@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, Relic, RelicType } from '../../types';
 import { RELIC_INFO } from '../../constants';
@@ -11,11 +12,11 @@ interface ShopProps {
   relics: Relic[]; // inventory
   onBuyCard: (card: Card) => void;
   onBuyRelic: (relic: Relic, index: number) => void;
-  onNextLevel: () => void;
+  onNext: () => void;
 }
 
 export const Shop: React.FC<ShopProps> = ({ 
-  gold, shopCards, shopRelics, relics, onBuyCard, onBuyRelic, onNextLevel 
+  gold, shopCards, shopRelics, relics, onBuyCard, onBuyRelic, onNext 
 }) => {
   return (
      <div className="w-full h-full flex flex-col items-center p-8 bg-slate-900 overflow-y-auto">
@@ -82,10 +83,10 @@ export const Shop: React.FC<ShopProps> = ({
         </div>
 
         <Button 
-          onClick={onNextLevel} 
+          onClick={onNext} 
           className="bg-green-600 hover:bg-green-500 text-white px-12 py-4 text-xl shadow-lg shadow-green-900/50"
         >
-          Next Battle &rarr;
+          Travel to Map &rarr;
         </Button>
      </div>
   );

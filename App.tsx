@@ -1,9 +1,10 @@
+
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
-  GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType 
+  GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType, MapNode 
 } from './types';
-import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN } from './constants';
+import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN, CAMPAIGN_MAP } from './constants';
 import { generateBoard, getValidMoves } from './utils/gameLogic';
 
 // Component Imports
@@ -17,6 +18,7 @@ import { GameBoard } from './components/game/GameBoard';
 import { PlayerHand } from './components/game/PlayerHand';
 import { DeckModal } from './components/modals/DeckModal';
 import { RelicDetailModal } from './components/modals/RelicDetailModal';
+import { MapModal } from './components/modals/MapModal';
 
 export default function App() {
   const [phase, setPhase] = useState<GamePhase>('SETTINGS');
@@ -28,9 +30,14 @@ export default function App() {
   const [masterDeck, setMasterDeck] = useState<Card[]>([]);
   const [relics, setRelics] = useState<Relic[]>([]);
   const [shopCards, setShopCards] = useState<Card[]>([]);
-  const [shopRelics, setShopRelics] = useState<Relic[]>([]); // New shop relics
+  const [shopRelics, setShopRelics] = useState<Relic[]>([]); 
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
-  const [gold, setGold] = useState(0); // Persistent Gold
+  const [gold, setGold] = useState(0);
+  
+  // Map State
+  const [currentMapNodeId, setCurrentMapNodeId] = useState<string | null>(null);
+  const [completedMapNodeIds, setCompletedMapNodeIds] = useState<string[]>([]);
+  const [showMapModal, setShowMapModal] = useState(false);
 
   // Game State
   const [board, setBoard] = useState<Cell[][]>([]);
@@ -54,7 +61,7 @@ export default function App() {
     sourcePos?: Position;
   } | null>(null);
   const [showDeckModal, setShowDeckModal] = useState(false);
-  const [selectedRelic, setSelectedRelic] = useState<Relic | null>(null); // For dialog
+  const [selectedRelic, setSelectedRelic] = useState<Relic | null>(null); 
 
   // --- Logic Helpers ---
 
@@ -63,6 +70,8 @@ export default function App() {
     setGold(0);
     setCampaignLevel(1);
     setRelics([]);
+    setCurrentMapNodeId(null);
+    setCompletedMapNodeIds([]);
     setPhase('DECK_SELECTION');
   };
 
@@ -73,7 +82,8 @@ export default function App() {
       return { ...template, id: uuidv4() };
     });
     setMasterDeck(newMasterDeck);
-    initGame(true, newMasterDeck, 1);
+    // Go to Map to select first level
+    setPhase('MAP');
   };
 
   const initGame = (campaignMode: boolean, campaignDeck?: Card[], level: number = 1) => {
@@ -364,7 +374,16 @@ export default function App() {
 
   const handleWin = () => {
     if (isCampaign) {
-        // Generate Rewards
+        if (currentMapNodeId) {
+           setCompletedMapNodeIds(prev => [...prev, currentMapNodeId]);
+        }
+        
+        // Check if final boss
+        if (currentMapNodeId === '7') { // Hardcoded final level ID
+           setPhase('GAME_OVER_WIN');
+           return;
+        }
+
         const rewards = Array.from({length: REWARD_CARDS}).map(() => {
             const t = DECK_TEMPLATE[Math.floor(Math.random() * DECK_TEMPLATE.length)];
             return { ...t, id: uuidv4() };
@@ -390,7 +409,7 @@ export default function App() {
       const shopR: Relic[] = [];
       const relicTypes = [RelicType.LAST_WILL, RelicType.NECROMANCY];
       // Pick 2 random types (duplicates allowed in generation pool, but distinct slots)
-      for(let i=0; i<2; i++) {
+      for(let i = 0; i < RELICS_IN_SHOP; i++) {
           const type = relicTypes[Math.floor(Math.random() * relicTypes.length)];
           shopR.push({ type, level: 1 }); // Shop always sells base "upgrade"
       }
@@ -439,10 +458,10 @@ export default function App() {
       setSelectedRelic(null);
   };
 
-  const nextLevel = () => {
-      const nextLvl = campaignLevel + 1;
-      setCampaignLevel(nextLvl);
-      initGame(true, masterDeck, nextLvl);
+  const handleMapNodeSelect = (node: MapNode) => {
+      setCurrentMapNodeId(node.id);
+      setCampaignLevel(node.level);
+      initGame(true, masterDeck, node.level);
   };
 
   const endPlayerTurn = (currentBoard: Cell[][], currentEnPassantTarget: Position | null) => {
@@ -739,6 +758,7 @@ export default function App() {
         cardsPlayed={cardsPlayed}
         onResign={() => setPhase('SETTINGS')}
         onRelicClick={setSelectedRelic}
+        onOpenMap={() => setShowMapModal(true)}
       />
 
       {/* Main Content */}
@@ -756,6 +776,17 @@ export default function App() {
         {phase === 'DECK_SELECTION' && (
           <DeckSelection onSelectDeck={selectStarterDeck} />
         )}
+        
+        {phase === 'MAP' && (
+           <MapModal 
+             mapNodes={CAMPAIGN_MAP}
+             currentNodeId={currentMapNodeId}
+             completedNodes={completedMapNodeIds}
+             onNodeSelect={handleMapNodeSelect}
+             onClose={() => {}} // Can't close in select mode
+             isReadOnly={false}
+           />
+        )}
 
         {phase === 'REWARD' && (
            <Reward rewardCards={rewardCards} onSelectReward={selectReward} />
@@ -769,7 +800,7 @@ export default function App() {
              relics={relics}
              onBuyCard={buyCard}
              onBuyRelic={buyRelic}
-             onNextLevel={nextLevel}
+             onNext={() => setPhase('MAP')}
            />
         )}
 
@@ -814,6 +845,17 @@ export default function App() {
                   onClose={() => setSelectedRelic(null)}
                   onSell={sellRelic}
                 />
+            )}
+            
+            {showMapModal && (
+              <MapModal 
+                mapNodes={CAMPAIGN_MAP}
+                currentNodeId={currentMapNodeId}
+                completedNodes={completedMapNodeIds}
+                onNodeSelect={() => {}} // No interaction in view mode
+                onClose={() => setShowMapModal(false)}
+                isReadOnly={true}
+              />
             )}
 
           </div>
