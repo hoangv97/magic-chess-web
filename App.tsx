@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
-  GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position 
+  GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType 
 } from './types';
-import { PIECE_ICONS, DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS } from './constants';
+import { PIECE_ICONS, DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELIC_LEVEL_REWARDS } from './constants';
 import { generateBoard, getValidMoves, isValidPos } from './utils/gameLogic';
 
 // --- Components ---
@@ -71,7 +71,9 @@ export default function App() {
   const [isCampaign, setIsCampaign] = useState(false);
   const [campaignLevel, setCampaignLevel] = useState(1);
   const [masterDeck, setMasterDeck] = useState<Card[]>([]);
+  const [relics, setRelics] = useState<Relic[]>([]);
   const [shopCards, setShopCards] = useState<Card[]>([]);
+  const [shopRelics, setShopRelics] = useState<Relic[]>([]); // New shop relics
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
   const [gold, setGold] = useState(0); // Persistent Gold
 
@@ -97,6 +99,7 @@ export default function App() {
     sourcePos?: Position;
   } | null>(null);
   const [showDeckModal, setShowDeckModal] = useState(false);
+  const [selectedRelic, setSelectedRelic] = useState<Relic | null>(null); // For dialog
 
   // --- Logic Helpers ---
 
@@ -104,6 +107,7 @@ export default function App() {
     setIsCampaign(true);
     setGold(0);
     setCampaignLevel(1);
+    setRelics([]);
     setPhase('DECK_SELECTION');
   };
 
@@ -126,7 +130,7 @@ export default function App() {
       // Campaign difficulty scaling
       size = Math.min(6 + Math.floor((level - 1) / 2), 12);
       eCount = Math.min(2 + level, 12); // Increases by 1 each level
-      pCount = 0; // Player spawns pieces via cards in campaign usually, but lets give 1 random start piece maybe? No, let's rely on the King and cards.
+      pCount = 0; 
     }
 
     const newBoard = generateBoard(size);
@@ -159,7 +163,6 @@ export default function App() {
     if (level >= 6) enemyPool.push(PieceType.QUEEN);
 
     if (!campaignMode) {
-      // Custom game pool
       enemyPool = [PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.PAWN, PieceType.QUEEN];
     }
 
@@ -224,7 +227,10 @@ export default function App() {
     setPhase('PLAYING');
     setTurnCount(1);
     setCardsPlayed(0);
-    if (!campaignMode) setGold(0); // Reset gold only for custom game
+    if (!campaignMode) {
+        setGold(0);
+        setRelics([]);
+    }
     setSelectedPiecePos(null);
     setValidMoves([]);
     setLastMoveFrom(null);
@@ -244,7 +250,6 @@ export default function App() {
   }, [deck, hand]);
 
   // Check loss condition immediately if state changes (useEffect might lag, so we check in actions)
-  // But we need a robust check.
   const checkLossCondition = (currentBoard: Cell[][], currentDeck: Card[], currentHand: Card[]) => {
       let whitePieces = 0;
       let whiteKing = false;
@@ -308,39 +313,59 @@ export default function App() {
     }
   };
 
+  const spawnRelicPiece = (boardState: Cell[][], side: Side, type: PieceType) => {
+      // Find empty spot in base rows
+      const size = boardState.length;
+      const baseRows = side === Side.WHITE ? [size - 1, size - 2] : [0, 1];
+      const validSpots: Position[] = [];
+      baseRows.forEach(r => {
+          for (let c = 0; c < size; c++) {
+              if (!boardState[r][c].piece) validSpots.push({row: r, col: c});
+          }
+      });
+
+      if (validSpots.length > 0) {
+          const spot = validSpots[Math.floor(Math.random() * validSpots.length)];
+          boardState[spot.row][spot.col].piece = {
+              id: uuidv4(),
+              type: type,
+              side: side,
+              hasMoved: false
+          };
+      }
+  };
+
   const executeMove = (from: Position, to: Position) => {
     const newBoard = [...board.map(row => row.map(cell => ({...cell})))];
     const piece = newBoard[from.row][from.col].piece!;
     let target = newBoard[to.row][to.col].piece;
     let nextEnPassantTarget: Position | null = null;
+    let enemyKilled = false;
 
     // Handle En Passant Capture
     if (piece.type === PieceType.PAWN && !target && from.col !== to.col && enPassantTarget) {
         if (to.row === enPassantTarget.row && to.col === enPassantTarget.col) {
-            // Captured the pawn behind the target square
-            const captureRow = from.row; // The pawn being captured is on the same row as 'from' for horizontal capture logic, but En Passant technically moves into the empty square behind.
-            // Actually, if White (moving up, row decreases) captures En Passant at (r-1, c), the victim is at (r, c).
-            // Logic: The target square is empty. The victim is at [from.row][to.col] or [to.row - dir][to.col] depending on perspective.
-            // Simplified: The victim is 'behind' the movement direction.
             const direction = piece.side === Side.WHITE ? -1 : 1;
-            const victimRow = to.row - direction; // e.g. White moves 6->5. Victim at 6.
+            const victimRow = to.row - direction; 
             const victimPiece = newBoard[victimRow][to.col].piece;
             if (victimPiece && victimPiece.side !== Side.WHITE) {
-                target = victimPiece; // Set target for gold logic
-                newBoard[victimRow][to.col].piece = null; // Remove victim
+                target = victimPiece;
+                newBoard[victimRow][to.col].piece = null;
+                enemyKilled = true;
             }
         }
     }
 
-    // Handle Double Push (Set En Passant Target)
+    // Handle Double Push
     if (piece.type === PieceType.PAWN && Math.abs(from.row - to.row) === 2) {
         nextEnPassantTarget = { row: (from.row + to.row) / 2, col: from.col };
     }
 
-    // Gold Logic
+    // Gold Logic & Necromancy
     if (target && target.side === Side.BLACK) {
         const goldReward = PIECE_GOLD_VALUES[target.type] || 10;
         setGold(prev => prev + goldReward);
+        enemyKilled = true;
     }
 
     // Move Piece
@@ -350,6 +375,14 @@ export default function App() {
     // Pawn Promotion
     if (piece.type === PieceType.PAWN && to.row === 0) {
         newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
+    }
+
+    // Trigger NECROMANCY Relic
+    if (enemyKilled) {
+        const necromancy = relics.find(r => r.type === RelicType.NECROMANCY);
+        if (necromancy) {
+            spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
+        }
     }
 
     setBoard(newBoard);
@@ -365,7 +398,7 @@ export default function App() {
         return;
     }
 
-    // Check Loss (Edge case: suicidal move? Usually not possible in strict chess but arcade allows it)
+    // Check Loss
     if (checkLossCondition(newBoard, deck, hand)) {
         setPhase('GAME_OVER_LOSS');
         return;
@@ -397,6 +430,17 @@ export default function App() {
           return { ...t, id: uuidv4() };
       });
       setShopCards(shop);
+
+      // Generate Shop Relics (2 slots)
+      const shopR: Relic[] = [];
+      const relicTypes = [RelicType.LAST_WILL, RelicType.NECROMANCY];
+      // Pick 2 random types (duplicates allowed in generation pool, but distinct slots)
+      for(let i=0; i<2; i++) {
+          const type = relicTypes[Math.floor(Math.random() * relicTypes.length)];
+          shopR.push({ type, level: 1 }); // Shop always sells base "upgrade"
+      }
+      setShopRelics(shopR);
+
       setPhase('SHOP');
   };
 
@@ -406,6 +450,38 @@ export default function App() {
           setMasterDeck(prev => [...prev, card]);
           setShopCards(prev => prev.filter(c => c.id !== card.id));
       }
+  };
+
+  const buyRelic = (relic: Relic, index: number) => {
+      const info = RELIC_INFO[relic.type];
+      const existing = relics.find(r => r.type === relic.type);
+      // Cost increases with current level? Or flat? "High price". Let's do basePrice * (currentLevel + 1)
+      const currentLevel = existing ? existing.level : 0;
+      const cost = info.basePrice * (currentLevel + 1);
+
+      if (gold >= cost) {
+          setGold(prev => prev - cost);
+          
+          if (existing) {
+              setRelics(prev => prev.map(r => r.type === relic.type ? { ...r, level: r.level + 1 } : r));
+          } else {
+              setRelics(prev => [...prev, { type: relic.type, level: 1 }]);
+          }
+
+          // Remove from shop
+          const newShopRelics = [...shopRelics];
+          newShopRelics.splice(index, 1);
+          setShopRelics(newShopRelics);
+      }
+  };
+
+  const sellRelic = (relic: Relic) => {
+      const info = RELIC_INFO[relic.type];
+      // Sell price: 50% of total value roughly? or just base * level * 0.5
+      const sellValue = Math.floor(info.basePrice * relic.level * 0.5);
+      setGold(prev => prev + sellValue);
+      setRelics(prev => prev.filter(r => r.type !== relic.type));
+      setSelectedRelic(null);
   };
 
   const nextLevel = () => {
@@ -421,7 +497,6 @@ export default function App() {
 
   const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null) => {
     setBoard(prevBoard => {
-      // Use the board passed from player turn which has latest state
       const boardCopy = prevBoard.map(row => row.map(cell => ({
         ...cell,
         piece: cell.piece ? { ...cell.piece, isFrozen: false } : null
@@ -430,7 +505,6 @@ export default function App() {
       const size = boardCopy.length;
       const enemies: { pos: Position, piece: Piece, moves: Position[] }[] = [];
 
-      // Identify all enemy moves
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const p = boardCopy[r][c].piece;
@@ -444,20 +518,18 @@ export default function App() {
         }
       }
 
-      // If no moves, pass turn back or check stalemates (ignoring stalemate for arcade flow)
       if (enemies.length === 0) {
         setTurn(Side.WHITE);
         setCardsPlayed(0);
         drawCard();
         setIsEnemyMoveLimited(false);
-        setEnPassantTarget(null); // Clear en passant for player's turn if enemy didn't double push
+        setEnPassantTarget(null);
         return boardCopy;
       }
 
       // AI Decision Making
       let bestMove: { from: Position, to: Position } | null = null;
       
-      // 1. Try to kill King
       for (const e of enemies) {
         const kingKill = e.moves.find(m => boardCopy[m.row][m.col].piece?.type === PieceType.KING);
         if (kingKill) {
@@ -466,13 +538,11 @@ export default function App() {
         }
       }
 
-      // 2. Try to capture high value targets
       if (!bestMove) {
         const captures: { from: Position, to: Position, value: number }[] = [];
         enemies.forEach(e => {
           e.moves.forEach(m => {
             const target = boardCopy[m.row][m.col].piece;
-            // Also value En Passant captures
             const isEP = e.piece.type === PieceType.PAWN && playerEnPassantTarget && m.row === playerEnPassantTarget.row && m.col === playerEnPassantTarget.col;
             
             if (target?.side === Side.WHITE || isEP) {
@@ -482,7 +552,7 @@ export default function App() {
                    else if (target.type === PieceType.ROOK) val = 5;
                    else if (target.type === PieceType.BISHOP || target.type === PieceType.KNIGHT) val = 3;
                } else if (isEP) {
-                   val = 1; // Killing a pawn via EP
+                   val = 1; 
                }
                captures.push({ from: e.pos, to: m, value: val });
             }
@@ -494,7 +564,6 @@ export default function App() {
         }
       }
 
-      // 3. Random move
       if (!bestMove) {
          const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
          const randomMove = randomEnemy.moves[Math.floor(Math.random() * randomEnemy.moves.length)];
@@ -505,15 +574,22 @@ export default function App() {
 
       if (bestMove) {
         const movingPiece = boardCopy[bestMove.from.row][bestMove.from.col].piece!;
+        const targetPiece = boardCopy[bestMove.to.row][bestMove.to.col].piece;
+        let playerPieceKilled = false;
         
-        // Handle En Passant Capture (Enemy)
+        // Handle En Passant (Enemy)
         if (movingPiece.type === PieceType.PAWN && playerEnPassantTarget && bestMove.to.row === playerEnPassantTarget.row && bestMove.to.col === playerEnPassantTarget.col) {
-             const direction = 1; // Black moves DOWN (+1)
-             const victimRow = bestMove.to.row - direction; // Victim is UP from the target square
+             const direction = 1;
+             const victimRow = bestMove.to.row - direction;
+             if (boardCopy[victimRow][bestMove.to.col].piece) {
+                 playerPieceKilled = true;
+             }
              boardCopy[victimRow][bestMove.to.col].piece = null;
+        } else if (targetPiece && targetPiece.side === Side.WHITE) {
+            playerPieceKilled = true;
         }
 
-        // Handle Double Push (Set En Passant Target for Player)
+        // Handle Double Push
         if (movingPiece.type === PieceType.PAWN && Math.abs(bestMove.from.row - bestMove.to.row) === 2) {
             nextEnPassantTarget = { row: (bestMove.from.row + bestMove.to.row) / 2, col: bestMove.from.col };
         }
@@ -521,31 +597,36 @@ export default function App() {
         boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
         boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
 
-        // Promotion (Enemy reaches size-1)
+        // Promotion
         if (movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
             boardCopy[bestMove.to.row][bestMove.to.col].piece!.type = PieceType.QUEEN;
+        }
+
+        // Trigger LAST WILL Relic
+        if (playerPieceKilled) {
+             const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
+             if (lastWill) {
+                 spawnRelicPiece(boardCopy, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
+             }
         }
 
         setLastMoveFrom(bestMove.from);
         setLastMoveTo(bestMove.to);
       }
 
-      // Update State
       setEnPassantTarget(nextEnPassantTarget);
       
-      // Check Loss Condition
       if (checkLossCondition(boardCopy, deck, hand)) {
           setPhase('GAME_OVER_LOSS');
       }
 
-      // Check Win Condition (Unlikely in enemy turn, but if enemy kills own king?? Arcade weirdness)
       if (checkWinCondition(boardCopy)) {
           handleWin();
       }
 
       setTurn(Side.WHITE);
       setTurnCount(c => c + 1);
-      setCardsPlayed(0); // Reset cards played
+      setCardsPlayed(0); 
       drawCard();
       setIsEnemyMoveLimited(false);
       return boardCopy;
@@ -676,9 +757,6 @@ export default function App() {
   };
 
   const consumeCard = (id: string) => {
-    // Check loss state after card is consumed (hand decreases)
-    // We need to use the updater function to ensure we check state *after* update, but React is async.
-    // So we manually calculate next state for check.
     const nextHand = hand.filter(c => c.id !== id);
     setHand(nextHand);
     setSelectedCardId(null);
@@ -710,6 +788,20 @@ export default function App() {
         
         {phase === 'PLAYING' || phase === 'SHOP' || phase === 'REWARD' ? (
           <div className="flex gap-4 items-center">
+            {/* Relics Bar */}
+            {relics.length > 0 && (
+                <div className="flex items-center gap-2 bg-slate-700/50 px-2 py-1 rounded-lg border border-slate-600">
+                    {relics.map((r, i) => (
+                        <div key={i} className="relative cursor-pointer hover:scale-110 transition-transform" onClick={() => setSelectedRelic(r)}>
+                            <span className="text-2xl">{RELIC_INFO[r.type].icon}</span>
+                            <span className="absolute -bottom-1 -right-1 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-gray-500 font-bold">
+                                {r.level}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             <div className="text-center px-4 py-1 bg-slate-700 rounded-lg border border-slate-600">
                <span className="block text-[10px] uppercase text-slate-400">Treasury</span>
                <span className="font-bold text-yellow-400 text-lg">💰 {gold}</span>
@@ -820,30 +912,67 @@ export default function App() {
 
         {/* SHOP SCREEN */}
         {phase === 'SHOP' && (
-           <div className="w-full h-full flex flex-col items-center p-8 bg-slate-900">
+           <div className="w-full h-full flex flex-col items-center p-8 bg-slate-900 overflow-y-auto">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-white mb-2">Merchant's Camp</h2>
                 <p className="text-slate-400">Spend your gold to reinforce your army.</p>
               </div>
               
-              <div className="flex flex-wrap gap-8 justify-center mb-12">
-                 {shopCards.map(card => (
-                   <div key={card.id} className="relative group">
-                     <CardComponent 
-                       card={card} 
-                       selected={false} 
-                       disabled={gold < card.cost} 
-                       onClick={() => buyCard(card)}
-                       showCost={true}
-                     />
-                     {gold < card.cost && (
-                       <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-red-500 font-bold rotate-12 border-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                         TOO EXPENSIVE
-                       </div>
-                     )}
-                   </div>
-                 ))}
-                 {shopCards.length === 0 && <div className="text-slate-500 italic">Sold Out</div>}
+              {/* Relic Shop Section */}
+              {shopRelics.length > 0 && (
+                <div className="mb-12 w-full max-w-4xl">
+                    <h3 className="text-xl font-bold text-purple-400 mb-4 border-b border-purple-500/30 pb-2">Ancient Relics</h3>
+                    <div className="flex gap-6 justify-center">
+                        {shopRelics.map((relic, idx) => {
+                             const info = RELIC_INFO[relic.type];
+                             const existing = relics.find(r => r.type === relic.type);
+                             const level = existing ? existing.level : 0;
+                             const cost = info.basePrice * (level + 1);
+                             
+                             return (
+                                <div key={idx} className="bg-slate-800 border border-purple-500/50 rounded-lg p-4 w-64 flex flex-col items-center hover:bg-slate-800/80 transition-colors shadow-lg shadow-purple-900/20">
+                                    <div className="text-5xl mb-2">{info.icon}</div>
+                                    <div className="font-bold text-white">{info.name}</div>
+                                    <div className="text-xs text-purple-300 uppercase font-bold mb-2">{existing ? `Upgrade to Lvl ${level + 1}` : "New Artifact"}</div>
+                                    <p className="text-xs text-slate-400 text-center mb-4 h-12 flex items-center justify-center">
+                                        {info.description(level + 1)}
+                                    </p>
+                                    <Button 
+                                        disabled={gold < cost}
+                                        onClick={() => buyRelic(relic, idx)}
+                                        className={`w-full ${gold >= cost ? 'bg-purple-600 hover:bg-purple-500' : 'bg-slate-700'}`}
+                                    >
+                                        Buy {cost}g
+                                    </Button>
+                                </div>
+                             );
+                        })}
+                    </div>
+                </div>
+              )}
+
+              {/* Cards Shop Section */}
+              <div className="w-full max-w-4xl mb-12">
+                 <h3 className="text-xl font-bold text-yellow-400 mb-4 border-b border-yellow-500/30 pb-2">Battle Cards</h3>
+                 <div className="flex flex-wrap gap-8 justify-center">
+                    {shopCards.map(card => (
+                    <div key={card.id} className="relative group">
+                        <CardComponent 
+                        card={card} 
+                        selected={false} 
+                        disabled={gold < card.cost} 
+                        onClick={() => buyCard(card)}
+                        showCost={true}
+                        />
+                        {gold < card.cost && (
+                        <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-red-500 font-bold rotate-12 border-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            TOO EXPENSIVE
+                        </div>
+                        )}
+                    </div>
+                    ))}
+                    {shopCards.length === 0 && <div className="text-slate-500 italic">Sold Out</div>}
+                 </div>
               </div>
 
               <Button 
@@ -1004,6 +1133,27 @@ export default function App() {
                     </div>
                   </div>
                </div>
+            )}
+
+            {/* Relic Dialog */}
+            {selectedRelic && (
+                <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center">
+                     <div className="bg-slate-800 p-8 rounded-lg border border-slate-600 max-w-sm w-full shadow-2xl relative">
+                         <div className="text-6xl text-center mb-4">{RELIC_INFO[selectedRelic.type].icon}</div>
+                         <h3 className="text-2xl font-bold text-center text-white mb-1">{RELIC_INFO[selectedRelic.type].name}</h3>
+                         <p className="text-purple-400 text-center font-bold mb-4">Level {selectedRelic.level}</p>
+                         <p className="text-slate-300 text-center mb-8">
+                             {RELIC_INFO[selectedRelic.type].description(selectedRelic.level)}
+                         </p>
+                         
+                         <div className="flex gap-4">
+                             <Button onClick={() => setSelectedRelic(null)} className="flex-1 bg-slate-600 hover:bg-slate-500">Close</Button>
+                             <Button onClick={() => sellRelic(selectedRelic)} className="flex-1 bg-red-600 hover:bg-red-500">
+                                 Sell (+{Math.floor(RELIC_INFO[selectedRelic.type].basePrice * selectedRelic.level * 0.5)}g)
+                             </Button>
+                         </div>
+                     </div>
+                </div>
             )}
 
           </div>

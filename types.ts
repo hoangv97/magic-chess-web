@@ -57,6 +57,16 @@ export interface Card {
   cost: number; 
 }
 
+export enum RelicType {
+  LAST_WILL = 'LAST_WILL',
+  NECROMANCY = 'NECROMANCY'
+}
+
+export interface Relic {
+  type: RelicType;
+  level: number;
+}
+
 export interface GameSettings {
   boardSize: number;
   enemyCount: number;

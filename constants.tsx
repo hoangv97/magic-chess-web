@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PieceType, CardType, Card } from './types';
+import { PieceType, CardType, Card, RelicType } from './types';
 
 export const PIECE_ICONS: Record<PieceType, React.ReactNode> = {
   [PieceType.KING]: (
@@ -111,4 +111,27 @@ export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.KNIGHT]: 20,
   [PieceType.ROOK]: 15,
   [PieceType.PAWN]: 10,
+};
+
+export const RELIC_INFO: Record<RelicType, { name: string; basePrice: number; icon: string, description: (lvl: number) => string }> = {
+  [RelicType.LAST_WILL]: { 
+    name: "Martyr's Sigil", 
+    basePrice: 150, 
+    icon: "⚰️",
+    description: (lvl) => `Spawn a ${RELIC_LEVEL_REWARDS[Math.min(lvl, 5)]} on base row when your piece dies.`
+  },
+  [RelicType.NECROMANCY]: { 
+    name: "Soul Harvester", 
+    basePrice: 250, 
+    icon: "💀",
+    description: (lvl) => `Spawn a ${RELIC_LEVEL_REWARDS[Math.min(lvl, 5)]} on base row when an enemy dies.`
+  }
+};
+
+export const RELIC_LEVEL_REWARDS: Record<number, PieceType> = {
+  1: PieceType.PAWN,
+  2: PieceType.KNIGHT,
+  3: PieceType.BISHOP,
+  4: PieceType.ROOK,
+  5: PieceType.QUEEN
 };
