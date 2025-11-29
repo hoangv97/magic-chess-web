@@ -25,7 +25,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
     <div className="h-56 bg-slate-900 border-t border-slate-700 flex flex-col relative z-20 shrink-0">
        <div className="flex-grow flex items-center px-4 space-x-4">
           
-          <div className="flex-grow flex items-center overflow-x-auto hide-scrollbar space-x-4 h-full">
+          <div className="max-sm:space-x-2 flex-grow flex items-center overflow-x-auto hide-scrollbar space-x-4 h-full">
               {hand.length === 0 && (
                 <div className="w-full text-center text-slate-500 italic">
                   {t.emptyHand}
@@ -44,11 +44,11 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
 
           <div 
             onClick={onDeckClick}
-            className="w-24 h-40 border-2 border-slate-600 bg-slate-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 hover:-translate-y-1 transition-all shadow-lg shrink-0 ml-4 group"
+            className="max-sm:w-16 max-sm:h-32 w-24 h-40 border-2 border-slate-600 bg-slate-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 hover:-translate-y-1 transition-all shadow-lg shrink-0 ml-4 group"
           >
              <div className="text-3xl mb-1 group-hover:scale-110 transition-transform">🎴</div>
              <div className="font-bold text-lg text-white">{deckCount}</div>
-             <div className="text-[10px] text-slate-400 uppercase tracking-wider">{t.deck}</div>
+             <div className="mt-3 text-[10px] text-slate-400 uppercase tracking-wider">{t.deck}</div>
           </div>
 
        </div>

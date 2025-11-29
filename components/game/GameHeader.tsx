@@ -28,10 +28,10 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   return (
     <header className="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center shadow-lg z-10 shrink-0">
       <div>
-         <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+         <h1 className="max-sm:hidden text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
            {title}
          </h1>
-         {isCampaign && <p className="text-xs text-yellow-500 font-bold tracking-widest">{t.campaignLevel} {campaignLevel}</p>}
+         {isCampaign && <p className="max-sm:hidden text-xs text-yellow-500 font-bold tracking-widest">{t.campaignLevel} {campaignLevel}</p>}
       </div>
       
       {phase === 'PLAYING' || phase === 'SHOP' || phase === 'REWARD' ? (
@@ -50,13 +50,13 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
               </div>
           )}
 
-          <div className="text-center px-4 py-1 bg-slate-700 rounded-lg border border-slate-600">
-             <span className="block text-[10px] uppercase text-slate-400">{t.treasury}</span>
-             <span className="font-bold text-yellow-400 text-lg">💰 {gold}</span>
+          <div className="text-center">
+             <span className="block text-[10px] uppercase text-slate-500">{t.treasury}</span>
+             <span className="font-bold text-yellow-400">💰 {gold}</span>
           </div>
           {phase === 'PLAYING' && (
             <>
-              <div className="text-center">
+              <div className="text-center hidden">
                  <span className="block text-[10px] uppercase text-slate-500">{t.played}</span>
                  <span className={`font-bold ${cardsPlayed >= MAX_CARDS_PLAYED_PER_TURN ? 'text-red-500' : 'text-white'}`}>{cardsPlayed}/{MAX_CARDS_PLAYED_PER_TURN}</span>
               </div>

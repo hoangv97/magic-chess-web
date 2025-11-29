@@ -40,12 +40,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
+  const getZoomByBoardLength = () => {
+    if (board.length === 12) return .8;
+    if (board.length === 11) return .85;
+    if (board.length === 10) return .875;
+    if (board.length === 9) return .9;
+    return 1;
+  }
+
   return (
     <div className={`flex-grow flex items-center justify-center p-4 overflow-auto ${theme.bg}`}>
        <div 
          className={`grid p-2 rounded shadow-2xl border-4 ${theme.border} bg-opacity-20`}
          style={{ 
-           gridTemplateColumns: `repeat(${board.length}, minmax(0, 1fr))` 
+           gridTemplateColumns: `repeat(${board.length}, minmax(0, 1fr))`,
+           zoom: getZoomByBoardLength(),
          }}
        >
          {board.map((row, r) => (

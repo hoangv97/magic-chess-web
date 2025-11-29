@@ -69,7 +69,7 @@ export const TRANSLATIONS = {
       title: "CAMPAIGN MAP",
       readOnly: "The path traveled...",
       choose: "Choose your next move...",
-      close: "Close Map",
+      close: "Close",
       zones: ["The Outskirts", "Shadow Forest", "Forgotten Ruins", "Dragon's Peak", "The Void"]
     },
     cards: {
@@ -193,7 +193,7 @@ export const TRANSLATIONS = {
       title: "BẢN ĐỒ CHIẾN DỊCH",
       readOnly: "Hành trình đã qua...",
       choose: "Chọn hướng đi tiếp theo...",
-      close: "Đóng Bản Đồ",
+      close: "Đóng",
       zones: ["Vùng Ngoại Ô", "Rừng Bóng Tối", "Tàn Tích Cổ", "Đỉnh Rồng", "Hư Vô"]
     },
     cards: {

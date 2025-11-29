@@ -16,7 +16,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ settings, setSettings, start
   const t = TRANSLATIONS[settings.language].mainMenu;
 
   return (
-    <div className="m-auto bg-slate-800 p-8 rounded-xl shadow-2xl max-w-md w-full border border-slate-700">
+    <div className="max-sm:mx-2 m-auto bg-slate-800 p-8 rounded-xl shadow-2xl max-w-md w-full border border-slate-700">
       <h2 className="text-3xl font-black mb-8 text-white text-center tracking-tighter">{t.newGame}</h2>
       
       <Button 
