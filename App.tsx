@@ -1,16 +1,19 @@
 
-
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType, MapNode, TileEffect 
 } from './types';
-import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN, TILE_EFFECT_INFO } from './constants';
+import { 
+  getDeckTemplate, PIECE_GOLD_VALUES, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN, getTileEffectInfo 
+} from './constants';
 import { generateBoard, getValidMoves } from './utils/gameLogic';
 import { generateCampaignMap } from './utils/mapGenerator';
+import { TRANSLATIONS } from './utils/locales';
 
 // Component Imports
 import { MainMenu } from './components/screens/MainMenu';
+import { SettingsScreen } from './components/screens/SettingsScreen';
 import { DeckSelection } from './components/screens/DeckSelection';
 import { Reward } from './components/screens/Reward';
 import { Shop } from './components/screens/Shop';
@@ -25,8 +28,19 @@ import { InfoModal } from './components/modals/InfoModal';
 
 export default function App() {
   const [phase, setPhase] = useState<GamePhase>('SETTINGS');
-  const [settings, setSettings] = useState<GameSettings>({ boardSize: 8, enemyCount: 6, playerCount: 4 });
+  const [settings, setSettings] = useState<GameSettings>({ 
+    boardSize: 8, 
+    enemyCount: 6, 
+    playerCount: 4,
+    language: 'en',
+    theme: 'CLASSIC',
+    pieceSet: 'STANDARD'
+  });
   
+  // Helpers to get localized data
+  const t = TRANSLATIONS[settings.language];
+  const deckTemplate = getDeckTemplate(settings.language);
+
   // Campaign State
   const [isCampaign, setIsCampaign] = useState(false);
   const [campaignLevel, setCampaignLevel] = useState(1);
@@ -84,13 +98,12 @@ export default function App() {
   };
 
   const selectStarterDeck = (index: number) => {
-    const starter = STARTER_DECKS[index];
+    const starter = getStarterDecks(settings.language)[index];
     const newMasterDeck = starter.cards.map(type => {
-      const template = DECK_TEMPLATE.find(t => t.type === type)!;
+      const template = deckTemplate.find(t => t.type === type)!;
       return { ...template, id: uuidv4() };
     });
     setMasterDeck(newMasterDeck);
-    // Go to Map to select first level
     setPhase('MAP');
   };
 
@@ -100,9 +113,8 @@ export default function App() {
     let pCount = settings.playerCount;
 
     if (campaignMode) {
-      // Campaign difficulty scaling
       size = Math.min(6 + Math.floor((level - 1) / 2), 12);
-      eCount = Math.min(2 + level, 12); // Increases by 1 each level
+      eCount = Math.min(2 + level, 12); 
       pCount = 0; 
     }
 
@@ -130,7 +142,6 @@ export default function App() {
 
     // Place Random Enemies
     let enemiesPlaced = 0;
-    // Enemy composition scales with level
     let enemyPool = [PieceType.PAWN];
     if (level >= 2) enemyPool.push(PieceType.KNIGHT);
     if (level >= 3) enemyPool.push(PieceType.BISHOP);
@@ -144,10 +155,8 @@ export default function App() {
     let safety = 0;
     while (enemiesPlaced < eCount && safety < 1000) {
       safety++;
-      const r = Math.floor(Math.random() * 2); // Top 2 rows
+      const r = Math.floor(Math.random() * 2);
       const c = Math.floor(Math.random() * size);
-      
-      // Ensure we don't spawn on top of existing pieces
       if (!newBoard[r][c].piece) {
         newBoard[r][c].piece = {
           id: uuidv4(),
@@ -160,7 +169,6 @@ export default function App() {
       }
     }
 
-    // Place Random Player Pieces (Only for Custom Mode)
     if (!campaignMode) {
         let playersPlaced = 0;
         const playerTypes = [PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.PAWN];
@@ -182,20 +190,16 @@ export default function App() {
         }
     }
 
-    // Init Deck
     let gameDeck: Card[] = [];
     if (campaignMode && campaignDeck) {
-      // Shuffle master deck
       gameDeck = [...campaignDeck].sort(() => Math.random() - 0.5);
     } else {
-      // Random deck for custom mode
       gameDeck = Array.from({ length: 20 }).map(() => {
-          const template = DECK_TEMPLATE[Math.floor(Math.random() * DECK_TEMPLATE.length)];
+          const template = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
           return { ...template, id: uuidv4() };
       });
     }
     
-    // Draw initial hand (3 cards)
     const initialHand = gameDeck.splice(0, 3);
 
     setBoard(newBoard);
@@ -219,7 +223,6 @@ export default function App() {
   };
 
   const drawCard = useCallback(() => {
-    // Only draw if hand size < max cards in hand
     if (deck.length > 0 && hand.length < MAX_CARDS_IN_HAND) {
       const newDeck = [...deck];
       const card = newDeck.pop();
@@ -228,7 +231,6 @@ export default function App() {
     }
   }, [deck, hand]);
 
-  // Check loss condition immediately if state changes (useEffect might lag, so we check in actions)
   const checkLossCondition = (currentBoard: Cell[][], currentDeck: Card[], currentHand: Card[]) => {
       let whitePieces = 0;
       let whiteKing = false;
@@ -239,7 +241,6 @@ export default function App() {
           }
       }));
 
-      // Lose if King dead OR (No cards in deck/hand AND No pieces except King)
       if (!whiteKing) return true;
       if (currentDeck.length === 0 && currentHand.length === 0 && whitePieces === 0) return true;
       return false;
@@ -255,7 +256,6 @@ export default function App() {
           }
       }));
 
-      // Win if King dead OR All other enemies dead
       if (!blackKing) return true;
       if (blackPieces === 0) return true;
       return false;
@@ -265,20 +265,20 @@ export default function App() {
     const cell = board[r][c];
     const piece = cell.piece;
     const effect = cell.tileEffect;
+    const tileInfo = getTileEffectInfo(settings.language, effect);
 
-    // Prioritize Piece info if exists
     if (piece) {
        setInfoModalContent({
-           title: `${piece.side === Side.WHITE ? 'Player' : 'Enemy'} ${piece.type}`,
+           title: `${piece.side === Side.WHITE ? t.game.mainMenu.replace('Main Menu', 'Player') : 'Enemy'} ${t.pieces[piece.type]}`,
            content: (
                <div className="space-y-4">
-                   <p><strong>Status:</strong> {(piece.frozenTurns || 0) > 0 ? <span className="text-blue-400">❄️ Frozen ({piece.frozenTurns} turns left)</span> : <span className="text-green-400">Active</span>}</p>
-                   {piece.tempMoveOverride && <p><strong>Effect:</strong> <span className="text-purple-400">Moves like {piece.tempMoveOverride} this turn.</span></p>}
+                   <p><strong>{t.tooltips.status}</strong> {(piece.frozenTurns || 0) > 0 ? <span className="text-blue-400">{t.tooltips.frozen.replace('{0}', String(piece.frozenTurns))}</span> : <span className="text-green-400">{t.tooltips.active}</span>}</p>
+                   {piece.tempMoveOverride && <p><strong>{t.tooltips.effect}</strong> <span className="text-purple-400">{t.tooltips.movesLike.replace('{0}', t.pieces[piece.tempMoveOverride])}</span></p>}
                    {effect !== TileEffect.NONE && (
                       <div className="pt-4 border-t border-slate-600">
-                          <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Current Terrain</p>
-                          <p className="font-bold text-yellow-500">{TILE_EFFECT_INFO[effect].name}</p>
-                          <p>{TILE_EFFECT_INFO[effect].description}</p>
+                          <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">{t.tooltips.currentTerrain}</p>
+                          <p className="font-bold text-yellow-500">{tileInfo.name}</p>
+                          <p>{tileInfo.desc}</p>
                       </div>
                    )}
                </div>
@@ -287,11 +287,10 @@ export default function App() {
        return;
     }
 
-    // Else show Tile info if special
     if (effect !== TileEffect.NONE) {
         setInfoModalContent({
-            title: TILE_EFFECT_INFO[effect].name,
-            content: <p>{TILE_EFFECT_INFO[effect].description}</p>
+            title: tileInfo.name,
+            content: <p>{tileInfo.desc}</p>
         });
     }
   };
@@ -302,13 +301,11 @@ export default function App() {
     const clickedPiece = board[r][c].piece;
     const isSelfPiece = clickedPiece?.side === Side.WHITE;
 
-    // --- Card Targeting Mode ---
     if (selectedCardId && cardTargetMode) {
       handleCardTargeting(r, c, clickedPiece);
       return;
     }
 
-    // --- Normal Movement Mode ---
     if (isSelfPiece) {
       if (selectedPiecePos?.row === r && selectedPiecePos?.col === c) {
         setSelectedPiecePos(null);
@@ -325,7 +322,6 @@ export default function App() {
     if (selectedPiecePos && isMoveValid) {
       executeMove(selectedPiecePos, { row: r, col: c });
     } else {
-      // If clicking on empty special tile or enemy piece (without move intent), show info
       if (!clickedPiece && board[r][c].tileEffect !== TileEffect.NONE) {
          showCellInfo(r, c);
       }
@@ -340,14 +336,11 @@ export default function App() {
   };
 
   const spawnRelicPiece = (boardState: Cell[][], side: Side, type: PieceType) => {
-      // Find empty spot in base rows
       const size = boardState.length;
       const baseRows = side === Side.WHITE ? [size - 1, size - 2] : [0, 1];
       const validSpots: Position[] = [];
       baseRows.forEach(r => {
           for (let c = 0; c < size; c++) {
-              // Ensure we don't spawn in WALLs or HOLEs if possible, or maybe spawn logic overrides it?
-              // Let's safe check to only spawn on valid tiles
               const cell = boardState[r][c];
               if (!cell.piece && cell.tileEffect !== TileEffect.WALL && cell.tileEffect !== TileEffect.HOLE) {
                   validSpots.push({row: r, col: c});
@@ -375,7 +368,6 @@ export default function App() {
     let enemyKilled = false;
     let selfKilled = false;
 
-    // Handle En Passant Capture
     if (piece.type === PieceType.PAWN && !target && from.col !== to.col && enPassantTarget) {
         if (to.row === enPassantTarget.row && to.col === enPassantTarget.col) {
             const direction = piece.side === Side.WHITE ? -1 : 1;
@@ -389,47 +381,39 @@ export default function App() {
         }
     }
 
-    // Handle Double Push
     if (piece.type === PieceType.PAWN && Math.abs(from.row - to.row) === 2) {
         nextEnPassantTarget = { row: (from.row + to.row) / 2, col: from.col };
     }
 
-    // Gold Logic & Necromancy
     if (target && target.side === Side.BLACK) {
         const goldReward = PIECE_GOLD_VALUES[target.type] || 10;
         setGold(prev => prev + goldReward);
         enemyKilled = true;
     }
 
-    // Move Piece
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined };
     newBoard[from.row][from.col].piece = null;
 
-    // SPECIAL TILES LOGIC (After move)
     const destEffect = newBoard[to.row][to.col].tileEffect;
     if (destEffect === TileEffect.LAVA) {
-        newBoard[to.row][to.col].piece = null; // Died
-        selfKilled = true; // Trigger Last Will if player died
+        newBoard[to.row][to.col].piece = null; 
+        selfKilled = true; 
     } else if (destEffect === TileEffect.MUD) {
-        // Freeze for next turn (effectively 2 turns in counter: 1 for current + 1 for next)
         if (newBoard[to.row][to.col].piece) {
             newBoard[to.row][to.col].piece!.frozenTurns = 2;
         }
     }
 
-    // Pawn Promotion
     if (newBoard[to.row][to.col].piece && piece.type === PieceType.PAWN && to.row === 0) {
         newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
     }
 
-    // Trigger RELICS
     if (enemyKilled) {
         const necromancy = relics.find(r => r.type === RelicType.NECROMANCY);
         if (necromancy) {
             spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
         }
     }
-    // Self death triggers (Lava)
     if (selfKilled) {
         const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
         if (lastWill) {
@@ -437,7 +421,6 @@ export default function App() {
         }
     }
 
-    // Decrement Player Frozen Turns (End of Turn)
     newBoard.forEach(row => row.forEach(cell => {
         if (cell.piece && cell.piece.side === Side.WHITE && (cell.piece.frozenTurns || 0) > 0) {
             cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
@@ -451,13 +434,11 @@ export default function App() {
     setValidMoves([]);
     setEnPassantTarget(nextEnPassantTarget);
 
-    // Check Win
     if (checkWinCondition(newBoard)) {
         handleWin();
         return;
     }
 
-    // Check Loss
     if (checkLossCondition(newBoard, deck, hand)) {
         setPhase('GAME_OVER_LOSS');
         return;
@@ -478,7 +459,7 @@ export default function App() {
         }
 
         const rewards = Array.from({length: REWARD_CARDS}).map(() => {
-            const t = DECK_TEMPLATE[Math.floor(Math.random() * DECK_TEMPLATE.length)];
+            const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
             return { ...t, id: uuidv4() };
         });
         setRewardCards(rewards);
@@ -491,14 +472,12 @@ export default function App() {
   const selectReward = (card: Card) => {
       setMasterDeck(prev => [...prev, card]);
       
-      // Generate Shop
       const shop = Array.from({length: CARDS_IN_SHOP}).map(() => {
-          const t = DECK_TEMPLATE[Math.floor(Math.random() * DECK_TEMPLATE.length)];
+          const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
           return { ...t, id: uuidv4() };
       });
       setShopCards(shop);
 
-      // Generate Shop Relics (2 slots)
       const shopR: Relic[] = [];
       const relicTypes = [RelicType.LAST_WILL, RelicType.NECROMANCY];
       for(let i = 0; i < RELICS_IN_SHOP; i++) {
@@ -519,7 +498,7 @@ export default function App() {
   };
 
   const buyRelic = (relic: Relic, index: number) => {
-      const info = RELIC_INFO[relic.type];
+      const info = getRelicInfo(settings.language, relic.type);
       const existing = relics.find(r => r.type === relic.type);
       const currentLevel = existing ? existing.level : 0;
       const cost = info.basePrice * (currentLevel + 1);
@@ -540,7 +519,7 @@ export default function App() {
   };
 
   const sellRelic = (relic: Relic) => {
-      const info = RELIC_INFO[relic.type];
+      const info = getRelicInfo(settings.language, relic.type);
       const sellValue = Math.floor(info.basePrice * relic.level * 0.5);
       setGold(prev => prev + sellValue);
       setRelics(prev => prev.filter(r => r.type !== relic.type));
@@ -572,10 +551,8 @@ export default function App() {
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const p = boardCopy[r][c].piece;
-          // Apply freeze logic: if frozenTurns > 0, it cannot move.
           if (p?.side === Side.BLACK) {
              if ((p.frozenTurns || 0) > 0) {
-                 // Do not generate moves
              } else {
                 let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget);
                 if (isEnemyMoveLimited) {
@@ -588,7 +565,6 @@ export default function App() {
       }
 
       if (enemies.length === 0) {
-        // No moves, but we still need to process freeze counters
         boardCopy.forEach(row => row.forEach(cell => {
             if (cell.piece && cell.piece.side === Side.BLACK && (cell.piece.frozenTurns || 0) > 0) {
                 cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
@@ -604,7 +580,6 @@ export default function App() {
         return boardCopy;
       }
 
-      // AI Decision Making
       let bestMove: { from: Position, to: Position } | null = null;
       
       for (const e of enemies) {
@@ -654,7 +629,6 @@ export default function App() {
         const targetPiece = boardCopy[bestMove.to.row][bestMove.to.col].piece;
         let playerPieceKilled = false;
         
-        // Handle En Passant (Enemy)
         if (movingPiece.type === PieceType.PAWN && playerEnPassantTarget && bestMove.to.row === playerEnPassantTarget.row && bestMove.to.col === playerEnPassantTarget.col) {
              const direction = 1;
              const victimRow = bestMove.to.row - direction;
@@ -666,7 +640,6 @@ export default function App() {
             playerPieceKilled = true;
         }
 
-        // Handle Double Push
         if (movingPiece.type === PieceType.PAWN && Math.abs(bestMove.from.row - bestMove.to.row) === 2) {
             nextEnPassantTarget = { row: (bestMove.from.row + bestMove.to.row) / 2, col: bestMove.from.col };
         }
@@ -674,22 +647,19 @@ export default function App() {
         boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
         boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
 
-        // Special Tile Logic for Enemy
         const effect = boardCopy[bestMove.to.row][bestMove.to.col].tileEffect;
         if (effect === TileEffect.LAVA) {
-            boardCopy[bestMove.to.row][bestMove.to.col].piece = null; // AI Died
+            boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
         } else if (effect === TileEffect.MUD) {
             if (boardCopy[bestMove.to.row][bestMove.to.col].piece) {
                 boardCopy[bestMove.to.row][bestMove.to.col].piece!.frozenTurns = 2;
             }
         }
 
-        // Promotion
         if (boardCopy[bestMove.to.row][bestMove.to.col].piece && movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
             boardCopy[bestMove.to.row][bestMove.to.col].piece!.type = PieceType.QUEEN;
         }
 
-        // Trigger LAST WILL Relic
         if (playerPieceKilled) {
              const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
              if (lastWill) {
@@ -701,7 +671,6 @@ export default function App() {
         setLastMoveTo(bestMove.to);
       }
 
-      // Decrement Black Frozen Turns (End of Turn)
       boardCopy.forEach(row => row.forEach(cell => {
           if (cell.piece && cell.piece.side === Side.BLACK && (cell.piece.frozenTurns || 0) > 0) {
               cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
@@ -735,7 +704,6 @@ export default function App() {
       return;
     }
 
-    // Limit check
     if (cardsPlayed >= MAX_CARDS_PLAYED_PER_TURN) {
       alert(`You have reached the maximum of ${MAX_CARDS_PLAYED_PER_TURN} cards played this turn.`);
       return;
@@ -766,9 +734,6 @@ export default function App() {
       if (enemies.length > 0) {
         const target = enemies[Math.floor(Math.random() * enemies.length)];
         if (newBoard[target.row][target.col].piece) {
-            // Freezes for upcoming turn. Current turn is Player's. Next is Enemy's. 
-            // End of Enemy's turn decrement.
-            // If we set 1: Enemy Turn (frozen) -> End (0). Correct.
             newBoard[target.row][target.col].piece!.frozenTurns = 1;
             played = true;
         }
@@ -790,7 +755,6 @@ export default function App() {
     const size = board.length;
 
     if (type.includes('SPAWN')) {
-        // Can only spawn on EMPTY and SAFE tiles (no wall/hole)
         if (r >= size - 2 && !piece) {
             const cell = newBoard[r][c];
             if (cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE) {
@@ -800,11 +764,9 @@ export default function App() {
             const spawnType = type.replace('SPAWN_', '') as PieceType;
             newBoard[r][c].piece = { id: uuidv4(), type: spawnType, side: Side.WHITE, hasMoved: false, frozenTurns: 0 };
             
-            // Check MUD spawn
             if (cell.tileEffect === TileEffect.MUD) {
                 newBoard[r][c].piece!.frozenTurns = 2;
             }
-            // Check LAVA spawn (instant death)
             if (cell.tileEffect === TileEffect.LAVA) {
                 newBoard[r][c].piece = null;
             }
@@ -896,6 +858,7 @@ export default function App() {
         onResign={() => setPhase('SETTINGS')}
         onRelicClick={setSelectedRelic}
         onOpenMap={() => setShowMapModal(true)}
+        settings={settings}
       />
 
       {/* Main Content */}
@@ -907,11 +870,20 @@ export default function App() {
              setSettings={setSettings}
              startCampaign={startCampaign}
              initGame={initGame}
+             onOpenSettings={() => setPhase('GLOBAL_SETTINGS')}
+           />
+        )}
+
+        {phase === 'GLOBAL_SETTINGS' && (
+           <SettingsScreen 
+             settings={settings}
+             setSettings={setSettings}
+             onBack={() => setPhase('SETTINGS')}
            />
         )}
 
         {phase === 'DECK_SELECTION' && (
-          <DeckSelection onSelectDeck={selectStarterDeck} />
+          <DeckSelection onSelectDeck={selectStarterDeck} settings={settings} />
         )}
         
         {phase === 'MAP' && (
@@ -920,13 +892,14 @@ export default function App() {
              currentNodeId={currentMapNodeId}
              completedNodes={completedMapNodeIds}
              onNodeSelect={handleMapNodeSelect}
-             onClose={() => {}} // Can't close in select mode
+             onClose={() => {}} 
              isReadOnly={false}
+             settings={settings}
            />
         )}
 
         {phase === 'REWARD' && (
-           <Reward rewardCards={rewardCards} onSelectReward={selectReward} />
+           <Reward rewardCards={rewardCards} onSelectReward={selectReward} settings={settings} />
         )}
 
         {phase === 'SHOP' && (
@@ -938,6 +911,7 @@ export default function App() {
              onBuyCard={buyCard}
              onBuyRelic={buyRelic}
              onNext={() => setPhase('MAP')}
+             settings={settings}
            />
         )}
 
@@ -946,6 +920,7 @@ export default function App() {
           isCampaign={isCampaign}
           onMainMenu={() => setPhase('SETTINGS')}
           onRestartCampaign={startCampaign}
+          settings={settings}
         />
 
         {phase === 'PLAYING' && (
@@ -961,6 +936,7 @@ export default function App() {
               onSquareRightClick={handleSquareRightClick}
               selectedCardId={selectedCardId}
               cardTargetMode={cardTargetMode}
+              settings={settings}
             />
 
             <PlayerHand 
@@ -971,6 +947,7 @@ export default function App() {
               cardsPlayed={cardsPlayed}
               onCardClick={handleCardClick}
               onDeckClick={() => setShowDeckModal(true)}
+              settings={settings}
             />
 
             {showDeckModal && (
@@ -982,6 +959,7 @@ export default function App() {
                   relic={selectedRelic} 
                   onClose={() => setSelectedRelic(null)}
                   onSell={sellRelic}
+                  settings={settings}
                 />
             )}
             
@@ -990,9 +968,10 @@ export default function App() {
                 mapNodes={mapNodes}
                 currentNodeId={currentMapNodeId}
                 completedNodes={completedMapNodeIds}
-                onNodeSelect={() => {}} // No interaction in view mode
+                onNodeSelect={() => {}} 
                 onClose={() => setShowMapModal(false)}
                 isReadOnly={true}
+                settings={settings}
               />
             )}
 

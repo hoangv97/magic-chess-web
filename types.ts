@@ -85,14 +85,30 @@ export interface MapNode {
   name?: string;
 }
 
+export type Language = 'en' | 'vi';
+export type BoardThemeId = 'CLASSIC' | 'FOREST' | 'OCEAN' | 'DARK';
+export type PieceSetId = 'STANDARD' | 'SIMPLE';
+
+export interface BoardTheme {
+  name: string;
+  light: string;
+  dark: string;
+  bg: string;
+  border: string;
+}
+
 export interface GameSettings {
   boardSize: number;
   enemyCount: number;
   playerCount: number;
+  language: Language;
+  theme: BoardThemeId;
+  pieceSet: PieceSetId;
 }
 
 export type GamePhase = 
-  | 'SETTINGS' 
+  | 'SETTINGS'
+  | 'GLOBAL_SETTINGS'
   | 'DECK_SELECTION'
   | 'MAP'
   | 'PLAYING' 

@@ -1,33 +1,38 @@
+
 import React from 'react';
-import { GamePhase } from '../../types';
+import { GamePhase, GameSettings } from '../../types';
 import { Button } from '../ui/Button';
+import { TRANSLATIONS } from '../../utils/locales';
 
 interface GameOverProps {
   phase: GamePhase;
   isCampaign: boolean;
   onMainMenu: () => void;
   onRestartCampaign: () => void;
+  settings: GameSettings;
 }
 
-export const GameOver: React.FC<GameOverProps> = ({ phase, isCampaign, onMainMenu, onRestartCampaign }) => {
+export const GameOver: React.FC<GameOverProps> = ({ phase, isCampaign, onMainMenu, onRestartCampaign, settings }) => {
   if (phase !== 'GAME_OVER_WIN' && phase !== 'GAME_OVER_LOSS') return null;
+  const t = TRANSLATIONS[settings.language].game;
+  const isWin = phase === 'GAME_OVER_WIN';
   
   return (
      <div className="absolute inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm">
        <div className="text-center p-8 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl">
-         <h2 className={`text-6xl font-black mb-4 ${phase === 'GAME_OVER_WIN' ? 'text-green-400' : 'text-red-500'}`}>
-           {phase === 'GAME_OVER_WIN' ? 'VICTORY' : 'DEFEAT'}
+         <h2 className={`text-6xl font-black mb-4 ${isWin ? 'text-green-400' : 'text-red-500'}`}>
+           {isWin ? t.victory : t.defeat}
          </h2>
          <p className="text-slate-300 mb-8 text-xl">
-           {phase === 'GAME_OVER_WIN' ? (isCampaign ? 'The enemy army has been annihilated!' : 'You have won!') : (isCampaign ? 'Your army is depleted.' : 'You have lost.')}
+           {isWin ? (isCampaign ? t.victoryDescCampaign : t.victoryDescCustom) : (isCampaign ? t.defeatDescCampaign : t.defeatDescCustom)}
          </p>
          <div className="flex gap-4 justify-center">
            <Button onClick={onMainMenu} className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-xl">
-             Main Menu
+             {t.mainMenu}
            </Button>
            {phase === 'GAME_OVER_LOSS' && isCampaign && (
               <Button onClick={onRestartCampaign} className="bg-purple-600 hover:bg-purple-500 px-8 py-3 text-xl">
-                Restart Campaign
+                {t.restartCampaign}
               </Button>
            )}
          </div>

@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { GamePhase, Relic } from '../../types';
-import { RELIC_INFO, MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
+import { GamePhase, Relic, GameSettings } from '../../types';
+import { getRelicInfo, MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { Button } from '../ui/Button';
+import { TRANSLATIONS } from '../../utils/locales';
 
 interface GameHeaderProps {
   phase: GamePhase;
@@ -15,18 +16,22 @@ interface GameHeaderProps {
   onResign: () => void;
   onRelicClick: (relic: Relic) => void;
   onOpenMap: () => void;
+  settings: GameSettings;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({ 
-  phase, isCampaign, campaignLevel, relics, gold, turnCount, cardsPlayed, onResign, onRelicClick, onOpenMap 
+  phase, isCampaign, campaignLevel, relics, gold, turnCount, cardsPlayed, onResign, onRelicClick, onOpenMap, settings 
 }) => {
+  const t = TRANSLATIONS[settings.language].header;
+  const title = TRANSLATIONS[settings.language].mainMenu.title;
+
   return (
     <header className="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center shadow-lg z-10 shrink-0">
       <div>
          <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-           CHESS EVOLUTION
+           {title}
          </h1>
-         {isCampaign && <p className="text-xs text-yellow-500 font-bold tracking-widest">CAMPAIGN LEVEL {campaignLevel}</p>}
+         {isCampaign && <p className="text-xs text-yellow-500 font-bold tracking-widest">{t.campaignLevel} {campaignLevel}</p>}
       </div>
       
       {phase === 'PLAYING' || phase === 'SHOP' || phase === 'REWARD' ? (
@@ -36,7 +41,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
               <div className="flex items-center gap-2 bg-slate-700/50 px-2 py-1 rounded-lg border border-slate-600">
                   {relics.map((r, i) => (
                       <div key={i} className="relative cursor-pointer hover:scale-110 transition-transform" onClick={() => onRelicClick(r)}>
-                          <span className="text-2xl">{RELIC_INFO[r.type].icon}</span>
+                          <span className="text-2xl">{getRelicInfo(settings.language, r.type).icon}</span>
                           <span className="absolute -bottom-1 -right-1 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-gray-500 font-bold">
                               {r.level}
                           </span>
@@ -46,17 +51,17 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           )}
 
           <div className="text-center px-4 py-1 bg-slate-700 rounded-lg border border-slate-600">
-             <span className="block text-[10px] uppercase text-slate-400">Treasury</span>
+             <span className="block text-[10px] uppercase text-slate-400">{t.treasury}</span>
              <span className="font-bold text-yellow-400 text-lg">💰 {gold}</span>
           </div>
           {phase === 'PLAYING' && (
             <>
               <div className="text-center">
-                 <span className="block text-[10px] uppercase text-slate-500">Played</span>
+                 <span className="block text-[10px] uppercase text-slate-500">{t.played}</span>
                  <span className={`font-bold ${cardsPlayed >= MAX_CARDS_PLAYED_PER_TURN ? 'text-red-500' : 'text-white'}`}>{cardsPlayed}/{MAX_CARDS_PLAYED_PER_TURN}</span>
               </div>
               <div className="text-center">
-                 <span className="block text-[10px] uppercase text-slate-500">Turns</span>
+                 <span className="block text-[10px] uppercase text-slate-500">{t.turns}</span>
                  <span className={`font-bold text-white`}>{turnCount}</span>
               </div>
               
@@ -66,7 +71,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 </Button>
               )}
               
-              <Button className="bg-red-900/50 hover:bg-red-800 text-xs border border-red-700" onClick={onResign}>Resign</Button>
+              <Button className="bg-red-900/50 hover:bg-red-800 text-xs border border-red-700" onClick={onResign}>{t.resign}</Button>
             </>
           )}
         </div>
