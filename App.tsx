@@ -1,10 +1,11 @@
 
+
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
-  GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType, MapNode 
+  GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType, MapNode, TileEffect 
 } from './types';
-import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN } from './constants';
+import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN, TILE_EFFECT_INFO } from './constants';
 import { generateBoard, getValidMoves } from './utils/gameLogic';
 import { generateCampaignMap } from './utils/mapGenerator';
 
@@ -20,6 +21,7 @@ import { PlayerHand } from './components/game/PlayerHand';
 import { DeckModal } from './components/modals/DeckModal';
 import { RelicDetailModal } from './components/modals/RelicDetailModal';
 import { MapModal } from './components/modals/MapModal';
+import { InfoModal } from './components/modals/InfoModal';
 
 export default function App() {
   const [phase, setPhase] = useState<GamePhase>('SETTINGS');
@@ -64,6 +66,9 @@ export default function App() {
   } | null>(null);
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [selectedRelic, setSelectedRelic] = useState<Relic | null>(null); 
+  
+  // Info Modal State
+  const [infoModalContent, setInfoModalContent] = useState<{ title: string; content: React.ReactNode } | null>(null);
 
   // --- Logic Helpers ---
 
@@ -109,7 +114,8 @@ export default function App() {
       id: uuidv4(),
       type: PieceType.KING,
       side: Side.WHITE,
-      hasMoved: false
+      hasMoved: false,
+      frozenTurns: 0
     };
 
     // Place Enemy King
@@ -118,7 +124,8 @@ export default function App() {
       id: uuidv4(),
       type: PieceType.KING,
       side: Side.BLACK,
-      hasMoved: false
+      hasMoved: false,
+      frozenTurns: 0
     };
 
     // Place Random Enemies
@@ -140,12 +147,14 @@ export default function App() {
       const r = Math.floor(Math.random() * 2); // Top 2 rows
       const c = Math.floor(Math.random() * size);
       
+      // Ensure we don't spawn on top of existing pieces
       if (!newBoard[r][c].piece) {
         newBoard[r][c].piece = {
           id: uuidv4(),
           type: enemyPool[Math.floor(Math.random() * enemyPool.length)],
           side: Side.BLACK,
-          hasMoved: false
+          hasMoved: false,
+          frozenTurns: 0
         };
         enemiesPlaced++;
       }
@@ -165,7 +174,8 @@ export default function App() {
             id: uuidv4(),
             type: playerTypes[Math.floor(Math.random() * playerTypes.length)],
             side: Side.WHITE,
-            hasMoved: false
+            hasMoved: false,
+            frozenTurns: 0
             };
             playersPlaced++;
         }
@@ -205,6 +215,7 @@ export default function App() {
     setLastMoveTo(null);
     setIsEnemyMoveLimited(false);
     setEnPassantTarget(null);
+    setInfoModalContent(null);
   };
 
   const drawCard = useCallback(() => {
@@ -250,6 +261,41 @@ export default function App() {
       return false;
   };
 
+  const showCellInfo = (r: number, c: number) => {
+    const cell = board[r][c];
+    const piece = cell.piece;
+    const effect = cell.tileEffect;
+
+    // Prioritize Piece info if exists
+    if (piece) {
+       setInfoModalContent({
+           title: `${piece.side === Side.WHITE ? 'Player' : 'Enemy'} ${piece.type}`,
+           content: (
+               <div className="space-y-4">
+                   <p><strong>Status:</strong> {(piece.frozenTurns || 0) > 0 ? <span className="text-blue-400">❄️ Frozen ({piece.frozenTurns} turns left)</span> : <span className="text-green-400">Active</span>}</p>
+                   {piece.tempMoveOverride && <p><strong>Effect:</strong> <span className="text-purple-400">Moves like {piece.tempMoveOverride} this turn.</span></p>}
+                   {effect !== TileEffect.NONE && (
+                      <div className="pt-4 border-t border-slate-600">
+                          <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">Current Terrain</p>
+                          <p className="font-bold text-yellow-500">{TILE_EFFECT_INFO[effect].name}</p>
+                          <p>{TILE_EFFECT_INFO[effect].description}</p>
+                      </div>
+                   )}
+               </div>
+           )
+       });
+       return;
+    }
+
+    // Else show Tile info if special
+    if (effect !== TileEffect.NONE) {
+        setInfoModalContent({
+            title: TILE_EFFECT_INFO[effect].name,
+            content: <p>{TILE_EFFECT_INFO[effect].description}</p>
+        });
+    }
+  };
+
   const handleSquareClick = (r: number, c: number) => {
     if (turn !== Side.WHITE) return;
 
@@ -278,7 +324,19 @@ export default function App() {
     const isMoveValid = validMoves.some(m => m.row === r && m.col === c);
     if (selectedPiecePos && isMoveValid) {
       executeMove(selectedPiecePos, { row: r, col: c });
+    } else {
+      // If clicking on empty special tile or enemy piece (without move intent), show info
+      if (!clickedPiece && board[r][c].tileEffect !== TileEffect.NONE) {
+         showCellInfo(r, c);
+      }
+      if (clickedPiece && clickedPiece.side === Side.BLACK) {
+         showCellInfo(r, c);
+      }
     }
+  };
+
+  const handleSquareRightClick = (r: number, c: number) => {
+      showCellInfo(r, c);
   };
 
   const spawnRelicPiece = (boardState: Cell[][], side: Side, type: PieceType) => {
@@ -288,7 +346,12 @@ export default function App() {
       const validSpots: Position[] = [];
       baseRows.forEach(r => {
           for (let c = 0; c < size; c++) {
-              if (!boardState[r][c].piece) validSpots.push({row: r, col: c});
+              // Ensure we don't spawn in WALLs or HOLEs if possible, or maybe spawn logic overrides it?
+              // Let's safe check to only spawn on valid tiles
+              const cell = boardState[r][c];
+              if (!cell.piece && cell.tileEffect !== TileEffect.WALL && cell.tileEffect !== TileEffect.HOLE) {
+                  validSpots.push({row: r, col: c});
+              }
           }
       });
 
@@ -298,7 +361,8 @@ export default function App() {
               id: uuidv4(),
               type: type,
               side: side,
-              hasMoved: false
+              hasMoved: false,
+              frozenTurns: 0
           };
       }
   };
@@ -309,6 +373,7 @@ export default function App() {
     let target = newBoard[to.row][to.col].piece;
     let nextEnPassantTarget: Position | null = null;
     let enemyKilled = false;
+    let selfKilled = false;
 
     // Handle En Passant Capture
     if (piece.type === PieceType.PAWN && !target && from.col !== to.col && enPassantTarget) {
@@ -340,18 +405,44 @@ export default function App() {
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined };
     newBoard[from.row][from.col].piece = null;
 
+    // SPECIAL TILES LOGIC (After move)
+    const destEffect = newBoard[to.row][to.col].tileEffect;
+    if (destEffect === TileEffect.LAVA) {
+        newBoard[to.row][to.col].piece = null; // Died
+        selfKilled = true; // Trigger Last Will if player died
+    } else if (destEffect === TileEffect.MUD) {
+        // Freeze for next turn (effectively 2 turns in counter: 1 for current + 1 for next)
+        if (newBoard[to.row][to.col].piece) {
+            newBoard[to.row][to.col].piece!.frozenTurns = 2;
+        }
+    }
+
     // Pawn Promotion
-    if (piece.type === PieceType.PAWN && to.row === 0) {
+    if (newBoard[to.row][to.col].piece && piece.type === PieceType.PAWN && to.row === 0) {
         newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
     }
 
-    // Trigger NECROMANCY Relic
+    // Trigger RELICS
     if (enemyKilled) {
         const necromancy = relics.find(r => r.type === RelicType.NECROMANCY);
         if (necromancy) {
             spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
         }
     }
+    // Self death triggers (Lava)
+    if (selfKilled) {
+        const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
+        if (lastWill) {
+             spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
+        }
+    }
+
+    // Decrement Player Frozen Turns (End of Turn)
+    newBoard.forEach(row => row.forEach(cell => {
+        if (cell.piece && cell.piece.side === Side.WHITE && (cell.piece.frozenTurns || 0) > 0) {
+            cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
+        }
+    }));
 
     setBoard(newBoard);
     setLastMoveFrom(from);
@@ -381,8 +472,6 @@ export default function App() {
            setCompletedMapNodeIds(prev => [...prev, currentMapNodeId]);
         }
         
-        // Check if final boss of entire generated map
-        // Or just let it be endless (but we only generated 50 levels)
         if (campaignLevel >= 50) { 
            setPhase('GAME_OVER_WIN');
            return;
@@ -412,10 +501,9 @@ export default function App() {
       // Generate Shop Relics (2 slots)
       const shopR: Relic[] = [];
       const relicTypes = [RelicType.LAST_WILL, RelicType.NECROMANCY];
-      // Pick 2 random types (duplicates allowed in generation pool, but distinct slots)
       for(let i = 0; i < RELICS_IN_SHOP; i++) {
           const type = relicTypes[Math.floor(Math.random() * relicTypes.length)];
-          shopR.push({ type, level: 1 }); // Shop always sells base "upgrade"
+          shopR.push({ type, level: 1 });
       }
       setShopRelics(shopR);
 
@@ -433,7 +521,6 @@ export default function App() {
   const buyRelic = (relic: Relic, index: number) => {
       const info = RELIC_INFO[relic.type];
       const existing = relics.find(r => r.type === relic.type);
-      // Cost increases with current level? Or flat? "High price". Let's do basePrice * (currentLevel + 1)
       const currentLevel = existing ? existing.level : 0;
       const cost = info.basePrice * (currentLevel + 1);
 
@@ -446,7 +533,6 @@ export default function App() {
               setRelics(prev => [...prev, { type: relic.type, level: 1 }]);
           }
 
-          // Remove from shop
           const newShopRelics = [...shopRelics];
           newShopRelics.splice(index, 1);
           setShopRelics(newShopRelics);
@@ -455,7 +541,6 @@ export default function App() {
 
   const sellRelic = (relic: Relic) => {
       const info = RELIC_INFO[relic.type];
-      // Sell price: 50% of total value roughly? or just base * level * 0.5
       const sellValue = Math.floor(info.basePrice * relic.level * 0.5);
       setGold(prev => prev + sellValue);
       setRelics(prev => prev.filter(r => r.type !== relic.type));
@@ -478,7 +563,7 @@ export default function App() {
     setBoard(prevBoard => {
       const boardCopy = prevBoard.map(row => row.map(cell => ({
         ...cell,
-        piece: cell.piece ? { ...cell.piece } : null // Keep freeze status for calculation
+        piece: cell.piece ? { ...cell.piece } : null
       })));
 
       const size = boardCopy.length;
@@ -487,20 +572,27 @@ export default function App() {
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const p = boardCopy[r][c].piece;
-          if (p?.side === Side.BLACK && !p.isFrozen) {
-            let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget);
-            if (isEnemyMoveLimited) {
-                moves = moves.filter(m => Math.abs(m.row - r) <= 1 && Math.abs(m.col - c) <= 1);
-            }
-            if (moves.length > 0) enemies.push({ pos: { row: r, col: c }, piece: p, moves });
+          // Apply freeze logic: if frozenTurns > 0, it cannot move.
+          if (p?.side === Side.BLACK) {
+             if ((p.frozenTurns || 0) > 0) {
+                 // Do not generate moves
+             } else {
+                let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget);
+                if (isEnemyMoveLimited) {
+                    moves = moves.filter(m => Math.abs(m.row - r) <= 1 && Math.abs(m.col - c) <= 1);
+                }
+                if (moves.length > 0) enemies.push({ pos: { row: r, col: c }, piece: p, moves });
+             }
           }
         }
       }
 
       if (enemies.length === 0) {
-        // Clear frozen status since turn is skipped
+        // No moves, but we still need to process freeze counters
         boardCopy.forEach(row => row.forEach(cell => {
-          if (cell.piece) cell.piece.isFrozen = false;
+            if (cell.piece && cell.piece.side === Side.BLACK && (cell.piece.frozenTurns || 0) > 0) {
+                cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
+            }
         }));
 
         setTurn(Side.WHITE);
@@ -582,8 +674,18 @@ export default function App() {
         boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
         boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
 
+        // Special Tile Logic for Enemy
+        const effect = boardCopy[bestMove.to.row][bestMove.to.col].tileEffect;
+        if (effect === TileEffect.LAVA) {
+            boardCopy[bestMove.to.row][bestMove.to.col].piece = null; // AI Died
+        } else if (effect === TileEffect.MUD) {
+            if (boardCopy[bestMove.to.row][bestMove.to.col].piece) {
+                boardCopy[bestMove.to.row][bestMove.to.col].piece!.frozenTurns = 2;
+            }
+        }
+
         // Promotion
-        if (movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
+        if (boardCopy[bestMove.to.row][bestMove.to.col].piece && movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
             boardCopy[bestMove.to.row][bestMove.to.col].piece!.type = PieceType.QUEEN;
         }
 
@@ -599,9 +701,11 @@ export default function App() {
         setLastMoveTo(bestMove.to);
       }
 
-      // Clear frozen status for all pieces after enemy turn
+      // Decrement Black Frozen Turns (End of Turn)
       boardCopy.forEach(row => row.forEach(cell => {
-        if (cell.piece) cell.piece.isFrozen = false;
+          if (cell.piece && cell.piece.side === Side.BLACK && (cell.piece.frozenTurns || 0) > 0) {
+              cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
+          }
       }));
 
       setEnPassantTarget(nextEnPassantTarget);
@@ -662,7 +766,10 @@ export default function App() {
       if (enemies.length > 0) {
         const target = enemies[Math.floor(Math.random() * enemies.length)];
         if (newBoard[target.row][target.col].piece) {
-            newBoard[target.row][target.col].piece!.isFrozen = true;
+            // Freezes for upcoming turn. Current turn is Player's. Next is Enemy's. 
+            // End of Enemy's turn decrement.
+            // If we set 1: Enemy Turn (frozen) -> End (0). Correct.
+            newBoard[target.row][target.col].piece!.frozenTurns = 1;
             played = true;
         }
       }
@@ -683,9 +790,25 @@ export default function App() {
     const size = board.length;
 
     if (type.includes('SPAWN')) {
+        // Can only spawn on EMPTY and SAFE tiles (no wall/hole)
         if (r >= size - 2 && !piece) {
+            const cell = newBoard[r][c];
+            if (cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE) {
+                alert("Cannot spawn on an obstacle.");
+                return;
+            }
             const spawnType = type.replace('SPAWN_', '') as PieceType;
-            newBoard[r][c].piece = { id: uuidv4(), type: spawnType, side: Side.WHITE, hasMoved: false };
+            newBoard[r][c].piece = { id: uuidv4(), type: spawnType, side: Side.WHITE, hasMoved: false, frozenTurns: 0 };
+            
+            // Check MUD spawn
+            if (cell.tileEffect === TileEffect.MUD) {
+                newBoard[r][c].piece!.frozenTurns = 2;
+            }
+            // Check LAVA spawn (instant death)
+            if (cell.tileEffect === TileEffect.LAVA) {
+                newBoard[r][c].piece = null;
+            }
+
             setBoard(newBoard);
             consumeCard(selectedCardId);
         } else {
@@ -702,7 +825,7 @@ export default function App() {
              const cols = Array.from({length: size}, (_, i) => i).sort((a,b) => Math.abs(a-center) - Math.abs(b-center));
              for (let row of baseRows) {
                 for (let col of cols) {
-                    if (!newBoard[row][col].piece) {
+                    if (!newBoard[row][col].piece && newBoard[row][col].tileEffect !== TileEffect.WALL && newBoard[row][col].tileEffect !== TileEffect.HOLE) {
                         targetPos = { row, col };
                         break;
                     }
@@ -715,7 +838,7 @@ export default function App() {
                  setBoard(newBoard);
                  consumeCard(selectedCardId);
              } else {
-                 alert("No empty space in base rows!");
+                 alert("No valid empty space in base rows!");
              }
         }
         return;
@@ -835,6 +958,7 @@ export default function App() {
               lastMoveFrom={lastMoveFrom}
               lastMoveTo={lastMoveTo}
               onSquareClick={handleSquareClick}
+              onSquareRightClick={handleSquareRightClick}
               selectedCardId={selectedCardId}
               cardTargetMode={cardTargetMode}
             />
@@ -869,6 +993,14 @@ export default function App() {
                 onNodeSelect={() => {}} // No interaction in view mode
                 onClose={() => setShowMapModal(false)}
                 isReadOnly={true}
+              />
+            )}
+
+            {infoModalContent && (
+              <InfoModal 
+                title={infoModalContent.title}
+                content={infoModalContent.content}
+                onClose={() => setInfoModalContent(null)}
               />
             )}
 

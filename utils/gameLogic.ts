@@ -1,13 +1,29 @@
-import { Cell, Piece, PieceType, Side, Position } from '../types';
+
+import { Cell, Piece, PieceType, Side, Position, TileEffect } from '../types';
+import { TEST_GENERATE_SPECIAL_TILES } from '../constants';
 
 export const generateBoard = (size: number): Cell[][] => {
   const board: Cell[][] = [];
   for (let r = 0; r < size; r++) {
     const row: Cell[] = [];
     for (let c = 0; c < size; c++) {
+      let effect = TileEffect.NONE;
+      
+      if (TEST_GENERATE_SPECIAL_TILES) {
+        // Avoid spawn areas for Kings (approximate)
+        if (r > 1 && r < size - 2) {
+          const rand = Math.random();
+          if (rand < 0.05) effect = TileEffect.HOLE;
+          else if (rand < 0.10) effect = TileEffect.WALL;
+          else if (rand < 0.15) effect = TileEffect.MUD;
+          else if (rand < 0.20) effect = TileEffect.LAVA;
+        }
+      }
+
       row.push({
         position: { row: r, col: c },
         piece: null,
+        tileEffect: effect
       });
     }
     board.push(row);
@@ -32,7 +48,7 @@ export const getValidMoves = (
   enPassantTarget: Position | null = null,
   ignoreCheck: boolean = false 
 ): Position[] => {
-  if (piece.isFrozen) return [];
+  if ((piece.frozenTurns || 0) > 0) return [];
 
   const moves: Position[] = [];
   const size = board.length;
@@ -41,43 +57,71 @@ export const getValidMoves = (
   // Use override type if available (from Borrow card)
   const effectiveType = piece.tempMoveOverride || piece.type;
 
+  const isMoveableTo = (r: number, c: number): boolean => {
+     if (!isValidPos({row: r, col: c}, size)) return false;
+     const tile = board[r][c];
+     if (tile.tileEffect === TileEffect.WALL) return false;
+     if (tile.tileEffect === TileEffect.HOLE) return false; // Cannot land on hole
+     return true;
+  };
+
   const addMove = (r: number, c: number): boolean => {
     // Returns true if we should continue searching in this direction (for sliding pieces)
     if (!isValidPos({ row: r, col: c }, size)) return false;
-    const target = board[r][c].piece;
     
+    const cell = board[r][c];
+    
+    // WALL blocks movement and line of sight
+    if (cell.tileEffect === TileEffect.WALL) return false;
+
+    const target = cell.piece;
     if (target) {
       if (target.side !== piece.side) {
-        moves.push({ row: r, col: c }); // Capture
+        // Can capture? Only if not HOLE (though HOLE shouldn't have pieces, checking for safety)
+        if (cell.tileEffect !== TileEffect.HOLE) {
+           moves.push({ row: r, col: c }); 
+        }
       }
-      return false; // Blocked
+      return false; // Blocked by piece
     }
     
-    moves.push({ row: r, col: c }); // Empty
+    // HOLE: Cannot land, but if we are here (and not blocked by piece/wall), we can pass through (return true)
+    if (cell.tileEffect !== TileEffect.HOLE) {
+        moves.push({ row: r, col: c }); // Empty and valid
+    }
+    
     return true;
   };
 
   if (effectiveType === PieceType.PAWN) {
     // Forward 1
     const fwdR = currentPos.row + direction;
-    if (isValidPos({ row: fwdR, col: currentPos.col }, size) && !board[fwdR][currentPos.col].piece) {
-      moves.push({ row: fwdR, col: currentPos.col });
-      
-      // Forward 2 (Initial move)
-      const startRow = piece.side === Side.WHITE ? size - 2 : 1; // Correct start row based on board generation logic (spawns in top/bottom 2 rows usually, but standard chess is specific. We allow 2-step from "start" position if hasn't moved)
-      if (!piece.hasMoved && currentPos.row === startRow) {
-          const fwd2R = currentPos.row + (direction * 2);
-          if (isValidPos({ row: fwd2R, col: currentPos.col }, size) && !board[fwd2R][currentPos.col].piece) {
-             moves.push({ row: fwd2R, col: currentPos.col });
-          }
-      }
+    if (isValidPos({ row: fwdR, col: currentPos.col }, size)) {
+       const cell = board[fwdR][currentPos.col];
+       if (!cell.piece && cell.tileEffect !== TileEffect.WALL && cell.tileEffect !== TileEffect.HOLE) {
+           moves.push({ row: fwdR, col: currentPos.col });
+           
+           // Forward 2
+           const startRow = piece.side === Side.WHITE ? size - 2 : 1;
+           if (!piece.hasMoved && currentPos.row === startRow) {
+              const fwd2R = currentPos.row + (direction * 2);
+              if (isValidPos({ row: fwd2R, col: currentPos.col }, size)) {
+                  const cell2 = board[fwd2R][currentPos.col];
+                  if (!cell2.piece && cell2.tileEffect !== TileEffect.WALL && cell2.tileEffect !== TileEffect.HOLE) {
+                     moves.push({ row: fwd2R, col: currentPos.col });
+                  }
+              }
+           }
+       }
     }
 
     // Capture (Diagonal) including En Passant
     [[fwdR, currentPos.col - 1], [fwdR, currentPos.col + 1]].forEach(([r, c]) => {
       if (isValidPos({ row: r, col: c }, size)) {
-        const target = board[r][c].piece;
-        
+        const cell = board[r][c];
+        if (cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE) return;
+
+        const target = cell.piece;
         // Normal Capture
         if (target && target.side !== piece.side) {
           moves.push({ row: r, col: c });
@@ -99,7 +143,11 @@ export const getValidMoves = (
   }
   if (effectiveType === PieceType.KING) {
     [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => {
-      addMove(currentPos.row + dr, currentPos.col + dc);
+      const r = currentPos.row + dr;
+      const c = currentPos.col + dc;
+      if (isMoveableTo(r, c)) {
+         addMove(r, c);
+      }
     });
   }
   
@@ -117,14 +165,16 @@ export const getValidMoves = (
 
   if (effectiveType === PieceType.KNIGHT) {
     const jumps = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
-    jumps.forEach(([dr, dc]) => addMove(currentPos.row + dr, currentPos.col + dc));
+    jumps.forEach(([dr, dc]) => {
+        const r = currentPos.row + dr;
+        const c = currentPos.col + dc;
+        if (isMoveableTo(r, c)) {
+            addMove(r, c);
+        }
+    });
   }
   
-  if (piece.type === PieceType.KING && !piece.tempMoveOverride) {
-     [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => {
-       addMove(currentPos.row + dr, currentPos.col + dc);
-     });
-  }
+  // King Logic (Duplicate check removed, it was already handled above)
 
   return moves;
 };

@@ -1,6 +1,9 @@
 
+
 import React from 'react';
-import { PieceType, CardType, Card, RelicType, MapNode } from './types';
+import { PieceType, CardType, Card, RelicType, MapNode, TileEffect } from './types';
+
+export const TEST_GENERATE_SPECIAL_TILES = true;
 
 export const PIECE_ICONS: Record<PieceType, React.ReactNode> = {
   [PieceType.KING]: (
@@ -106,7 +109,7 @@ export const STARTER_DECKS = [
     name: "Experiment",
     description: "Experimental deck for strategic testing.",
     cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN]
-  }
+  },
 ];
 
 export const MAX_CARDS_IN_HAND = 7;
@@ -145,4 +148,12 @@ export const RELIC_LEVEL_REWARDS: Record<number, PieceType> = {
   3: PieceType.BISHOP,
   4: PieceType.ROOK,
   5: PieceType.QUEEN
+};
+
+export const TILE_EFFECT_INFO: Record<TileEffect, { name: string; description: string }> = {
+  [TileEffect.NONE]: { name: "Grass", description: "Standard terrain. No special effects." },
+  [TileEffect.HOLE]: { name: "Abyss", description: "A deep chasm. Pieces cannot stand here, but sliding pieces (Rook, Bishop, Queen) can pass over it." },
+  [TileEffect.WALL]: { name: "Stone Wall", description: "A solid obstacle. Pieces cannot enter or pass through this tile." },
+  [TileEffect.MUD]: { name: "Mud Puddle", description: "Sticky terrain. Any piece entering this tile will be frozen for the next turn." },
+  [TileEffect.LAVA]: { name: "Magma Pool", description: "Deadly heat. Any piece entering this tile is instantly destroyed." }
 };

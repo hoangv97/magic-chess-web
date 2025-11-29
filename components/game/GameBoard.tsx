@@ -1,6 +1,7 @@
+
 import React from 'react';
-import { Cell, Side, Position, PieceType, CardType } from '../../types';
-import { PIECE_ICONS } from '../../constants';
+import { Cell, Side, Position, PieceType, CardType, TileEffect } from '../../types';
+import { PIECE_ICONS, TILE_EFFECT_INFO } from '../../constants';
 
 interface GameBoardProps {
   board: Cell[][];
@@ -9,17 +10,28 @@ interface GameBoardProps {
   lastMoveFrom: Position | null;
   lastMoveTo: Position | null;
   onSquareClick: (r: number, c: number) => void;
+  onSquareRightClick: (r: number, c: number) => void;
   selectedCardId: string | null;
   cardTargetMode: { type: CardType, step: string } | null;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ 
-  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, selectedCardId, cardTargetMode 
+  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareRightClick, selectedCardId, cardTargetMode 
 }) => {
   const getCellSizeClass = () => {
      const size = board.length;
      if (size >= 10) return "w-10 h-10 sm:w-12 sm:h-12";
      return "w-12 h-12 sm:w-16 sm:h-16";
+  };
+
+  const getTileEffectStyle = (effect: TileEffect) => {
+    switch (effect) {
+        case TileEffect.HOLE: return "bg-black shadow-[inset_0_0_10px_rgba(0,0,0,1)]";
+        case TileEffect.WALL: return "bg-stone-600 border-4 border-stone-800 shadow-xl";
+        case TileEffect.MUD: return "bg-[#5c4033] opacity-80 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]";
+        case TileEffect.LAVA: return "bg-red-900 animate-pulse shadow-[inset_0_0_15px_rgba(255,100,0,0.5)]";
+        default: return "";
+    }
   };
 
   return (
@@ -47,17 +59,24 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 (cardTargetMode.type.includes('BACK') && cell.piece?.side === Side.WHITE && cell.piece.type !== PieceType.KING)
              );
 
+             const tileClass = getTileEffectStyle(cell.tileEffect);
+             const tileInfo = TILE_EFFECT_INFO[cell.tileEffect];
+             const hasTooltip = cell.piece || cell.tileEffect !== TileEffect.NONE;
+
              return (
                <div 
                  key={`${r}-${c}`}
                  onClick={() => onSquareClick(r, c)}
+                 onContextMenu={(e) => { e.preventDefault(); onSquareRightClick(r, c); }}
                  className={`
-                   ${getCellSizeClass()} flex items-center justify-center relative select-none
+                   ${getCellSizeClass()} flex items-center justify-center relative select-none group
                    ${isDark ? 'bg-[#b58863]' : 'bg-[#f0d9b5]'}
                    ${isSelected ? 'ring-inset ring-4 ring-yellow-400' : ''}
                    ${isCardTarget ? 'ring-inset ring-4 ring-blue-500 cursor-copy' : ''}
                    ${(isLastFrom || isLastTo) ? 'after:absolute after:inset-0 after:bg-yellow-500/30' : ''}
                    ${isValid ? 'cursor-pointer' : ''}
+                   ${tileClass ? tileClass : ''}
+                   ${cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE ? 'z-10' : ''}
                  `}
                >
                  {(c === 0) && <span className={`absolute left-0.5 top-0.5 text-[8px] ${isDark ? 'text-[#f0d9b5]' : 'text-[#b58863]'}`}>{size - r}</span>}
@@ -66,14 +85,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                  {isValid && !cell.piece && <div className="w-3 h-3 rounded-full bg-black/20" />}
                  {isValid && cell.piece && <div className="absolute inset-0 border-4 border-red-500/50 rounded-full animate-pulse" />}
 
+                 {/* Special Tile Icons overlay */}
+                 {cell.tileEffect === TileEffect.WALL && <span className="absolute text-2xl">🧱</span>}
+                 {cell.tileEffect === TileEffect.HOLE && <span className="absolute text-2xl">🕳️</span>}
+                 {/* Mud and Lava are just background textures */}
+
+                 {/* TOOLTIP: Only show if there is something interesting */}
+                 {hasTooltip && (
+                   <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-50 hidden group-hover:block pointer-events-none shadow-lg border border-slate-700">
+                      {cell.piece ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="font-bold text-yellow-400">{cell.piece.side} {cell.piece.type}</span>
+                          {(cell.piece.frozenTurns || 0) > 0 && <span className="text-blue-300">❄️ Frozen ({cell.piece.frozenTurns})</span>}
+                          {cell.piece.tempMoveOverride && <span className="text-purple-300">✨ {cell.piece.tempMoveOverride}</span>}
+                          {cell.tileEffect !== TileEffect.NONE && <span className="text-[9px] text-slate-400">On: {tileInfo.name}</span>}
+                        </div>
+                      ) : (
+                        <div className="font-bold text-orange-400">{tileInfo.name}</div>
+                      )}
+                      <div className="text-[8px] text-slate-500 mt-1">Right-click for info</div>
+                   </div>
+                 )}
+
                  {cell.piece && (
                    <div className={`
-                     w-4/5 h-4/5 transition-transform duration-200
+                     w-4/5 h-4/5 transition-transform duration-200 z-20
                      ${cell.piece.side === Side.WHITE ? 'text-white drop-shadow-[0_2px_1px_rgba(0,0,0,0.8)]' : 'text-black drop-shadow-[0_1px_0px_rgba(255,255,255,0.5)]'}
-                     ${cell.piece.isFrozen ? 'brightness-50 grayscale opacity-80' : ''}
+                     ${(cell.piece.frozenTurns || 0) > 0 ? 'brightness-50 grayscale opacity-80' : ''}
                    `}>
                      {PIECE_ICONS[cell.piece.type]}
-                     {cell.piece.isFrozen && <div className="absolute -top-1 -right-1 text-base">❄️</div>}
+                     {(cell.piece.frozenTurns || 0) > 0 && <div className="absolute -top-1 -right-1 text-base">❄️</div>}
                      {cell.piece.tempMoveOverride && <div className="absolute -bottom-1 -right-1 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center border border-white">✨</div>}
                    </div>
                  )}

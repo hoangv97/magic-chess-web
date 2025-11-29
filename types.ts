@@ -24,7 +24,15 @@ export interface Piece {
   side: Side;
   hasMoved: boolean;
   tempMoveOverride?: PieceType; // For "Borrow" card
-  isFrozen?: boolean; // For "Freeze" card
+  frozenTurns?: number; // Replaced boolean with counter. 0 = not frozen.
+}
+
+export enum TileEffect {
+  NONE = 'NONE',
+  HOLE = 'HOLE', // No piece can go in (but sliders can pass through)
+  WALL = 'WALL', // No piece can go in or pass through
+  MUD = 'MUD',   // Go in and cannot move in the next turn
+  LAVA = 'LAVA'  // Died if go in
 }
 
 export interface Cell {
@@ -32,6 +40,7 @@ export interface Cell {
   piece: Piece | null;
   highlight?: boolean; // For valid moves
   targetable?: boolean; // For card targeting
+  tileEffect: TileEffect;
 }
 
 export enum CardType {
