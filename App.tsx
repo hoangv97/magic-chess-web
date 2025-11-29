@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { 
   GameSettings, GamePhase, Cell, Piece, PieceType, Side, Card, CardType, Position, Relic, RelicType, MapNode 
 } from './types';
-import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN, CAMPAIGN_MAP } from './constants';
+import { DECK_TEMPLATE, PIECE_GOLD_VALUES, STARTER_DECKS, RELIC_INFO, RELICS_IN_SHOP, RELIC_LEVEL_REWARDS, MAX_CARDS_IN_HAND, CARDS_IN_SHOP, REWARD_CARDS, MAX_CARDS_PLAYED_PER_TURN } from './constants';
 import { generateBoard, getValidMoves } from './utils/gameLogic';
+import { generateCampaignMap } from './utils/mapGenerator';
 
 // Component Imports
 import { MainMenu } from './components/screens/MainMenu';
@@ -35,6 +36,7 @@ export default function App() {
   const [gold, setGold] = useState(0);
   
   // Map State
+  const [mapNodes, setMapNodes] = useState<MapNode[]>([]);
   const [currentMapNodeId, setCurrentMapNodeId] = useState<string | null>(null);
   const [completedMapNodeIds, setCompletedMapNodeIds] = useState<string[]>([]);
   const [showMapModal, setShowMapModal] = useState(false);
@@ -72,6 +74,7 @@ export default function App() {
     setRelics([]);
     setCurrentMapNodeId(null);
     setCompletedMapNodeIds([]);
+    setMapNodes(generateCampaignMap());
     setPhase('DECK_SELECTION');
   };
 
@@ -378,8 +381,9 @@ export default function App() {
            setCompletedMapNodeIds(prev => [...prev, currentMapNodeId]);
         }
         
-        // Check if final boss
-        if (currentMapNodeId === '7') { // Hardcoded final level ID
+        // Check if final boss of entire generated map
+        // Or just let it be endless (but we only generated 50 levels)
+        if (campaignLevel >= 50) { 
            setPhase('GAME_OVER_WIN');
            return;
         }
@@ -779,7 +783,7 @@ export default function App() {
         
         {phase === 'MAP' && (
            <MapModal 
-             mapNodes={CAMPAIGN_MAP}
+             mapNodes={mapNodes}
              currentNodeId={currentMapNodeId}
              completedNodes={completedMapNodeIds}
              onNodeSelect={handleMapNodeSelect}
@@ -849,7 +853,7 @@ export default function App() {
             
             {showMapModal && (
               <MapModal 
-                mapNodes={CAMPAIGN_MAP}
+                mapNodes={mapNodes}
                 currentNodeId={currentMapNodeId}
                 completedNodes={completedMapNodeIds}
                 onNodeSelect={() => {}} // No interaction in view mode

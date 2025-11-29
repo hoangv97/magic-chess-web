@@ -141,23 +141,3 @@ export const RELIC_LEVEL_REWARDS: Record<number, PieceType> = {
   4: PieceType.ROOK,
   5: PieceType.QUEEN
 };
-
-export const CAMPAIGN_MAP: MapNode[] = [
-  // Start
-  { id: '1', level: 1, x: 50, y: 90, next: ['2'], name: 'The Outskirts' },
-  // Linear
-  { id: '2', level: 2, x: 50, y: 75, next: ['3a', '3b'], name: 'Crossroads' },
-  // Branch
-  { id: '3a', level: 3, x: 30, y: 60, next: ['4a'], name: 'Shadow Valley' },
-  { id: '3b', level: 3, x: 70, y: 60, next: ['4b'], name: 'High Peaks' },
-  // Parallel
-  { id: '4a', level: 4, x: 20, y: 45, next: ['5a'], name: 'Dark Forest' },
-  { id: '4b', level: 4, x: 80, y: 45, next: ['5b'], name: 'Windy Cliffs' },
-  // Converging slightly
-  { id: '5a', level: 5, x: 40, y: 30, next: ['6'], name: 'Old Ruins' },
-  { id: '5b', level: 5, x: 60, y: 30, next: ['6'], name: 'Abandoned Keep' },
-  // Merge
-  { id: '6', level: 6, x: 50, y: 15, next: ['7'], name: 'The Gate' },
-  // Boss
-  { id: '7', level: 7, x: 50, y: 5, next: [], name: 'Throne Room' }
-];
