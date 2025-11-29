@@ -478,7 +478,7 @@ export default function App() {
     setBoard(prevBoard => {
       const boardCopy = prevBoard.map(row => row.map(cell => ({
         ...cell,
-        piece: cell.piece ? { ...cell.piece, isFrozen: false } : null
+        piece: cell.piece ? { ...cell.piece } : null // Keep freeze status for calculation
       })));
 
       const size = boardCopy.length;
@@ -498,8 +498,13 @@ export default function App() {
       }
 
       if (enemies.length === 0) {
+        // Clear frozen status since turn is skipped
+        boardCopy.forEach(row => row.forEach(cell => {
+          if (cell.piece) cell.piece.isFrozen = false;
+        }));
+
         setTurn(Side.WHITE);
-        setTurnCount(1);
+        setTurnCount(c => c + 1);
         setCardsPlayed(0);
         drawCard();
         setIsEnemyMoveLimited(false);
@@ -593,6 +598,11 @@ export default function App() {
         setLastMoveFrom(bestMove.from);
         setLastMoveTo(bestMove.to);
       }
+
+      // Clear frozen status for all pieces after enemy turn
+      boardCopy.forEach(row => row.forEach(cell => {
+        if (cell.piece) cell.piece.isFrozen = false;
+      }));
 
       setEnPassantTarget(nextEnPassantTarget);
       

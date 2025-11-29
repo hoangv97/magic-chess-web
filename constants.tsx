@@ -101,6 +101,11 @@ export const STARTER_DECKS = [
     name: "Skirmish",
     description: "Agile movement with Knight and Bishop.",
     cards: [CardType.SPAWN_KNIGHT, CardType.SPAWN_BISHOP, CardType.SPAWN_PAWN, CardType.SPAWN_PAWN, CardType.SPAWN_PAWN]
+  },
+  {
+    name: "Experiment",
+    description: "Experimental deck for strategic testing.",
+    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN]
   }
 ];
 
