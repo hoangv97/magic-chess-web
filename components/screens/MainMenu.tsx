@@ -53,6 +53,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ settings, setSettings, start
           className="w-full accent-red-500 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
         />
       </div>
+      <div className="mb-6">
+        <label className="block text-sm font-bold mb-2 text-slate-300">{t.playerCount}: {settings.playerCount}</label>
+        <input 
+          type="range" min="1" max="10" value={settings.playerCount}
+          onChange={(e) => setSettings({...settings, playerCount: parseInt(e.target.value)})}
+          className="w-full accent-red-500 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
+        />
+      </div>
 
       <Button 
         onClick={() => initGame(false)} 

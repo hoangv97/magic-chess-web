@@ -11,6 +11,7 @@ export const TRANSLATIONS = {
       settings: "Settings",
       boardSize: "Board Size",
       enemies: "Enemies",
+      playerCount: "Player pieces",
       startCustom: "Start Custom Game"
     },
     settings: {
@@ -135,6 +136,7 @@ export const TRANSLATIONS = {
       settings: "Cài Đặt",
       boardSize: "Kích Thước Bàn",
       enemies: "Số Lượng Kẻ Thù",
+      playerCount: "Số lượng Quân",
       startCustom: "Bắt Đầu"
     },
     settings: {

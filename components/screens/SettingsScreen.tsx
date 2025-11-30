@@ -72,12 +72,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSet
              >
                {t.pieceSets.STANDARD}
              </Button>
-             <Button 
-                onClick={() => updateSetting('pieceSet', 'SIMPLE')} 
-                className={`flex-1 ${settings.pieceSet === 'SIMPLE' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}`}
-             >
-               {t.pieceSets.SIMPLE}
-             </Button>
           </div>
         </div>
 

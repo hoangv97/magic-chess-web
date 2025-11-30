@@ -12,8 +12,8 @@ export default function App() {
   const [mode, setMode] = useState<AppMode>('MENU');
   const [settings, setSettings] = useState<GameSettings>({ 
     boardSize: 8, 
-    enemyCount: 6, 
-    playerCount: 4,
+    enemyCount: 10, 
+    playerCount: 10,
     language: 'en',
     theme: 'CLASSIC',
     pieceSet: 'STANDARD'
