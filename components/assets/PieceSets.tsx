@@ -76,6 +76,18 @@ const StandardBlackKnight = () => (
 //   </svg>
 // );
 
+const StandardWhitePawn = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" className="w-full h-full fill-white stroke-black stroke-[1.5]">
+    <path d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z" style={{ opacity: 1, fill: "#ffffff", fillOpacity: 1, fillRule: "nonzero", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "miter", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1, }} />
+  </svg>
+);
+
+const StandardBlackPawn = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" className="w-full h-full fill-black stroke-white stroke-[1.5]">
+    <path d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z" style={{ opacity: 1, fill: "#000000", fillOpacity: 1, fillRule: "nonzero", stroke: "#000000", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "miter", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1, }} />
+  </svg>
+);
+
 const StandardWhiteAmazon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" className="w-full h-full fill-white stroke-black stroke-[1.5]">
     <g id="g4" fill="none" fillOpacity="1" fillRule="evenodd" stroke="#000" strokeDasharray="none" strokeLinecap="round" strokeLinejoin="round" strokeMiterlimit="4" strokeOpacity="1" strokeWidth="1.5" opacity="1" transform="matrix(.76115 0 0 .73279 5.778 12.966)" > <path id="path1" fill="#fff" d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21" ></path> <path id="path2" fill="#fff" d="M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.042-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.994-.5-2-.5-3 1-1 3 2.5 3 2.5h2s.78-1.992 2.5-3c1 0 1 3 1 3" ></path> <path id="path3" fill="#000" d="M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0" ></path> <path id="path4" fill="#000" d="M15 15.5a.5 1.5 0 1 1-1 0 .5 1.5 0 1 1 1 0" transform="rotate(30 14.5 15.5)" ></path> </g> <g id="g8" fill="#fff" stroke="#000" strokeLinejoin="round" strokeWidth="1.5" transform="matrix(.7313 0 0 .7253 6.015 -2.094)" > <path id="path1-3" d="M9 26c8.5-1.5 21-1.5 27 0l2.5-12.5L31 25l-.3-14.1-5.2 13.6-3-14.5-3 14.5-5.2-13.6L14 25 6.5 13.5Z" ></path> <path id="path2-7" d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5 7.841-.944 14.558-.626 21 0-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z" ></path> <path id="path3-1" fill="none" d="M11.5 30c3.5-1 18.5-1 22 0"></path> <circle id="circle4" cx="6" cy="12" r="2"></circle> <circle id="circle5" cx="14" cy="9" r="2"></circle> <circle id="circle6" cx="22.5" cy="8" r="2"></circle> <circle id="circle7" cx="31" cy="9" r="2"></circle> <circle id="circle8" cx="39" cy="12" r="2"></circle> </g>
