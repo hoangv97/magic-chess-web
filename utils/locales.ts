@@ -1,4 +1,5 @@
 
+
 import { CardType, PieceType, RelicType, TileEffect } from '../types';
 
 export const TRANSLATIONS = {
@@ -105,7 +106,8 @@ export const TRANSLATIONS = {
         "Fortress": { name: "Fortress", desc: "Defensive power with a heavy Rook." },
         "Divine": { name: "Divine", desc: "Diagonal control with a Bishop." },
         "Skirmish": { name: "Skirmish", desc: "Agile movement with Knight and Bishop." },
-        "Experiment": { name: "Experiment", desc: "Experimental deck for strategic testing." }
+        "Experiment": { name: "Experiment", desc: "Experimental deck for strategic testing." },
+        "Testing": { name: "Testing", desc: "Deck for testing mechanics." }
       }
     },
     pieces: {
@@ -114,7 +116,7 @@ export const TRANSLATIONS = {
       [PieceType.ROOK]: "Rook",
       [PieceType.BISHOP]: "Bishop",
       [PieceType.KNIGHT]: "Knight",
-      [PieceType.PAWN]: "Pawn"
+      [PieceType.PAWN]: "Pawn",
     },
     tooltips: {
       frozen: "❄️ Frozen ({0} turns left)",
@@ -239,7 +241,7 @@ export const TRANSLATIONS = {
       [PieceType.ROOK]: "Xe",
       [PieceType.BISHOP]: "Tượng",
       [PieceType.KNIGHT]: "Mã",
-      [PieceType.PAWN]: "Tốt"
+      [PieceType.PAWN]: "Tốt",
     },
     tooltips: {
       frozen: "❄️ Đóng băng (còn {0} lượt)",
