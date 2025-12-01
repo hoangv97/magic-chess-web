@@ -120,6 +120,8 @@ export interface GameSettings {
   language: Language;
   theme: BoardThemeId;
   pieceSet: PieceSetId;
+  soundEnabled: boolean;
+  soundVolume: number; // 0.0 to 1.0
 }
 
 export type GamePhase = 

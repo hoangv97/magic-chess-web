@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -10,6 +11,7 @@ import {
   getDeckTemplate, PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN, RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, getTileEffectInfo 
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
+import { soundManager } from '../utils/soundManager';
 
 interface UseGameLogicProps {
   settings: GameSettings;
@@ -171,6 +173,12 @@ export const useGameLogic = ({
     setSelectedEnemyPos(null);
     setEnemyValidMoves([]);
     setIsGameEnded(false);
+    
+    // Resume music if enabled
+    soundManager.init();
+    if (settings.soundEnabled) {
+       soundManager.startMusic();
+    }
   };
 
   const drawCard = useCallback(() => {
@@ -178,7 +186,10 @@ export const useGameLogic = ({
       const newDeck = [...deck];
       const card = newDeck.pop();
       setDeck(newDeck);
-      if (card) setHand(prev => [...prev, card]);
+      if (card) {
+          setHand(prev => [...prev, card]);
+          soundManager.playSfx('draw');
+      }
     }
   }, [deck, hand]);
 
@@ -283,6 +294,7 @@ export const useGameLogic = ({
               hasMoved: false,
               frozenTurns: 0
           };
+          soundManager.playSfx('spawn');
       }
   };
 
@@ -324,22 +336,29 @@ export const useGameLogic = ({
     if (destEffect === TileEffect.LAVA) {
         newBoard[to.row][to.col].piece = null; 
         selfKilled = true; 
+        soundManager.playSfx('capture');
     } else if (destEffect === TileEffect.MUD) {
         if (newBoard[to.row][to.col].piece) {
             newBoard[to.row][to.col].piece!.frozenTurns = 2;
+            soundManager.playSfx('frozen');
         }
     }
 
     if (newBoard[to.row][to.col].piece && piece.type === PieceType.PAWN && to.row === 0) {
         newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
+        soundManager.playSfx('spawn'); // Promotion sound
     }
 
     if (enemyKilled) {
+        soundManager.playSfx('capture');
         const necromancy = relics.find(r => r.type === RelicType.NECROMANCY);
         if (necromancy) {
             spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
         }
+    } else {
+        soundManager.playSfx('move');
     }
+
     if (selfKilled) {
         const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
         if (lastWill) {
@@ -364,12 +383,14 @@ export const useGameLogic = ({
     setEnPassantTarget(nextEnPassantTarget);
 
     if (checkWinCondition(newBoard)) {
+        soundManager.playSfx('win');
         setIsGameEnded(true);
         setTimeout(onWin, WAIT_END_GAME_TIMEOUT);
         return;
     }
 
     if (checkLossCondition(newBoard, deck, hand)) {
+        soundManager.playSfx('loss');
         setIsGameEnded(true);
         setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
         return;
@@ -496,21 +517,27 @@ export const useGameLogic = ({
         const effect = boardCopy[bestMove.to.row][bestMove.to.col].tileEffect;
         if (effect === TileEffect.LAVA) {
             boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
+            soundManager.playSfx('capture');
         } else if (effect === TileEffect.MUD) {
             if (boardCopy[bestMove.to.row][bestMove.to.col].piece) {
                 boardCopy[bestMove.to.row][bestMove.to.col].piece!.frozenTurns = 2;
+                soundManager.playSfx('frozen');
             }
         }
 
         if (boardCopy[bestMove.to.row][bestMove.to.col].piece && movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
             boardCopy[bestMove.to.row][bestMove.to.col].piece!.type = PieceType.QUEEN;
+            soundManager.playSfx('spawn');
         }
 
         if (playerPieceKilled) {
+             soundManager.playSfx('capture');
              const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
              if (lastWill) {
                  spawnRelicPiece(boardCopy, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
              }
+        } else {
+             soundManager.playSfx('move');
         }
 
         setLastMoveFrom(bestMove.from);
@@ -527,6 +554,7 @@ export const useGameLogic = ({
       
       if (checkLossCondition(boardCopy, deck, hand)) {
           setTimeout(() => {
+              soundManager.playSfx('loss');
               setIsGameEnded(true);
               setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
           }, 0);
@@ -534,6 +562,7 @@ export const useGameLogic = ({
 
       if (checkWinCondition(boardCopy)) {
           setTimeout(() => {
+              soundManager.playSfx('win');
               setIsGameEnded(true);
               setTimeout(onWin, WAIT_END_GAME_TIMEOUT);
           }, 0);
@@ -623,6 +652,8 @@ export const useGameLogic = ({
       alert(`You have reached the maximum of ${MAX_CARDS_PLAYED_PER_TURN} cards played this turn.`);
       return;
     }
+    
+    soundManager.playSfx('click');
 
     setSelectedCardId(card.id);
     setSelectedPiecePos(null);
@@ -654,11 +685,13 @@ export const useGameLogic = ({
         if (newBoard[target.row][target.col].piece) {
             newBoard[target.row][target.col].piece!.frozenTurns = 1;
             played = true;
+            soundManager.playSfx('frozen');
         }
       }
     } else if (card.type === CardType.EFFECT_LIMIT) {
       setIsEnemyMoveLimited(true);
       played = true;
+      soundManager.playSfx('frozen'); // Reuse frozen sound for limit
     }
     if (played) {
       setBoard(newBoard);
@@ -690,6 +723,7 @@ export const useGameLogic = ({
             }
 
             setBoard(newBoard);
+            soundManager.playSfx('spawn');
             consumeCard(selectedCardId);
         } else {
             alert("Can only spawn on empty squares in your base rows.");
@@ -716,6 +750,7 @@ export const useGameLogic = ({
                  newBoard[targetPos.row][targetPos.col].piece = { ...piece, hasMoved: false };
                  newBoard[r][c].piece = null;
                  setBoard(newBoard);
+                 soundManager.playSfx('spawn');
                  consumeCard(selectedCardId);
              } else {
                  alert("No valid empty space in base rows!");
@@ -728,6 +763,7 @@ export const useGameLogic = ({
         const borrowType = type.replace('EFFECT_BORROW_', '') as PieceType;
         newBoard[r][c].piece = { ...piece, tempMoveOverride: borrowType };
         setBoard(newBoard);
+        soundManager.playSfx('spawn');
         consumeCard(selectedCardId);
         return;
     }
@@ -742,6 +778,7 @@ export const useGameLogic = ({
                 newBoard[cardTargetMode.sourcePos.row][cardTargetMode.sourcePos.col].piece = p2;
                 newBoard[r][c].piece = p1;
                 setBoard(newBoard);
+                soundManager.playSfx('move');
                 consumeCard(selectedCardId);
              }
         }
@@ -757,6 +794,7 @@ export const useGameLogic = ({
     setCardsPlayed(prev => prev + 1);
 
     if (checkLossCondition(board, deck, nextHand)) {
+        soundManager.playSfx('loss');
         setIsGameEnded(true);
         setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
     }

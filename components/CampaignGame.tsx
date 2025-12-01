@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase } from '../types';
@@ -11,6 +12,7 @@ import { Shop } from './screens/Shop';
 import { GameOver } from './screens/GameOver';
 import { MapModal } from './modals/MapModal';
 import { TRANSLATIONS } from '../utils/locales';
+import { soundManager } from '../utils/soundManager';
 
 interface CampaignGameProps {
   settings: GameSettings;
@@ -75,6 +77,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   });
 
   const selectStarterDeck = (index: number) => {
+    soundManager.playSfx('click');
     const starter = getStarterDecks(settings.language)[index];
     const newMasterDeck = starter.cards.map(type => {
       const template = deckTemplate.find(t => t.type === type)!;
@@ -85,6 +88,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   };
 
   const handleMapNodeSelect = (node: MapNode) => {
+      soundManager.playSfx('click');
       setCurrentMapNodeId(node.id);
       setCampaignLevel(node.level);
       actions.initGame(true, masterDeck, node.level);
@@ -92,6 +96,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   };
 
   const selectReward = (card: Card) => {
+      soundManager.playSfx('draw');
       setMasterDeck(prev => [...prev, card]);
       
       const shop = Array.from({length: CARDS_IN_SHOP}).map(() => {
@@ -113,9 +118,12 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
 
   const buyCard = (card: Card) => {
       if (gold >= card.cost) {
+          soundManager.playSfx('buy');
           setGold(prev => prev - card.cost);
           setMasterDeck(prev => [...prev, card]);
           setShopCards(prev => prev.filter(c => c.id !== card.id));
+      } else {
+        soundManager.playSfx('click'); // Or some error sound
       }
   };
 
@@ -126,6 +134,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       const cost = info.basePrice * (currentLevel + 1);
 
       if (gold >= cost) {
+          soundManager.playSfx('buy');
           setGold(prev => prev - cost);
           
           if (existing) {
@@ -137,18 +146,22 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
           const newShopRelics = [...shopRelics];
           newShopRelics.splice(index, 1);
           setShopRelics(newShopRelics);
+      } else {
+        soundManager.playSfx('click');
       }
   };
 
   const sellRelic = (relic: Relic) => {
       const info = getRelicInfo(settings.language, relic.type);
       const sellValue = Math.floor(info.basePrice * relic.level * 0.5);
+      soundManager.playSfx('buy'); // Coins sound
       setGold(prev => prev + sellValue);
       setRelics(prev => prev.filter(r => r.type !== relic.type));
       actions.setSelectedRelic(null);
   };
   
   const restartCampaign = () => {
+    soundManager.playSfx('click');
     setGold(0);
     setCampaignLevel(1);
     setRelics([]);
@@ -191,7 +204,10 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
              relics={relics}
              onBuyCard={buyCard}
              onBuyRelic={buyRelic}
-             onNext={() => setPhase('MAP')}
+             onNext={() => {
+               soundManager.playSfx('click');
+               setPhase('MAP');
+             }}
              settings={settings}
            />
       )}
@@ -210,8 +226,14 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
           currentMapNodeId={currentMapNodeId}
           completedMapNodeIds={completedMapNodeIds}
           showMapModal={showMapModal}
-          onOpenMap={() => setShowMapModal(true)}
-          onCloseMap={() => setShowMapModal(false)}
+          onOpenMap={() => {
+            soundManager.playSfx('click');
+            setShowMapModal(true);
+          }}
+          onCloseMap={() => {
+            soundManager.playSfx('click');
+            setShowMapModal(false);
+          }}
           onResign={onExit}
           onSellRelic={sellRelic}
         />

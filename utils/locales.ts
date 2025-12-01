@@ -1,5 +1,6 @@
 
 
+
 import { CardType, PieceType, RelicType, TileEffect } from '../types';
 
 export const TRANSLATIONS = {
@@ -20,6 +21,9 @@ export const TRANSLATIONS = {
       language: "Language",
       theme: "Board Theme",
       pieceSet: "Piece Set",
+      sound: "Sound & Music",
+      volume: "Volume",
+      enableSound: "Enable Audio",
       back: "Back to Menu",
       themes: {
         CLASSIC: "Classic (Brown)",
@@ -146,6 +150,9 @@ export const TRANSLATIONS = {
       language: "Ngôn Ngữ",
       theme: "Giao Diện Bàn Cờ",
       pieceSet: "Bộ Quân Cờ",
+      sound: "Âm Thanh & Nhạc",
+      volume: "Âm Lượng",
+      enableSound: "Bật Âm Thanh",
       back: "Quay Lại",
       themes: {
         CLASSIC: "Cổ Điển (Nâu)",
@@ -247,7 +254,7 @@ export const TRANSLATIONS = {
       frozen: "❄️ Đóng băng (còn {0} lượt)",
       active: "Hoạt động",
       movesLike: "✨ Di chuyển như {0}",
-      on: "Trên:",
+      on: "On:",
       rightClick: "Chuột phải để xem",
       status: "Trạng thái:",
       effect: "Hiệu ứng:",
