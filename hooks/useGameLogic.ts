@@ -551,6 +551,13 @@ export const useGameLogic = ({
       return;
     }
 
+    // Check for valid move FIRST to allow capturing enemies
+    const isMoveValid = validMoves.some(m => m.row === r && m.col === c);
+    if (selectedPiecePos && isMoveValid) {
+      executeMove(selectedPiecePos, { row: r, col: c });
+      return;
+    }
+
     if (isSelfPiece) {
       // Clear enemy selection
       setSelectedEnemyPos(null);
@@ -584,16 +591,11 @@ export const useGameLogic = ({
        return;
     }
 
-    const isMoveValid = validMoves.some(m => m.row === r && m.col === c);
-    if (selectedPiecePos && isMoveValid) {
-      executeMove(selectedPiecePos, { row: r, col: c });
-    } else {
-       // Deselect everything on clicking empty non-valid space
-       setSelectedPiecePos(null);
-       setValidMoves([]);
-       setSelectedEnemyPos(null);
-       setEnemyValidMoves([]);
-    }
+    // Deselect everything on clicking empty non-valid space
+    setSelectedPiecePos(null);
+    setValidMoves([]);
+    setSelectedEnemyPos(null);
+    setEnemyValidMoves([]);
   };
 
   const handleSquareDoubleClick = (r: number, c: number) => {
