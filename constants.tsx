@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language } from './types';
 import { TRANSLATIONS } from './utils/locales';
@@ -81,6 +79,21 @@ export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.KNIGHT]: 20,
   [PieceType.ROOK]: 15,
   [PieceType.PAWN]: 10,
+  [PieceType.ELEPHANT]: 15,
+  [PieceType.GIRAFFE]: 25,
+  [PieceType.UNICORN]: 30,
+  [PieceType.ZEBRA]: 25,
+  [PieceType.MANN]: 20,
+  [PieceType.CENTAUR]: 35,
+  [PieceType.COMMONER]: 15,
+  [PieceType.CHAMPION]: 40,
+  [PieceType.WIZARD]: 35,
+  [PieceType.FOOL]: 10,
+  [PieceType.ARCHBISHOP]: 50,
+  [PieceType.CHANCELLOR]: 50,
+  [PieceType.AMAZON]: 75,
+  [PieceType.DRAGON]: 40,
+  [PieceType.SHIP]: 20,
 };
 
 export const RELIC_INFO: Record<RelicType, { basePrice: number; icon: string }> = {

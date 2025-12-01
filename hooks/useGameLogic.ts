@@ -39,6 +39,10 @@ export const useGameLogic = ({
   const [isEnemyMoveLimited, setIsEnemyMoveLimited] = useState(false);
   const [enPassantTarget, setEnPassantTarget] = useState<Position | null>(null);
 
+  // Enemy Visual State
+  const [selectedEnemyPos, setSelectedEnemyPos] = useState<Position | null>(null);
+  const [enemyValidMoves, setEnemyValidMoves] = useState<Position[]>([]);
+
   // Card State
   const [deck, setDeck] = useState<Card[]>([]);
   const [hand, setHand] = useState<Card[]>([]);
@@ -164,6 +168,8 @@ export const useGameLogic = ({
     setIsEnemyMoveLimited(false);
     setEnPassantTarget(null);
     setInfoModalContent(null);
+    setSelectedEnemyPos(null);
+    setEnemyValidMoves([]);
   };
 
   const drawCard = useCallback(() => {
@@ -351,6 +357,9 @@ export const useGameLogic = ({
     setLastMoveTo(to);
     setSelectedPiecePos(null);
     setValidMoves([]);
+    // Clear enemy selection on player move
+    setSelectedEnemyPos(null);
+    setEnemyValidMoves([]);
     setEnPassantTarget(nextEnPassantTarget);
 
     if (checkWinCondition(newBoard)) {
@@ -535,6 +544,7 @@ export const useGameLogic = ({
 
     const clickedPiece = board[r][c].piece;
     const isSelfPiece = clickedPiece?.side === Side.WHITE;
+    const isEnemyPiece = clickedPiece?.side === Side.BLACK;
 
     if (selectedCardId && cardTargetMode) {
       handleCardTargeting(r, c, clickedPiece);
@@ -542,6 +552,10 @@ export const useGameLogic = ({
     }
 
     if (isSelfPiece) {
+      // Clear enemy selection
+      setSelectedEnemyPos(null);
+      setEnemyValidMoves([]);
+
       if (selectedPiecePos?.row === r && selectedPiecePos?.col === c) {
         setSelectedPiecePos(null);
         setValidMoves([]);
@@ -553,20 +567,36 @@ export const useGameLogic = ({
       return;
     }
 
+    if (isEnemyPiece) {
+       // Clear player selection
+       setSelectedPiecePos(null);
+       setValidMoves([]);
+
+       if (selectedEnemyPos?.row === r && selectedEnemyPos?.col === c) {
+           setSelectedEnemyPos(null);
+           setEnemyValidMoves([]);
+       } else {
+           setSelectedEnemyPos({ row: r, col: c });
+           // Visualize moves for enemy. Pass null for enPassantTarget as they cannot capture their own shadow
+           const moves = getValidMoves(board, clickedPiece!, { row: r, col: c }, null);
+           setEnemyValidMoves(moves);
+       }
+       return;
+    }
+
     const isMoveValid = validMoves.some(m => m.row === r && m.col === c);
     if (selectedPiecePos && isMoveValid) {
       executeMove(selectedPiecePos, { row: r, col: c });
     } else {
-      if (!clickedPiece && board[r][c].tileEffect !== TileEffect.NONE) {
-         showCellInfo(r, c);
-      }
-      if (clickedPiece && clickedPiece.side === Side.BLACK) {
-         showCellInfo(r, c);
-      }
+       // Deselect everything on clicking empty non-valid space
+       setSelectedPiecePos(null);
+       setValidMoves([]);
+       setSelectedEnemyPos(null);
+       setEnemyValidMoves([]);
     }
   };
 
-  const handleSquareRightClick = (r: number, c: number) => {
+  const handleSquareDoubleClick = (r: number, c: number) => {
       showCellInfo(r, c);
   };
 
@@ -586,6 +616,9 @@ export const useGameLogic = ({
     setSelectedCardId(card.id);
     setSelectedPiecePos(null);
     setValidMoves([]);
+    setSelectedEnemyPos(null);
+    setEnemyValidMoves([]);
+
     if (card.type.includes('SPAWN') || card.type === CardType.EFFECT_BACK_BASE) {
       setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
     } else if (card.type === CardType.EFFECT_SWITCH) {
@@ -720,10 +753,11 @@ export const useGameLogic = ({
   return {
     gameState: {
       board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, 
-      deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent
+      deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent,
+      selectedEnemyPos, enemyValidMoves
     },
     actions: {
-      initGame, handleSquareClick, handleSquareRightClick, handleCardClick, 
+      initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, 
       setShowDeckModal, setSelectedRelic, setInfoModalContent
     }
   };

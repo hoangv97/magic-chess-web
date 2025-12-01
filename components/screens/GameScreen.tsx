@@ -54,10 +54,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         lastMoveFrom={gameState.lastMoveFrom}
         lastMoveTo={gameState.lastMoveTo}
         onSquareClick={actions.handleSquareClick}
-        onSquareRightClick={actions.handleSquareRightClick}
+        onSquareDoubleClick={actions.handleSquareDoubleClick}
         selectedCardId={gameState.selectedCardId}
         cardTargetMode={gameState.cardTargetMode}
         settings={settings}
+        selectedEnemyPos={gameState.selectedEnemyPos}
+        enemyValidMoves={gameState.enemyValidMoves}
       />
 
       <PlayerHand 

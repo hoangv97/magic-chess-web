@@ -12,14 +12,16 @@ interface GameBoardProps {
   lastMoveFrom: Position | null;
   lastMoveTo: Position | null;
   onSquareClick: (r: number, c: number) => void;
-  onSquareRightClick: (r: number, c: number) => void;
+  onSquareDoubleClick: (r: number, c: number) => void;
   selectedCardId: string | null;
   cardTargetMode: { type: CardType, step: string } | null;
   settings: GameSettings;
+  selectedEnemyPos: Position | null;
+  enemyValidMoves: Position[];
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ 
-  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareRightClick, selectedCardId, cardTargetMode, settings 
+  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves 
 }) => {
   const theme = BOARD_THEMES[settings.theme];
   const t = TRANSLATIONS[settings.language];
@@ -61,7 +63,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
            row.map((cell, c) => {
              const isDark = (r + c) % 2 === 1;
              const isSelected = selectedPiecePos?.row === r && selectedPiecePos?.col === c;
+             const isEnemySelected = selectedEnemyPos?.row === r && selectedEnemyPos?.col === c;
+             
              const isValid = validMoves.some(m => m.row === r && m.col === c);
+             const isEnemyValid = enemyValidMoves.some(m => m.row === r && m.col === c);
+
              const isLastFrom = lastMoveFrom?.row === r && lastMoveFrom?.col === c;
              const isLastTo = lastMoveTo?.row === r && lastMoveTo?.col === c;
              const size = board.length;
@@ -76,21 +82,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({
              const tileClass = getTileEffectStyle(cell.tileEffect);
              const tileInfo = getTileEffectInfo(settings.language, cell.tileEffect);
              const hasTooltip = cell.piece || cell.tileEffect !== TileEffect.NONE;
+             const tooltipPositionClass = r < 2 ? 'top-full mt-1' : 'bottom-full mb-1';
 
              return (
                <div 
                  key={`${r}-${c}`}
                  onClick={() => onSquareClick(r, c)}
-                 onContextMenu={(e) => { e.preventDefault(); onSquareRightClick(r, c); }}
+                 onDoubleClick={() => onSquareDoubleClick(r, c)}
+                 onContextMenu={(e) => e.preventDefault()}
                  className={`
                    ${getCellSizeClass()} flex items-center justify-center relative select-none group
                    ${isDark ? theme.dark : theme.light}
                    ${isSelected ? 'ring-inset ring-4 ring-yellow-400' : ''}
+                   ${isEnemySelected ? 'ring-inset ring-4 ring-red-600' : ''}
                    ${isCardTarget ? 'ring-inset ring-4 ring-blue-500 cursor-copy' : ''}
                    ${(isLastFrom || isLastTo) ? 'after:absolute after:inset-0 after:bg-yellow-500/30' : ''}
                    ${isValid ? 'cursor-pointer' : ''}
                    ${tileClass ? tileClass : ''}
                    ${cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE ? 'z-10' : ''}
+                   hover:z-[60]
                  `}
                >
                  {(c === 0) && <span className={`absolute left-0.5 top-0.5 text-[8px] opacity-50`}>{size - r}</span>}
@@ -99,11 +109,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                  {isValid && !cell.piece && <div className="w-3 h-3 rounded-full bg-black/20" />}
                  {isValid && cell.piece && <div className="absolute inset-0 border-4 border-red-500/50 rounded-full animate-pulse" />}
 
+                 {isEnemyValid && !cell.piece && <div className="w-3 h-3 rounded-full bg-red-600/40" />}
+                 {isEnemyValid && cell.piece && <div className="absolute inset-0 border-4 border-red-800 rounded-full opacity-70" />}
+
                  {cell.tileEffect === TileEffect.WALL && <span className="absolute text-2xl">🧱</span>}
                  {cell.tileEffect === TileEffect.HOLE && <span className="absolute text-2xl">🕳️</span>}
 
                  {hasTooltip && (
-                   <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-50 hidden group-hover:block pointer-events-none shadow-lg border border-slate-700">
+                   <div className={`absolute ${tooltipPositionClass} left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-[100] hidden group-hover:block pointer-events-none shadow-lg border border-slate-700`}>
                       {cell.piece ? (
                         <div className="flex flex-col items-center gap-1">
                           <span className="font-bold text-yellow-400">
@@ -116,7 +129,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                       ) : (
                         <div className="font-bold text-orange-400">{tileInfo.name}</div>
                       )}
-                      <div className="text-[8px] text-slate-500 mt-1">{t.tooltips.rightClick}</div>
+                      <div className="text-[8px] text-slate-500 mt-1">Double-click for info</div>
                    </div>
                  )}
 
