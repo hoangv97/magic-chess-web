@@ -1,18 +1,33 @@
 
+
+
+
+
 import { v4 as uuidv4 } from 'uuid';
-import { MapNode } from '../types';
+import { MapNode, BossType } from '../types';
 
 export const generateCampaignMap = (): MapNode[] => {
   const nodes: MapNode[] = [];
   const LEVELS_PER_ZONE = 10;
-  const TOTAL_ZONES = 5; // 50 levels total for this "endless" feel
+  const TOTAL_ZONES = 5; 
   const TOTAL_LEVELS = TOTAL_ZONES * LEVELS_PER_ZONE;
   const STEP_X = 120; // Pixels between levels
+  const BOSS_FREQUENCY = 3;
 
   let prevNodes: MapNode[] = [];
 
+  const bossTypes = [
+      BossType.FROST_GIANT, 
+      BossType.BLIZZARD_WITCH,
+      BossType.VOID_BRINGER, 
+      BossType.LAVA_TITAN, 
+      BossType.STONE_GOLEM,
+      BossType.UNDEAD_LORD
+  ];
+
   for (let level = 1; level <= TOTAL_LEVELS; level++) {
-    const isBoss = level % LEVELS_PER_ZONE === 0;
+    // Boss appears every 3 levels
+    const isBoss = level % BOSS_FREQUENCY === 0;
     const isStartOfZone = (level - 1) % LEVELS_PER_ZONE === 0;
 
     let nodeCount = 1;
@@ -41,13 +56,22 @@ export const generateCampaignMap = (): MapNode[] => {
         y = i === 0 ? 35 : 65;
       }
 
+      let bossType = BossType.NONE;
+      let name = undefined;
+
+      if (isBoss) {
+          name = 'Boss';
+          bossType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+      }
+
       const newNode: MapNode = {
         id,
         level,
         x: level * STEP_X, // Horizontal position in pixels
         y,
         next: [],
-        name: isBoss ? 'Boss' : undefined
+        name,
+        bossType
       };
       
       nodes.push(newNode);

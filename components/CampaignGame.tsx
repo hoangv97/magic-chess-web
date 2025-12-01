@@ -1,7 +1,9 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase } from '../types';
+import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType } from '../types';
 import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP, getTileEffectInfo } from '../constants';
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { useGameLogic } from '../hooks/useGameLogic';
@@ -91,7 +93,8 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       soundManager.playSfx('click');
       setCurrentMapNodeId(node.id);
       setCampaignLevel(node.level);
-      actions.initGame(true, masterDeck, node.level);
+      // Pass boss type from map node
+      actions.initGame(true, masterDeck, node.level, node.bossType || BossType.NONE);
       setPhase('PLAYING');
   };
 

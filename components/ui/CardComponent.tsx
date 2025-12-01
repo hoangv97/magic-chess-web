@@ -25,6 +25,7 @@ export const CardComponent: React.FC<CardComponentProps> = ({ card, selected, on
       {/* Icon placeholder based on type */}
       <span className="text-3xl">
         {card.type.includes('SPAWN') && '⚔️'}
+        {card.type.includes('IMMORTAL') && '🛡️'}
         {card.type.includes('SWITCH') && '🔄'}
         {card.type.includes('FREEZE') && '❄️'}
         {card.type.includes('LIMIT') && '🐌'}

@@ -1,7 +1,11 @@
 
+
+
+
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings } from '../../types';
+import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings, BossType } from '../../types';
 import { getTileEffectInfo, BOARD_THEMES } from '../../constants';
 import { getPieceIcon } from '../assets/PieceSets';
 import { TRANSLATIONS } from '../../utils/locales';
@@ -19,11 +23,12 @@ interface GameBoardProps {
   settings: GameSettings;
   selectedEnemyPos: Position | null;
   enemyValidMoves: Position[];
-  checkState?: { white: boolean, black: boolean }; // Added prop for check detection
+  checkState?: { white: boolean, black: boolean };
+  activeBoss?: BossType;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ 
-  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves, checkState
+  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves, checkState, activeBoss
 }) => {
   const theme = BOARD_THEMES[settings.theme];
   const t = TRANSLATIONS[settings.language];
@@ -34,11 +39,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
      return "w-12 h-12 sm:w-16 sm:h-16";
   };
 
+  // We are now handling effects with AnimatePresence, so base tile just needs background
   const getTileEffectStyle = (effect: TileEffect) => {
     switch (effect) {
         case TileEffect.HOLE: return "bg-black shadow-[inset_0_0_10px_rgba(0,0,0,1)]";
         case TileEffect.WALL: return "bg-stone-600 border-4 border-stone-800 shadow-xl";
-        case TileEffect.FROZEN: return "bg-cyan-300 opacity-80 shadow-[inset_0_0_5px_rgba(255,255,255,0.8)]"; // Visuals for FROZEN
+        case TileEffect.FROZEN: return "bg-cyan-300 opacity-80 shadow-[inset_0_0_5px_rgba(255,255,255,0.8)]";
         case TileEffect.LAVA: return "bg-red-900 animate-pulse shadow-[inset_0_0_15px_rgba(255,100,0,0.5)]";
         default: return "";
     }
@@ -78,10 +84,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 (cardTargetMode.type.includes('SPAWN') && r >= size - 2 && !cell.piece) ||
                 (cardTargetMode.type.includes('SWITCH') && cell.piece?.side === Side.WHITE) ||
                 (cardTargetMode.type.includes('BORROW') && cell.piece?.side === Side.WHITE) ||
+                (cardTargetMode.type.includes('IMMORTAL') && cell.piece?.side === Side.WHITE) ||
                 (cardTargetMode.type.includes('BACK') && cell.piece?.side === Side.WHITE && cell.piece.type !== PieceType.KING)
              );
 
-             const tileClass = getTileEffectStyle(cell.tileEffect);
              const tileInfo = getTileEffectInfo(settings.language, cell.tileEffect);
              const hasTooltip = cell.piece || cell.tileEffect !== TileEffect.NONE;
              const tooltipPositionClass = r < 2 ? 'top-full mt-1' : 'bottom-full mb-1';
@@ -92,6 +98,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                (cell.piece?.side === Side.WHITE && checkState.white) ||
                (cell.piece?.side === Side.BLACK && checkState.black)
              );
+             
+             const isBossPiece = activeBoss && activeBoss !== BossType.NONE && isKing && cell.piece?.side === Side.BLACK;
 
              return (
                <div 
@@ -107,11 +115,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                    ${isCardTarget ? 'ring-inset ring-4 ring-blue-500 cursor-copy' : ''}
                    ${(isLastFrom || isLastTo) ? 'after:absolute after:inset-0 after:bg-yellow-500/30' : ''}
                    ${isValid ? 'cursor-pointer' : ''}
-                   ${tileClass ? tileClass : ''}
                    ${cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE ? 'z-10' : ''}
                    hover:z-[60]
                  `}
                >
+                 {/* Tile Effect Overlay with Animation */}
+                 <AnimatePresence>
+                    {cell.tileEffect !== TileEffect.NONE && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.3 }}
+                        className={`absolute inset-0 pointer-events-none ${getTileEffectStyle(cell.tileEffect)}`}
+                      >
+                         {cell.tileEffect === TileEffect.WALL && <span className="absolute inset-0 flex items-center justify-center text-2xl">🧱</span>}
+                         {cell.tileEffect === TileEffect.FROZEN && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-50">❄️</span>}
+                      </motion.div>
+                    )}
+                 </AnimatePresence>
+
                  {(c === 0) && <span className={`absolute left-0.5 top-0.5 text-[8px] opacity-50`}>{size - r}</span>}
                  {(r === size - 1) && <span className={`absolute right-0.5 bottom-0 text-[8px] opacity-50`}>{String.fromCharCode(97 + c)}</span>}
 
@@ -127,10 +150,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     </div>
                  )}
 
-                 {cell.tileEffect === TileEffect.WALL && <span className="absolute text-2xl">🧱</span>}
-                 {cell.tileEffect === TileEffect.HOLE && <span className="absolute text-2xl"></span>}
-                 {cell.tileEffect === TileEffect.FROZEN && <span className="absolute text-xl opacity-50">❄️</span>}
-
                  {hasTooltip && (
                    <div className={`absolute ${tooltipPositionClass} left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-[100] hidden group-hover:block pointer-events-none shadow-lg border border-slate-700`}>
                       {cell.piece ? (
@@ -139,7 +158,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                               {cell.piece.side === Side.WHITE ? '' : ''} {t.pieces[cell.piece.type]}
                           </span>
                           {(cell.piece.frozenTurns || 0) > 0 && <span className="text-blue-300">{t.tooltips.frozen.replace('{0}', String(cell.piece.frozenTurns))}</span>}
+                          {(cell.piece.immortalTurns || 0) > 0 && <span className="text-yellow-300">{t.tooltips.immortal.replace('{0}', String(cell.piece.immortalTurns! > 100 ? '∞' : cell.piece.immortalTurns))}</span>}
                           {cell.piece.tempMoveOverride && <span className="text-purple-300">{t.tooltips.movesLike.replace('{0}', t.pieces[cell.piece.tempMoveOverride])}</span>}
+                          {isBossPiece && <span className="text-red-500 font-bold uppercase">{t.tooltips.bossAbility}</span>}
                           {cell.tileEffect !== TileEffect.NONE && <span className="text-[9px] text-slate-400">{t.tooltips.on} {tileInfo.name}</span>}
                         </div>
                       ) : (
@@ -179,9 +200,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                          initial={{ scale: 0.5, rotateY: 180, filter: "brightness(2)" }}
                          animate={{ scale: 1, rotateY: 0, filter: "brightness(1)" }}
                          transition={{ duration: 0.5, type: "spring" }}
-                         className="w-full h-full"
+                         className="w-full h-full relative"
                        >
                           {getPieceIcon(settings.pieceSet, cell.piece.side, cell.piece.type)}
+                          {isBossPiece && (
+                              <div className="absolute -top-3 -right-3 text-2xl drop-shadow-md z-30">
+                                  👿
+                              </div>
+                          )}
                        </motion.div>
 
                        <AnimatePresence>
@@ -194,6 +220,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                               transition={{ duration: 0.3 }}
                             >
                               ❄️
+                            </motion.div>
+                         )}
+                         {(cell.piece.immortalTurns || 0) > 0 && (
+                            <motion.div 
+                              initial={{ scale: 0, opacity: 0 }} 
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute -top-2 -left-2 text-lg drop-shadow-md bg-white rounded-full w-6 h-6 flex items-center justify-center border border-yellow-500 z-40"
+                              transition={{ duration: 0.3 }}
+                            >
+                              🛡️
                             </motion.div>
                          )}
                          {cell.piece.tempMoveOverride && (

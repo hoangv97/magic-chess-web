@@ -1,7 +1,9 @@
 
 
+
+
 import React, { useState, useEffect } from 'react';
-import { GameSettings } from './types';
+import { GameSettings, BossType } from './types';
 import { MainMenu } from './components/screens/MainMenu';
 import { SettingsScreen } from './components/screens/SettingsScreen';
 import { CampaignGame } from './components/CampaignGame';
@@ -18,7 +20,8 @@ const DEFAULT_SETTINGS: GameSettings = {
   theme: 'CLASSIC',
   pieceSet: 'STANDARD',
   soundEnabled: true,
-  soundVolume: 0.5
+  soundVolume: 0.5,
+  customBossType: BossType.NONE
 };
 
 export default function App() {
@@ -28,7 +31,12 @@ export default function App() {
   const [settings, setSettings] = useState<GameSettings>(() => {
      try {
        const saved = localStorage.getItem('cce_settings');
-       return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+       if (saved) {
+           const parsed = JSON.parse(saved);
+           // Merge with default to ensure new keys exist
+           return { ...DEFAULT_SETTINGS, ...parsed };
+       }
+       return DEFAULT_SETTINGS;
      } catch (e) {
        console.error("Failed to load settings", e);
        return DEFAULT_SETTINGS;

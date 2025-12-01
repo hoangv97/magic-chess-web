@@ -41,6 +41,7 @@ export interface Piece {
   hasMoved: boolean;
   tempMoveOverride?: PieceType; // For "Borrow" card
   frozenTurns?: number; // Replaced boolean with counter. 0 = not frozen.
+  immortalTurns?: number; // If > 0, cannot be captured
 }
 
 export enum TileEffect {
@@ -72,6 +73,7 @@ export enum CardType {
   EFFECT_BORROW_KNIGHT = 'EFFECT_BORROW_KNIGHT',
   EFFECT_BORROW_BISHOP = 'EFFECT_BORROW_BISHOP',
   EFFECT_BACK_BASE = 'EFFECT_BACK_BASE', // Send own piece back to base row
+  EFFECT_IMMORTAL = 'EFFECT_IMMORTAL', // Make own piece immortal for 1 turn
 }
 
 export interface Card {
@@ -92,6 +94,16 @@ export interface Relic {
   level: number;
 }
 
+export enum BossType {
+  NONE = 'NONE',
+  FROST_GIANT = 'FROST_GIANT',
+  BLIZZARD_WITCH = 'BLIZZARD_WITCH',
+  VOID_BRINGER = 'VOID_BRINGER',
+  LAVA_TITAN = 'LAVA_TITAN',
+  STONE_GOLEM = 'STONE_GOLEM',
+  UNDEAD_LORD = 'UNDEAD_LORD'
+}
+
 export interface MapNode {
   id: string;
   level: number;
@@ -99,6 +111,7 @@ export interface MapNode {
   y: number; // Percentage 0-100
   next: string[];
   name?: string;
+  bossType?: BossType;
 }
 
 export type Language = 'en' | 'vi';
@@ -122,6 +135,7 @@ export interface GameSettings {
   pieceSet: PieceSetId;
   soundEnabled: boolean;
   soundVolume: number; // 0.0 to 1.0
+  customBossType: BossType;
 }
 
 export type GamePhase = 

@@ -1,6 +1,8 @@
 
+
+
 import React, { useEffect, useRef } from 'react';
-import { MapNode, GameSettings } from '../../types';
+import { MapNode, GameSettings, BossType } from '../../types';
 import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
 
@@ -47,6 +49,16 @@ export const MapModal: React.FC<MapModalProps> = ({
       return node.level === 1;
     }
     return currentNode?.next.includes(node.id);
+  };
+
+  const getBossIcon = (type?: BossType) => {
+      switch(type) {
+          case BossType.FROST_GIANT: return '❄️';
+          case BossType.VOID_BRINGER: return '🕳️';
+          case BossType.LAVA_TITAN: return '🌋';
+          case BossType.STONE_GOLEM: return '🗿';
+          default: return '☠️';
+      }
   };
 
   return (
@@ -115,6 +127,7 @@ export const MapModal: React.FC<MapModalProps> = ({
                  const isCurrent = currentNodeId === node.id;
                  const isAvailable = isNodeAvailable(node);
                  const isLocked = !isCompleted && !isCurrent && !isAvailable;
+                 const isBoss = node.name === 'Boss';
 
                  if (!isVisible) return null;
 
@@ -130,21 +143,21 @@ export const MapModal: React.FC<MapModalProps> = ({
                     >
                        <div className={`
                           flex items-center justify-center rounded-full border-2 shadow-lg transition-transform duration-300
-                          ${node.name === 'Boss' ? 'w-16 h-16 text-2xl' : 'w-10 h-10 text-sm'}
+                          ${isBoss ? 'w-16 h-16 text-2xl' : 'w-10 h-10 text-sm'}
                           ${isAvailable ? 'hover:scale-125 bg-yellow-900/80 border-yellow-400 animate-bounce' : ''}
                           ${isCompleted ? 'bg-green-800 border-green-500 text-green-200' : ''}
                           ${isCurrent ? 'bg-blue-600 border-blue-400 text-white scale-125 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : ''}
                           ${isLocked ? 'bg-slate-800 border-slate-600 text-slate-600' : ''}
                        `}>
                           {isCompleted ? '✓' : isCurrent ? '📍' : isAvailable ? '⚔️' : isLocked ? '🔒' : ''}
-                          {node.name === 'Boss' && !isCompleted && !isCurrent && !isAvailable && '☠️'}
+                          {isBoss && !isCompleted && !isCurrent && !isAvailable && getBossIcon(node.bossType)}
                        </div>
 
                        <div className={`
                           mt-2 text-[10px] font-bold px-2 py-1 rounded bg-black/80 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity
                           ${isCurrent ? 'opacity-100 bg-blue-900' : ''}
                        `}>
-                          Lvl {node.level} {node.name ? `- ${node.name}` : ''}
+                          Lvl {node.level} {isBoss ? `- ${node.bossType?.replace('_', ' ')}` : ''}
                        </div>
                     </div>
                  );

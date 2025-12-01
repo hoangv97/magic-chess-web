@@ -1,9 +1,12 @@
 
+
+
+
 import React from 'react';
-import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language } from './types';
+import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language, BossType } from './types';
 import { TRANSLATIONS } from './utils/locales';
 
-export const TEST_GENERATE_SPECIAL_TILES = true;
+export const TEST_GENERATE_SPECIAL_TILES = false;
 
 export const BOARD_THEMES: Record<BoardThemeId, BoardTheme> = {
   CLASSIC: { name: 'Classic', light: 'bg-[#f0d9b5]', dark: 'bg-[#b58863]', bg: 'bg-[#1a1c23]', border: 'border-[#2a2018]' },
@@ -26,6 +29,7 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.EFFECT_BORROW_KNIGHT, cost: 45 },
   { type: CardType.EFFECT_BORROW_BISHOP, cost: 45 },
   { type: CardType.EFFECT_BACK_BASE, cost: 15 },
+  { type: CardType.EFFECT_IMMORTAL, cost: 70 },
 ];
 
 export const getDeckTemplate = (lang: Language) => {
@@ -51,7 +55,7 @@ export const STARTER_DECKS_CONFIG = [
   },
   {
     id: "Experiment",
-    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN]
+    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_IMMORTAL]
   },
 ];
 
@@ -136,4 +140,9 @@ export const TILE_EFFECT_INFO: Record<TileEffect, { name: string; desc: string }
   [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
   [TileEffect.FROZEN]: { name: "Frozen Ground", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
   [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." }
+};
+
+export const getBossInfo = (lang: Language, type: BossType) => {
+  if (type === BossType.NONE) return null;
+  return TRANSLATIONS[lang].bosses[type];
 };

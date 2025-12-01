@@ -1,5 +1,7 @@
 
 
+
+
 import { Cell, Piece, PieceType, Side, Position, TileEffect } from '../types';
 import { TEST_GENERATE_SPECIAL_TILES } from '../constants';
 
@@ -63,6 +65,8 @@ export const getValidMoves = (
      const tile = board[r][c];
      if (tile.tileEffect === TileEffect.WALL) return false;
      if (tile.tileEffect === TileEffect.HOLE) return false; // Cannot land on hole
+     // Cannot capture immortal pieces
+     if (tile.piece && tile.piece.side !== piece.side && (tile.piece.immortalTurns || 0) > 0) return false;
      return true;
   };
 
@@ -78,12 +82,12 @@ export const getValidMoves = (
     const target = cell.piece;
     if (target) {
       if (target.side !== piece.side) {
-        // Can capture? Only if not HOLE (though HOLE shouldn't have pieces, checking for safety)
-        if (cell.tileEffect !== TileEffect.HOLE) {
+        // Can capture? Only if not HOLE and not IMMORTAL
+        if (cell.tileEffect !== TileEffect.HOLE && !(target.immortalTurns && target.immortalTurns > 0)) {
            moves.push({ row: r, col: c }); 
         }
       }
-      return false; // Blocked by piece
+      return false; // Blocked by piece (enemy or friendly)
     }
     
     // HOLE: Cannot land, but if we are here (and not blocked by piece/wall), we can pass through (return true)
@@ -125,11 +129,21 @@ export const getValidMoves = (
         const target = cell.piece;
         // Normal Capture
         if (target && target.side !== piece.side) {
-          moves.push({ row: r, col: c });
+          if (!(target.immortalTurns && target.immortalTurns > 0)) {
+             moves.push({ row: r, col: c });
+          }
         } 
         // En Passant Capture
         else if (enPassantTarget && enPassantTarget.row === r && enPassantTarget.col === c) {
-           moves.push({ row: r, col: c });
+           // Check if the pawn being captured is immortal (needs board check, assumed simpler here for now)
+           // But En Passant captures the piece 'behind' movement.
+           // For simplicity, let's assume if you can EP, you can. 
+           // Technically should check if victim is immortal.
+           const victimRow = r - direction;
+           const victim = board[victimRow][c].piece;
+           if (victim && !(victim.immortalTurns && victim.immortalTurns > 0)) {
+               moves.push({ row: r, col: c });
+           }
         }
       }
     });
@@ -147,6 +161,10 @@ export const getValidMoves = (
       const r = currentPos.row + dr;
       const c = currentPos.col + dc;
       if (isMoveableTo(r, c)) {
+         // Special check for King move - simple addMove logic might need isMoveableTo wrapper?
+         // addMove handles capture logic inside.
+         // But isMoveableTo checks obstacle logic before even trying.
+         // Let's rely on addMove but double check blocking.
          addMove(r, c);
       }
     });

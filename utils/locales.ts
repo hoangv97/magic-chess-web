@@ -2,7 +2,11 @@
 
 
 
-import { CardType, PieceType, RelicType, TileEffect } from '../types';
+
+
+
+
+import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 
 export const TRANSLATIONS = {
   en: {
@@ -15,7 +19,8 @@ export const TRANSLATIONS = {
       boardSize: "Board Size",
       enemies: "Enemies",
       playerCount: "Player pieces",
-      startCustom: "Start Custom Game"
+      startCustom: "Start Custom Game",
+      selectBoss: "Select Boss"
     },
     settings: {
       title: "SETTINGS",
@@ -93,6 +98,7 @@ export const TRANSLATIONS = {
       [CardType.EFFECT_BORROW_KNIGHT]: { title: "Knight's Leap", desc: "Target piece moves like a Knight this turn." },
       [CardType.EFFECT_BORROW_BISHOP]: { title: "Bishop's Sight", desc: "Target piece moves like a Bishop this turn." },
       [CardType.EFFECT_BACK_BASE]: { title: "Recall", desc: "Return one of your pieces to the base row." },
+      [CardType.EFFECT_IMMORTAL]: { title: "Divine Shield", desc: "Make a piece immortal until your next turn." },
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Martyr's Sigil", desc: "Spawn a {0} on base row when your piece dies." },
@@ -102,8 +108,41 @@ export const TRANSLATIONS = {
       [TileEffect.NONE]: { name: "Grass", desc: "Standard terrain. No special effects." },
       [TileEffect.HOLE]: { name: "Abyss", desc: "A deep chasm. Pieces cannot stand here, but sliding pieces can pass over." },
       [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
-      [TileEffect.FROZEN]: { name: "Frozen Tile", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
+      [TileEffect.FROZEN]: { name: "Frozen Ground", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
       [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." }
+    },
+    bosses: {
+      [BossType.NONE]: { name: "None", desc: "No boss." },
+      [BossType.FROST_GIANT]: { 
+        name: "Frost Giant", 
+        desc: "A giant of ice and snow.",
+        ability: "PASSIVE: Your pieces freeze after moving." 
+      },
+      [BossType.BLIZZARD_WITCH]: { 
+        name: "Blizzard Witch", 
+        desc: "Sorceress of the northern winds.",
+        ability: "ACTIVE: Freezes random tiles each turn." 
+      },
+      [BossType.VOID_BRINGER]: { 
+        name: "Void Bringer", 
+        desc: "An entity from the abyss.",
+        ability: "ACTIVE: Summons abyssal holes on the board each turn." 
+      },
+      [BossType.LAVA_TITAN]: { 
+        name: "Lava Titan", 
+        desc: "Forged in the heart of a volcano.",
+        ability: "ACTIVE: Erupts magma pools on the board each turn." 
+      },
+      [BossType.STONE_GOLEM]: { 
+        name: "Stone Golem", 
+        desc: "An ancient guardian of stone.",
+        ability: "ACTIVE: Constructs stone walls every 5 turns to block your path." 
+      },
+      [BossType.UNDEAD_LORD]: { 
+        name: "Undead Lord", 
+        desc: "A master of death who shields his minions.",
+        ability: "ACTIVE: Grants immortality to a random minion. The chosen one changes every 5 turns." 
+      }
     },
     deckSelection: {
       title: "Choose Your Army",
@@ -127,12 +166,14 @@ export const TRANSLATIONS = {
     tooltips: {
       frozen: "❄️ Frozen ({0} turns left)",
       active: "Active",
+      immortal: "🛡️ Immortal ({0} turns left)",
       movesLike: "✨ Moves like {0} this turn.",
       on: "On:",
       rightClick: "Right-click for info",
       status: "Status:",
       effect: "Effect:",
-      currentTerrain: "Current Terrain"
+      currentTerrain: "Current Terrain",
+      bossAbility: "Boss Ability"
     }
   },
   vi: {
@@ -145,7 +186,8 @@ export const TRANSLATIONS = {
       boardSize: "Kích Thước Bàn",
       enemies: "Số Lượng Kẻ Thù",
       playerCount: "Số lượng Quân",
-      startCustom: "Bắt Đầu"
+      startCustom: "Bắt Đầu",
+      selectBoss: "Chọn Trùm"
     },
     settings: {
       title: "CÀI ĐẶT",
@@ -223,6 +265,7 @@ export const TRANSLATIONS = {
       [CardType.EFFECT_BORROW_KNIGHT]: { title: "Bước Nhảy Mã", desc: "Quân mục tiêu di chuyển như Mã lượt này." },
       [CardType.EFFECT_BORROW_BISHOP]: { title: "Tầm Nhìn Tượng", desc: "Quân mục tiêu di chuyển như Tượng lượt này." },
       [CardType.EFFECT_BACK_BASE]: { title: "Thu Hồi", desc: "Đưa một quân của bạn về hàng cuối." },
+      [CardType.EFFECT_IMMORTAL]: { title: "Khiên Thần", desc: "Làm một quân bất tử cho đến lượt sau." },
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Dấu Ấn Tử Sĩ", desc: "Tạo {0} khi quân bạn chết." },
@@ -234,6 +277,39 @@ export const TRANSLATIONS = {
       [TileEffect.WALL]: { name: "Tường Đá", desc: "Vật cản không thể đi qua." },
       [TileEffect.FROZEN]: { name: "Ô Băng", desc: "Trơn trượt. Đi vào sẽ bị đóng băng lượt sau." },
       [TileEffect.LAVA]: { name: "Dung Nham", desc: "Đi vào sẽ bị tiêu diệt ngay lập tức." }
+    },
+    bosses: {
+      [BossType.NONE]: { name: "Không", desc: "Không có trùm." },
+      [BossType.FROST_GIANT]: { 
+        name: "Người Khổng Lồ Băng", 
+        desc: "Kẻ thống trị băng tuyết.",
+        ability: "BỊ ĐỘNG: Quân bạn bị đóng băng sau khi đi." 
+      },
+      [BossType.BLIZZARD_WITCH]: { 
+        name: "Phù Thủy Bão Tuyết", 
+        desc: "Phù thủy của gió bắc.",
+        ability: "CHỦ ĐỘNG: Đóng băng các ô ngẫu nhiên mỗi lượt." 
+      },
+      [BossType.VOID_BRINGER]: { 
+        name: "Sứ Giả Hư Vô", 
+        desc: "Thực thể đến từ vực thẳm.",
+        ability: "CHỦ ĐỘNG: Triệu hồi các hố đen trên bàn cờ mỗi lượt." 
+      },
+      [BossType.LAVA_TITAN]: { 
+        name: "Titan Dung Nham", 
+        desc: "Sinh ra từ lòng núi lửa.",
+        ability: "CHỦ ĐỘNG: Phun trào dung nham lên bàn cờ mỗi lượt." 
+      },
+      [BossType.STONE_GOLEM]: { 
+        name: "Người Đá Cổ Đại", 
+        desc: "Vệ thần của đá.",
+        ability: "CHỦ ĐỘNG: Dựng tường đá mỗi 5 lượt để chặn đường." 
+      },
+      [BossType.UNDEAD_LORD]: { 
+        name: "Chúa Tể Bất Tử", 
+        desc: "Kẻ ban phát sự bất tử.",
+        ability: "CHỦ ĐỘNG: Ban sự bất tử cho một lính ngẫu nhiên. Thay đổi mỗi 5 lượt." 
+      }
     },
     deckSelection: {
       title: "Chọn Quân Đội",
@@ -256,12 +332,14 @@ export const TRANSLATIONS = {
     tooltips: {
       frozen: "❄️ Đóng băng (còn {0} lượt)",
       active: "Hoạt động",
+      immortal: "🛡️ Bất tử ({0} lượt)",
       movesLike: "✨ Di chuyển như {0}",
       on: "On:",
       rightClick: "Chuột phải để xem",
       status: "Trạng thái:",
       effect: "Hiệu ứng:",
-      currentTerrain: "Địa Hình"
+      currentTerrain: "Địa Hình",
+      bossAbility: "Kỹ Năng Trùm"
     }
   }
 };
