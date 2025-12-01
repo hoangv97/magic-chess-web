@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { GameSettings, BoardThemeId, PieceSetId, Language } from '../../types';
 import { BOARD_THEMES } from '../../constants';
@@ -10,9 +11,10 @@ interface SettingsScreenProps {
   settings: GameSettings;
   setSettings: (s: GameSettings) => void;
   onBack: () => void;
+  onReset?: () => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSettings, onBack }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSettings, onBack, onReset }) => {
   const t = TRANSLATIONS[settings.language].settings;
 
   const updateSetting = <K extends keyof GameSettings>(key: K, value: GameSettings[K]) => {
@@ -25,7 +27,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSet
 
   return (
     <div className="absolute inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-lg w-full border border-slate-700">
+      <div className="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-lg w-full border border-slate-700 max-h-screen overflow-y-auto">
         <h2 className="text-3xl font-black mb-8 text-white text-center tracking-tighter">{t.title}</h2>
 
         {/* Sound Settings */}
@@ -107,9 +109,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSet
           </div>
         </div>
 
-        <Button onClick={onBack} className="w-full bg-slate-600 hover:bg-slate-500 text-white py-3">
-           {t.back}
-        </Button>
+        <div className="flex flex-col gap-4">
+            {onReset && (
+                <Button onClick={onReset} className="w-full bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 py-2 text-sm">
+                {t.reset}
+                </Button>
+            )}
+            <Button onClick={onBack} className="w-full bg-slate-600 hover:bg-slate-500 text-white py-3">
+            {t.back}
+            </Button>
+            
+        </div>
       </div>
     </div>
   );

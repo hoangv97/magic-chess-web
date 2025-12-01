@@ -1,4 +1,5 @@
 
+
 import { Cell, Piece, PieceType, Side, Position, TileEffect } from '../types';
 import { TEST_GENERATE_SPECIAL_TILES } from '../constants';
 
@@ -15,7 +16,7 @@ export const generateBoard = (size: number): Cell[][] => {
           const rand = Math.random();
           if (rand < 0.05) effect = TileEffect.HOLE;
           else if (rand < 0.10) effect = TileEffect.WALL;
-          else if (rand < 0.15) effect = TileEffect.MUD;
+          else if (rand < 0.15) effect = TileEffect.FROZEN;
           else if (rand < 0.20) effect = TileEffect.LAVA;
         }
       }
@@ -174,7 +175,5 @@ export const getValidMoves = (
     });
   }
   
-  // King Logic (Duplicate check removed, it was already handled above)
-
   return moves;
 };

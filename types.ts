@@ -47,7 +47,7 @@ export enum TileEffect {
   NONE = 'NONE',
   HOLE = 'HOLE', // No piece can go in (but sliders can pass through)
   WALL = 'WALL', // No piece can go in or pass through
-  MUD = 'MUD',   // Go in and cannot move in the next turn
+  FROZEN = 'FROZEN',   // Go in and cannot move in the next turn (Renamed from MUD)
   LAVA = 'LAVA'  // Died if go in
 }
 

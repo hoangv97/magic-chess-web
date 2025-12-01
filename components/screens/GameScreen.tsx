@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { GameHeader } from '../game/GameHeader';
 import { GameBoard } from '../game/GameBoard';
@@ -60,6 +61,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         settings={settings}
         selectedEnemyPos={gameState.selectedEnemyPos}
         enemyValidMoves={gameState.enemyValidMoves}
+        checkState={gameState.checkState}
       />
 
       <PlayerHand 

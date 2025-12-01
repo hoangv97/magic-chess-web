@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -40,6 +39,7 @@ export const useGameLogic = ({
   const [isEnemyMoveLimited, setIsEnemyMoveLimited] = useState(false);
   const [enPassantTarget, setEnPassantTarget] = useState<Position | null>(null);
   const [isGameEnded, setIsGameEnded] = useState(false);
+  const [checkState, setCheckState] = useState<{white: boolean, black: boolean}>({ white: false, black: false });
 
   // Enemy Visual State
   const [selectedEnemyPos, setSelectedEnemyPos] = useState<Position | null>(null);
@@ -173,12 +173,57 @@ export const useGameLogic = ({
     setSelectedEnemyPos(null);
     setEnemyValidMoves([]);
     setIsGameEnded(false);
+    setCheckState({ white: false, black: false });
     
     // Resume music if enabled
     soundManager.init();
     if (settings.soundEnabled) {
        soundManager.startMusic();
     }
+  };
+
+  const calculateCheckState = (boardState: Cell[][]) => {
+     // Helper to check if a side's king is in danger
+     const isSideInCheck = (side: Side): boolean => {
+         let kingPos: Position | null = null;
+         const size = boardState.length;
+         
+         // Find King
+         for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+               const p = boardState[r][c].piece;
+               if (p && p.type === PieceType.KING && p.side === side) {
+                  kingPos = { row: r, col: c };
+                  break;
+               }
+            }
+            if (kingPos) break;
+         }
+
+         if (!kingPos) return false;
+
+         // Check all enemy moves
+         const enemySide = side === Side.WHITE ? Side.BLACK : Side.WHITE;
+         for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+               const p = boardState[r][c].piece;
+               if (p && p.side === enemySide) {
+                  // Using simplified valid moves - might need optimization if board is huge, but fine for 12x12
+                  // Note: we pass null for enPassantTarget as it's rare to checkmate with EP and this is just a warning
+                  const moves = getValidMoves(boardState, p, { row: r, col: c }, null);
+                  if (moves.some(m => m.row === kingPos!.row && m.col === kingPos!.col)) {
+                     return true;
+                  }
+               }
+            }
+         }
+         return false;
+     };
+
+     setCheckState({
+        white: isSideInCheck(Side.WHITE),
+        black: isSideInCheck(Side.BLACK)
+     });
   };
 
   const drawCard = useCallback(() => {
@@ -337,7 +382,7 @@ export const useGameLogic = ({
         newBoard[to.row][to.col].piece = null; 
         selfKilled = true; 
         soundManager.playSfx('capture');
-    } else if (destEffect === TileEffect.MUD) {
+    } else if (destEffect === TileEffect.FROZEN) { // Renamed from MUD
         if (newBoard[to.row][to.col].piece) {
             newBoard[to.row][to.col].piece!.frozenTurns = 2;
             soundManager.playSfx('frozen');
@@ -373,6 +418,7 @@ export const useGameLogic = ({
     }));
 
     setBoard(newBoard);
+    calculateCheckState(newBoard);
     setLastMoveFrom(from);
     setLastMoveTo(to);
     setSelectedPiecePos(null);
@@ -444,6 +490,7 @@ export const useGameLogic = ({
         drawCard();
         setIsEnemyMoveLimited(false);
         setEnPassantTarget(null);
+        calculateCheckState(boardCopy);
         return boardCopy;
       }
 
@@ -518,7 +565,7 @@ export const useGameLogic = ({
         if (effect === TileEffect.LAVA) {
             boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
             soundManager.playSfx('capture');
-        } else if (effect === TileEffect.MUD) {
+        } else if (effect === TileEffect.FROZEN) { // Renamed from MUD
             if (boardCopy[bestMove.to.row][bestMove.to.col].piece) {
                 boardCopy[bestMove.to.row][bestMove.to.col].piece!.frozenTurns = 2;
                 soundManager.playSfx('frozen');
@@ -573,6 +620,7 @@ export const useGameLogic = ({
       setCardsPlayed(0); 
       drawCard();
       setIsEnemyMoveLimited(false);
+      calculateCheckState(boardCopy);
       return boardCopy;
     });
   };
@@ -715,7 +763,7 @@ export const useGameLogic = ({
             const spawnType = type.replace('SPAWN_', '') as PieceType;
             newBoard[r][c].piece = { id: uuidv4(), type: spawnType, side: Side.WHITE, hasMoved: false, frozenTurns: 0 };
             
-            if (cell.tileEffect === TileEffect.MUD) {
+            if (cell.tileEffect === TileEffect.FROZEN) { // Renamed from MUD
                 newBoard[r][c].piece!.frozenTurns = 2;
             }
             if (cell.tileEffect === TileEffect.LAVA) {
@@ -804,7 +852,7 @@ export const useGameLogic = ({
     gameState: {
       board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, 
       deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent,
-      selectedEnemyPos, enemyValidMoves
+      selectedEnemyPos, enemyValidMoves, checkState
     },
     actions: {
       initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, 

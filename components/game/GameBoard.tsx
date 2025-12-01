@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings } from '../../types';
@@ -18,10 +19,11 @@ interface GameBoardProps {
   settings: GameSettings;
   selectedEnemyPos: Position | null;
   enemyValidMoves: Position[];
+  checkState?: { white: boolean, black: boolean }; // Added prop for check detection
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ 
-  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves 
+  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves, checkState
 }) => {
   const theme = BOARD_THEMES[settings.theme];
   const t = TRANSLATIONS[settings.language];
@@ -36,7 +38,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     switch (effect) {
         case TileEffect.HOLE: return "bg-black shadow-[inset_0_0_10px_rgba(0,0,0,1)]";
         case TileEffect.WALL: return "bg-stone-600 border-4 border-stone-800 shadow-xl";
-        case TileEffect.MUD: return "bg-[#5c4033] opacity-80 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]";
+        case TileEffect.FROZEN: return "bg-cyan-300 opacity-80 shadow-[inset_0_0_5px_rgba(255,255,255,0.8)]"; // Visuals for FROZEN
         case TileEffect.LAVA: return "bg-red-900 animate-pulse shadow-[inset_0_0_15px_rgba(255,100,0,0.5)]";
         default: return "";
     }
@@ -84,6 +86,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
              const hasTooltip = cell.piece || cell.tileEffect !== TileEffect.NONE;
              const tooltipPositionClass = r < 2 ? 'top-full mt-1' : 'bottom-full mb-1';
 
+             // Check warning logic
+             const isKing = cell.piece?.type === PieceType.KING;
+             const isUnderCheck = isKing && checkState && (
+               (cell.piece?.side === Side.WHITE && checkState.white) ||
+               (cell.piece?.side === Side.BLACK && checkState.black)
+             );
+
              return (
                <div 
                  key={`${r}-${c}`}
@@ -112,15 +121,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                  {isEnemyValid && !cell.piece && <div className="w-3 h-3 rounded-full bg-red-600/40" />}
                  {isEnemyValid && cell.piece && <div className="absolute inset-0 border-4 border-red-800 rounded-full opacity-70" />}
 
+                 {isUnderCheck && (
+                    <div className="absolute inset-0 bg-red-600/50 animate-pulse z-10 border-4 border-red-600">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black bg-red-600 text-white px-1 rounded">CHECK!</span>
+                    </div>
+                 )}
+
                  {cell.tileEffect === TileEffect.WALL && <span className="absolute text-2xl">🧱</span>}
                  {cell.tileEffect === TileEffect.HOLE && <span className="absolute text-2xl"></span>}
+                 {cell.tileEffect === TileEffect.FROZEN && <span className="absolute text-xl opacity-50">❄️</span>}
 
                  {hasTooltip && (
                    <div className={`absolute ${tooltipPositionClass} left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-[100] hidden group-hover:block pointer-events-none shadow-lg border border-slate-700`}>
                       {cell.piece ? (
                         <div className="flex flex-col items-center gap-1">
                           <span className="font-bold text-yellow-400">
-                              {cell.piece.side === Side.WHITE ? t.game.mainMenu.replace('Main Menu', 'Player') : 'Enemy'} {t.pieces[cell.piece.type]}
+                              {cell.piece.side === Side.WHITE ? '' : ''} {t.pieces[cell.piece.type]}
                           </span>
                           {(cell.piece.frozenTurns || 0) > 0 && <span className="text-blue-300">{t.tooltips.frozen.replace('{0}', String(cell.piece.frozenTurns))}</span>}
                           {cell.piece.tempMoveOverride && <span className="text-purple-300">{t.tooltips.movesLike.replace('{0}', t.pieces[cell.piece.tempMoveOverride])}</span>}

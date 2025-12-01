@@ -1,6 +1,7 @@
 
 
 
+
 import { CardType, PieceType, RelicType, TileEffect } from '../types';
 
 export const TRANSLATIONS = {
@@ -25,6 +26,7 @@ export const TRANSLATIONS = {
       volume: "Volume",
       enableSound: "Enable Audio",
       back: "Back to Menu",
+      reset: "Reset All Settings",
       themes: {
         CLASSIC: "Classic (Brown)",
         FOREST: "Forest (Green)",
@@ -100,7 +102,7 @@ export const TRANSLATIONS = {
       [TileEffect.NONE]: { name: "Grass", desc: "Standard terrain. No special effects." },
       [TileEffect.HOLE]: { name: "Abyss", desc: "A deep chasm. Pieces cannot stand here, but sliding pieces can pass over." },
       [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
-      [TileEffect.MUD]: { name: "Mud Puddle", desc: "Sticky terrain. Entering this tile freezes piece for next turn." },
+      [TileEffect.FROZEN]: { name: "Frozen Tile", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
       [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." }
     },
     deckSelection: {
@@ -154,6 +156,7 @@ export const TRANSLATIONS = {
       volume: "Âm Lượng",
       enableSound: "Bật Âm Thanh",
       back: "Quay Lại",
+      reset: "Đặt Lại Cài Đặt",
       themes: {
         CLASSIC: "Cổ Điển (Nâu)",
         FOREST: "Rừng Rậm (Xanh)",
@@ -229,7 +232,7 @@ export const TRANSLATIONS = {
       [TileEffect.NONE]: { name: "Cỏ", desc: "Địa hình thường." },
       [TileEffect.HOLE]: { name: "Vực Thẳm", desc: "Không thể đứng, quân bay có thể qua." },
       [TileEffect.WALL]: { name: "Tường Đá", desc: "Vật cản không thể đi qua." },
-      [TileEffect.MUD]: { name: "Bùn Lầy", desc: "Đi vào sẽ bị đóng băng lượt sau." },
+      [TileEffect.FROZEN]: { name: "Ô Băng", desc: "Trơn trượt. Đi vào sẽ bị đóng băng lượt sau." },
       [TileEffect.LAVA]: { name: "Dung Nham", desc: "Đi vào sẽ bị tiêu diệt ngay lập tức." }
     },
     deckSelection: {
