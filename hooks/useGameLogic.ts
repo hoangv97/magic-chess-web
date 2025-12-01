@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -8,7 +7,7 @@ import {
   generateBoard, getValidMoves 
 } from '../utils/gameLogic';
 import { 
-  getDeckTemplate, PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN, RELIC_LEVEL_REWARDS, getTileEffectInfo 
+  getDeckTemplate, PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN, RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, getTileEffectInfo 
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
 
@@ -38,6 +37,7 @@ export const useGameLogic = ({
   const [lastMoveTo, setLastMoveTo] = useState<Position | null>(null);
   const [isEnemyMoveLimited, setIsEnemyMoveLimited] = useState(false);
   const [enPassantTarget, setEnPassantTarget] = useState<Position | null>(null);
+  const [isGameEnded, setIsGameEnded] = useState(false);
 
   // Enemy Visual State
   const [selectedEnemyPos, setSelectedEnemyPos] = useState<Position | null>(null);
@@ -170,6 +170,7 @@ export const useGameLogic = ({
     setInfoModalContent(null);
     setSelectedEnemyPos(null);
     setEnemyValidMoves([]);
+    setIsGameEnded(false);
   };
 
   const drawCard = useCallback(() => {
@@ -363,12 +364,14 @@ export const useGameLogic = ({
     setEnPassantTarget(nextEnPassantTarget);
 
     if (checkWinCondition(newBoard)) {
-        onWin();
+        setIsGameEnded(true);
+        setTimeout(onWin, WAIT_END_GAME_TIMEOUT);
         return;
     }
 
     if (checkLossCondition(newBoard, deck, hand)) {
-        onLoss();
+        setIsGameEnded(true);
+        setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
         return;
     }
 
@@ -523,11 +526,17 @@ export const useGameLogic = ({
       setEnPassantTarget(nextEnPassantTarget);
       
       if (checkLossCondition(boardCopy, deck, hand)) {
-          onLoss();
+          setTimeout(() => {
+              setIsGameEnded(true);
+              setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
+          }, 0);
       }
 
       if (checkWinCondition(boardCopy)) {
-          onWin();
+          setTimeout(() => {
+              setIsGameEnded(true);
+              setTimeout(onWin, WAIT_END_GAME_TIMEOUT);
+          }, 0);
       }
 
       setTurn(Side.WHITE);
@@ -540,7 +549,7 @@ export const useGameLogic = ({
   };
 
   const handleSquareClick = (r: number, c: number) => {
-    if (turn !== Side.WHITE) return;
+    if (turn !== Side.WHITE || isGameEnded) return;
 
     const clickedPiece = board[r][c].piece;
     const isSelfPiece = clickedPiece?.side === Side.WHITE;
@@ -603,7 +612,7 @@ export const useGameLogic = ({
   };
 
   const handleCardClick = (card: Card) => {
-    if (turn !== Side.WHITE) return;
+    if (turn !== Side.WHITE || isGameEnded) return;
     if (selectedCardId === card.id) {
       setSelectedCardId(null);
       setCardTargetMode(null);
@@ -748,7 +757,8 @@ export const useGameLogic = ({
     setCardsPlayed(prev => prev + 1);
 
     if (checkLossCondition(board, deck, nextHand)) {
-        onLoss();
+        setIsGameEnded(true);
+        setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
     }
   };
 

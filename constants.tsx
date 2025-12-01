@@ -67,6 +67,7 @@ export const MAX_CARDS_PLAYED_PER_TURN = 3;
 export const REWARD_CARDS = 3;
 export const CARDS_IN_SHOP = 5;
 export const RELICS_IN_SHOP = 2;
+export const WAIT_END_GAME_TIMEOUT = 1000;
 
 export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.KING]: 100,

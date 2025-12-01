@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Side, GameSettings } from '../../types';
 import { MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { CardComponent } from '../ui/CardComponent';
@@ -31,15 +31,25 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
                   {t.emptyHand}
                 </div>
               )}
-              {hand.map((card) => (
-                <CardComponent 
-                  key={card.id} 
-                  card={card} 
-                  selected={selectedCardId === card.id} 
-                  onClick={() => onCardClick(card)}
-                  disabled={turn !== Side.WHITE}
-                />
-              ))}
+              <AnimatePresence mode='popLayout'>
+                {hand.map((card) => (
+                  <motion.div
+                    key={card.id}
+                    layout
+                    initial={{ opacity: 0, x: 100, scale: 0.5 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -50, scale: 0.5 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  >
+                    <CardComponent 
+                      card={card} 
+                      selected={selectedCardId === card.id} 
+                      onClick={() => onCardClick(card)}
+                      disabled={turn !== Side.WHITE}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
           </div>
 
           <div 
