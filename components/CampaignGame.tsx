@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase } from '../types';
@@ -159,6 +158,9 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
     setPhase('DECK_SELECTION');
   };
 
+  // Determine if GameScreen should be visible
+  const showGameScreen = phase === 'PLAYING' || phase === 'GAME_OVER_WIN' || phase === 'GAME_OVER_LOSS';
+
   return (
     <>
       {phase === 'DECK_SELECTION' && (
@@ -194,15 +196,8 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
            />
       )}
 
-      <GameOver 
-          phase={phase}
-          isCampaign={true}
-          onMainMenu={onExit}
-          onRestartCampaign={restartCampaign}
-          settings={settings}
-      />
-
-      {phase === 'PLAYING' && (
+      {/* Render Game Screen in background for Game Over to overlay */}
+      {showGameScreen && (
         <GameScreen 
           settings={settings}
           gameState={gameState}
@@ -221,6 +216,14 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
           onSellRelic={sellRelic}
         />
       )}
+
+      <GameOver 
+          phase={phase}
+          isCampaign={true}
+          onMainMenu={onExit}
+          onRestartCampaign={restartCampaign}
+          settings={settings}
+      />
     </>
   );
 };

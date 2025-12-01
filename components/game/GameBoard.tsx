@@ -138,10 +138,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                      <motion.div
                        layoutId={cell.piece.id}
                        key={cell.piece.id}
-                       initial={{ opacity: 0, scale: 0.5 }}
-                       animate={{ opacity: 1, scale: 1 }}
-                       exit={{ opacity: 0, scale: 0.2, rotate: 20 }}
-                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                       initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                       animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                       exit={{ 
+                         opacity: 0, 
+                         scale: 0.2, 
+                         rotate: 180, 
+                         filter: "hue-rotate(90deg) grayscale(100%) blur(2px)",
+                         transition: { duration: 0.4 } 
+                       }}
+                       transition={{ 
+                          type: "spring", 
+                          stiffness: 300, 
+                          damping: 25,
+                          layout: { duration: 0.25 }
+                       }}
                        className={`
                          w-4/5 h-4/5 z-20 relative
                          ${(cell.piece.frozenTurns || 0) > 0 ? 'brightness-50 grayscale opacity-80' : ''}
@@ -149,33 +160,49 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                      >
                        <motion.div
                          key={cell.piece.type}
-                         initial={{ scale: 0.8, opacity: 0.8 }}
-                         animate={{ scale: 1, opacity: 1 }}
-                         transition={{ duration: 0.3 }}
+                         initial={{ scale: 0.5, rotateY: 180, filter: "brightness(2)" }}
+                         animate={{ scale: 1, rotateY: 0, filter: "brightness(1)" }}
+                         transition={{ duration: 0.5, type: "spring" }}
                          className="w-full h-full"
                        >
                           {getPieceIcon(settings.pieceSet, cell.piece.side, cell.piece.type)}
                        </motion.div>
 
-                       {(cell.piece.frozenTurns || 0) > 0 && (
-                          <motion.div 
-                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                            className="absolute -top-1 -right-1 text-base"
-                          >
-                            ❄️
-                          </motion.div>
-                       )}
-                       {cell.piece.tempMoveOverride && (
-                          <motion.div 
-                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                            className="absolute -bottom-1 -right-1 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center border border-white"
-                          >
-                            ✨
-                          </motion.div>
-                       )}
+                       <AnimatePresence>
+                         {(cell.piece.frozenTurns || 0) > 0 && (
+                            <motion.div 
+                              initial={{ scale: 0, opacity: 0 }} 
+                              animate={{ scale: 1, opacity: 1, rotate: [0, 10, -10, 0] }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute -top-1 -right-1 text-base drop-shadow-md"
+                              transition={{ duration: 0.3 }}
+                            >
+                              ❄️
+                            </motion.div>
+                         )}
+                         {cell.piece.tempMoveOverride && (
+                            <motion.div 
+                              initial={{ scale: 0 }} 
+                              animate={{ scale: 1 }}
+                              exit={{ scale: 0 }}
+                              className="absolute -bottom-1 -right-1 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center border border-white shadow-sm"
+                            >
+                              ✨
+                            </motion.div>
+                         )}
+                       </AnimatePresence>
                      </motion.div>
                    )}
                  </AnimatePresence>
+                 
+                 {/* Selection and Move Indicator Animations */}
+                 {isValid && (
+                    <motion.div 
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="absolute w-2 h-2 bg-green-500/50 rounded-full pointer-events-none"
+                    />
+                 )}
                </div>
              );
            })

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { GameSettings, GamePhase } from '../types';
 import { useGameLogic } from '../hooks/useGameLogic';
@@ -27,17 +26,11 @@ export const CustomGame: React.FC<CustomGameProps> = ({ settings, onExit }) => {
     actions.initGame(false);
   }, []);
 
+  const showGameScreen = phase === 'PLAYING' || phase === 'GAME_OVER_WIN' || phase === 'GAME_OVER_LOSS';
+
   return (
     <>
-      <GameOver 
-          phase={phase}
-          isCampaign={false}
-          onMainMenu={onExit}
-          onRestartCampaign={() => {}}
-          settings={settings}
-      />
-
-      {phase === 'PLAYING' && (
+      {showGameScreen && (
         <GameScreen 
           settings={settings}
           gameState={gameState}
@@ -56,6 +49,14 @@ export const CustomGame: React.FC<CustomGameProps> = ({ settings, onExit }) => {
           onSellRelic={() => {}}
         />
       )}
+
+      <GameOver 
+          phase={phase}
+          isCampaign={false}
+          onMainMenu={onExit}
+          onRestartCampaign={() => {}}
+          settings={settings}
+      />
     </>
   );
 };
