@@ -52,10 +52,6 @@ export const STARTER_DECKS_CONFIG = [
     id: "Experiment",
     cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN]
   },
-  {
-    id: "Testing",
-    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_FREEZE]
-  },
 ];
 
 export const getStarterDecks = (lang: Language) => {

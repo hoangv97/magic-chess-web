@@ -113,7 +113,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                  {isEnemyValid && cell.piece && <div className="absolute inset-0 border-4 border-red-800 rounded-full opacity-70" />}
 
                  {cell.tileEffect === TileEffect.WALL && <span className="absolute text-2xl">🧱</span>}
-                 {cell.tileEffect === TileEffect.HOLE && <span className="absolute text-2xl">🕳️</span>}
+                 {cell.tileEffect === TileEffect.HOLE && <span className="absolute text-2xl"></span>}
 
                  {hasTooltip && (
                    <div className={`absolute ${tooltipPositionClass} left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-[100] hidden group-hover:block pointer-events-none shadow-lg border border-slate-700`}>
