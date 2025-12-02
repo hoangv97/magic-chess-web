@@ -18,7 +18,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ title, content, onClose })
         <div className="text-2xl font-black text-white mb-4 border-b border-slate-600 pb-2">
           {title}
         </div>
-        <div className="text-slate-300 mb-6 text-sm leading-relaxed">
+        <div className="text-slate-300 mb-6 text-sm leading-relaxed whitespace-pre-wrap">
           {content}
         </div>
         <Button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600">

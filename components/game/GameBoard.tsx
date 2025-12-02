@@ -1,8 +1,4 @@
 
-
-
-
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings, BossType } from '../../types';
@@ -39,7 +35,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
      return "w-12 h-12 sm:w-16 sm:h-16";
   };
 
-  // We are now handling effects with AnimatePresence, so base tile just needs background
   const getTileEffectStyle = (effect: TileEffect) => {
     switch (effect) {
         case TileEffect.HOLE: return "bg-black shadow-[inset_0_0_10px_rgba(0,0,0,1)]";
@@ -92,7 +87,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
              const hasTooltip = cell.piece || cell.tileEffect !== TileEffect.NONE;
              const tooltipPositionClass = r < 2 ? 'top-full mt-1' : 'bottom-full mb-1';
 
-             // Check warning logic
              const isKing = cell.piece?.type === PieceType.KING;
              const isUnderCheck = isKing && checkState && (
                (cell.piece?.side === Side.WHITE && checkState.white) ||
@@ -100,6 +94,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
              );
              
              const isBossPiece = activeBoss && activeBoss !== BossType.NONE && isKing && cell.piece?.side === Side.BLACK;
+
+             const variantStyle = cell.piece?.variant === 'LAVA' ? 'drop-shadow-[0_0_5px_rgba(255,50,0,0.8)] sepia(1) hue-rotate(-50deg) saturate(3)' :
+                                  cell.piece?.variant === 'ABYSS' ? 'drop-shadow-[0_0_5px_rgba(100,0,255,0.8)] invert(0.8) hue-rotate(240deg)' :
+                                  cell.piece?.variant === 'FROZEN' ? 'drop-shadow-[0_0_5px_rgba(0,255,255,0.8)] brightness(1.5) hue-rotate(180deg)' : '';
 
              return (
                <div 
@@ -119,7 +117,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                    hover:z-[60]
                  `}
                >
-                 {/* Tile Effect Overlay with Animation */}
                  <AnimatePresence>
                     {cell.tileEffect !== TileEffect.NONE && (
                       <motion.div
@@ -157,6 +154,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                           <span className="font-bold text-yellow-400">
                               {cell.piece.side === Side.WHITE ? '' : ''} {t.pieces[cell.piece.type]}
                           </span>
+                          {(cell.piece.variant) && <span className="text-orange-300 font-bold">Element: {cell.piece.variant}</span>}
                           {(cell.piece.frozenTurns || 0) > 0 && <span className="text-blue-300">{t.tooltips.frozen.replace('{0}', String(cell.piece.frozenTurns))}</span>}
                           {(cell.piece.immortalTurns || 0) > 0 && <span className="text-yellow-300">{t.tooltips.immortal.replace('{0}', String(cell.piece.immortalTurns! > 100 ? '∞' : cell.piece.immortalTurns))}</span>}
                           {cell.piece.tempMoveOverride && <span className="text-purple-300">{t.tooltips.movesLike.replace('{0}', t.pieces[cell.piece.tempMoveOverride])}</span>}
@@ -201,11 +199,29 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                          animate={{ scale: 1, rotateY: 0, filter: "brightness(1)" }}
                          transition={{ duration: 0.5, type: "spring" }}
                          className="w-full h-full relative"
+                         style={{ filter: variantStyle }}
                        >
                           {getPieceIcon(settings.pieceSet, cell.piece.side, cell.piece.type)}
                           {isBossPiece && (
                               <div className="absolute -top-3 -right-3 text-2xl drop-shadow-md z-30">
                                   👿
+                              </div>
+                          )}
+                          
+                          {/* Elemental Icons */}
+                          {cell.piece.variant === 'LAVA' && (
+                              <div className="absolute -bottom-1 -right-1 text-xs bg-red-900 text-white rounded-full w-4 h-4 flex items-center justify-center border border-orange-500 shadow-md z-30" title="Lava Element">
+                                🔥
+                              </div>
+                          )}
+                          {cell.piece.variant === 'ABYSS' && (
+                              <div className="absolute -bottom-1 -right-1 text-xs bg-black text-white rounded-full w-4 h-4 flex items-center justify-center border border-purple-500 shadow-md z-30" title="Abyss Element">
+                                🌀
+                              </div>
+                          )}
+                          {cell.piece.variant === 'FROZEN' && (
+                              <div className="absolute -bottom-1 -right-1 text-xs bg-cyan-700 text-white rounded-full w-4 h-4 flex items-center justify-center border border-cyan-300 shadow-md z-30" title="Frozen Element">
+                                ❄️
                               </div>
                           )}
                        </motion.div>
@@ -248,7 +264,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                    )}
                  </AnimatePresence>
                  
-                 {/* Selection and Move Indicator Animations */}
                  {isValid && (
                     <motion.div 
                       initial={{ scale: 0.8, opacity: 0 }}

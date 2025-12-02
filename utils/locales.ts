@@ -6,6 +6,8 @@
 
 
 
+
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 
 export const TRANSLATIONS = {
@@ -91,6 +93,15 @@ export const TRANSLATIONS = {
       [CardType.SPAWN_BISHOP]: { title: "Summon Bishop", desc: "Spawn a Bishop on your base rows." },
       [CardType.SPAWN_KNIGHT]: { title: "Summon Knight", desc: "Spawn a Knight on your base rows." },
       [CardType.SPAWN_PAWN]: { title: "Summon Pawn", desc: "Spawn a Pawn on your base rows." },
+      
+      [CardType.SPAWN_FOOL]: { title: "Summon Fool", desc: "Mimics the last move made by the enemy." },
+      [CardType.SPAWN_SHIP]: { title: "Summon Ship", desc: "Moves like Rook. Cannot kill. Breaks walls." },
+      [CardType.SPAWN_ELEPHANT]: { title: "Summon Elephant", desc: "Moves 1 fwd. Breaks walls. Swarms together." },
+      [CardType.SPAWN_DRAGON]: { title: "Summon Dragon", desc: "Moves like Knight. Ignores terrain hazards." },
+      [CardType.SPAWN_DRAGON_LAVA]: { title: "Lava Dragon", desc: "Leaves temporary Lava trail." },
+      [CardType.SPAWN_DRAGON_ABYSS]: { title: "Abyss Dragon", desc: "Leaves temporary Abyss trail." },
+      [CardType.SPAWN_DRAGON_FROZEN]: { title: "Frozen Dragon", desc: "Leaves temporary Frozen trail." },
+
       [CardType.EFFECT_SWITCH]: { title: "Swap Tactics", desc: "Switch positions of two of your pieces." },
       [CardType.EFFECT_FREEZE]: { title: "Glacial Glare", desc: "Freeze a random enemy piece for one turn." },
       [CardType.EFFECT_LIMIT]: { title: "Muddy Terrain", desc: "Limit enemy movement range to 1 tile next turn." },
@@ -152,7 +163,8 @@ export const TRANSLATIONS = {
         "Divine": { name: "Divine", desc: "Diagonal control with a Bishop." },
         "Skirmish": { name: "Skirmish", desc: "Agile movement with Knight and Bishop." },
         "Experiment": { name: "Experiment", desc: "Experimental deck for strategic testing." },
-        "Testing": { name: "Testing", desc: "Deck for testing mechanics." }
+        "Mystic": { name: "Mystic", desc: "Command magical creatures like Dragons and Fools." },
+        "Elemental": { name: "Elemental", desc: "Control the elements with special Dragons." }
       }
     },
     pieces: {
@@ -162,6 +174,10 @@ export const TRANSLATIONS = {
       [PieceType.BISHOP]: "Bishop",
       [PieceType.KNIGHT]: "Knight",
       [PieceType.PAWN]: "Pawn",
+      [PieceType.FOOL]: "Fool",
+      [PieceType.SHIP]: "Ship",
+      [PieceType.ELEPHANT]: "Elephant",
+      [PieceType.DRAGON]: "Dragon",
     },
     tooltips: {
       frozen: "❄️ Frozen ({0} turns left)",
@@ -258,6 +274,15 @@ export const TRANSLATIONS = {
       [CardType.SPAWN_BISHOP]: { title: "Triệu Hồi Tượng", desc: "Tạo một quân Tượng ở hàng cuối." },
       [CardType.SPAWN_KNIGHT]: { title: "Triệu Hồi Mã", desc: "Tạo một quân Mã ở hàng cuối." },
       [CardType.SPAWN_PAWN]: { title: "Triệu Hồi Tốt", desc: "Tạo một quân Tốt ở hàng cuối." },
+
+      [CardType.SPAWN_FOOL]: { title: "Triệu Hồi Gã Hề", desc: "Bắt chước nước đi cuối cùng của kẻ thù." },
+      [CardType.SPAWN_SHIP]: { title: "Triệu Hồi Tàu", desc: "Đi như Xe. Không thể giết. Phá tường." },
+      [CardType.SPAWN_ELEPHANT]: { title: "Triệu Hồi Voi", desc: "Đi 1 ô. Phá tường. Di chuyển theo đàn." },
+      [CardType.SPAWN_DRAGON]: { title: "Triệu Hồi Rồng", desc: "Đi như Mã. Bỏ qua địa hình hiểm trở." },
+      [CardType.SPAWN_DRAGON_LAVA]: { title: "Rồng Lửa", desc: "Để lại vệt dung nham tạm thời." },
+      [CardType.SPAWN_DRAGON_ABYSS]: { title: "Rồng Hư Vô", desc: "Để lại vệt hư vô tạm thời." },
+      [CardType.SPAWN_DRAGON_FROZEN]: { title: "Rồng Băng", desc: "Để lại vệt băng tạm thời." },
+
       [CardType.EFFECT_SWITCH]: { title: "Hoán Đổi", desc: "Đổi vị trí hai quân của bạn." },
       [CardType.EFFECT_FREEZE]: { title: "Ánh Nhìn Băng Giá", desc: "Đóng băng một quân địch ngẫu nhiên." },
       [CardType.EFFECT_LIMIT]: { title: "Địa Hình Bùn Lầy", desc: "Giới hạn di chuyển địch còn 1 ô." },
@@ -318,7 +343,9 @@ export const TRANSLATIONS = {
         "Fortress": { name: "Pháo Đài", desc: "Phòng thủ mạnh mẽ với quân Xe." },
         "Divine": { name: "Thần Thánh", desc: "Kiểm soát đường chéo với quân Tượng." },
         "Skirmish": { name: "Tiền Đạo", desc: "Linh hoạt với quân Mã và Tượng." },
-        "Experiment": { name: "Thử Nghiệm", desc: "Bộ bài thử nghiệm chiến thuật." }
+        "Experiment": { name: "Thử Nghiệm", desc: "Bộ bài thử nghiệm chiến thuật." },
+        "Mystic": { name: "Huyền Bí", desc: "Điều khiển sinh vật phép thuật." },
+        "Elemental": { name: "Nguyên Tố", desc: "Sử dụng rồng nguyên tố." }
       }
     },
     pieces: {
@@ -328,6 +355,10 @@ export const TRANSLATIONS = {
       [PieceType.BISHOP]: "Tượng",
       [PieceType.KNIGHT]: "Mã",
       [PieceType.PAWN]: "Tốt",
+      [PieceType.FOOL]: "Gã Hề",
+      [PieceType.SHIP]: "Tàu",
+      [PieceType.ELEPHANT]: "Voi",
+      [PieceType.DRAGON]: "Rồng",
     },
     tooltips: {
       frozen: "❄️ Đóng băng (còn {0} lượt)",

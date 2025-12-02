@@ -42,6 +42,7 @@ export interface Piece {
   tempMoveOverride?: PieceType; // For "Borrow" card
   frozenTurns?: number; // Replaced boolean with counter. 0 = not frozen.
   immortalTurns?: number; // If > 0, cannot be captured
+  variant?: 'LAVA' | 'ABYSS' | 'FROZEN'; // For Elemental Dragons
 }
 
 export enum TileEffect {
@@ -66,6 +67,15 @@ export enum CardType {
   SPAWN_BISHOP = 'SPAWN_BISHOP',
   SPAWN_KNIGHT = 'SPAWN_KNIGHT',
   SPAWN_PAWN = 'SPAWN_PAWN',
+  
+  SPAWN_FOOL = 'SPAWN_FOOL',
+  SPAWN_SHIP = 'SPAWN_SHIP',
+  SPAWN_ELEPHANT = 'SPAWN_ELEPHANT',
+  SPAWN_DRAGON = 'SPAWN_DRAGON',
+  SPAWN_DRAGON_LAVA = 'SPAWN_DRAGON_LAVA',
+  SPAWN_DRAGON_ABYSS = 'SPAWN_DRAGON_ABYSS',
+  SPAWN_DRAGON_FROZEN = 'SPAWN_DRAGON_FROZEN',
+
   EFFECT_SWITCH = 'EFFECT_SWITCH', // Switch 2 player pieces
   EFFECT_FREEZE = 'EFFECT_FREEZE', // Freeze random enemy
   EFFECT_LIMIT = 'EFFECT_LIMIT', // Limit enemy moves (implementation: reduce range or random skip?) -> Let's do: Enemy pieces move range = 1

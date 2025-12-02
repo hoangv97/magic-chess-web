@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+
+import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   Cell, Piece, PieceType, Side, Position, TileEffect, Card, CardType, GameSettings, Relic, RelicType, BossType 
@@ -42,6 +43,11 @@ export const useGameLogic = ({
   const [checkState, setCheckState] = useState<{white: boolean, black: boolean}>({ white: false, black: false });
   const [activeBoss, setActiveBoss] = useState<BossType>(BossType.NONE);
   const [bossTiles, setBossTiles] = useState<Position[]>([]);
+  
+  // New States for Advanced Mechanics
+  const [lastEnemyMoveType, setLastEnemyMoveType] = useState<PieceType | null>(null);
+  // Changed to useRef to avoid stale closure issues in setTimeout callbacks
+  const tempTileEffects = useRef<{ pos: Position, originalEffect: TileEffect, variant: TileEffect, turnsLeft: number }[]>([]);
 
   // Enemy Visual State
   const [selectedEnemyPos, setSelectedEnemyPos] = useState<Position | null>(null);
@@ -74,7 +80,6 @@ export const useGameLogic = ({
       size = Math.min(6 + Math.floor((level - 1) / 2), 12);
       eCount = Math.min(2 + level, 12); 
       pCount = 0; 
-      // bossType is passed in from CampaignGame based on MapNode
     } else {
         currentBoss = settings.customBossType;
     }
@@ -205,6 +210,8 @@ export const useGameLogic = ({
     setCheckState({ white: false, black: false });
     setActiveBoss(currentBoss);
     setBossTiles([]);
+    setLastEnemyMoveType(null);
+    tempTileEffects.current = [];
     
     // Resume music if enabled
     soundManager.init();
@@ -214,12 +221,10 @@ export const useGameLogic = ({
   };
 
   const calculateCheckState = (boardState: Cell[][]) => {
-     // Helper to check if a side's king is in danger
      const isSideInCheck = (side: Side): boolean => {
          let kingPos: Position | null = null;
          const size = boardState.length;
          
-         // Find King
          for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
                const p = boardState[r][c].piece;
@@ -233,13 +238,12 @@ export const useGameLogic = ({
 
          if (!kingPos) return false;
 
-         // Check all enemy moves
          const enemySide = side === Side.WHITE ? Side.BLACK : Side.WHITE;
          for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
                const p = boardState[r][c].piece;
                if (p && p.side === enemySide) {
-                  const moves = getValidMoves(boardState, p, { row: r, col: c }, null);
+                  const moves = getValidMoves(boardState, p, { row: r, col: c }, null, null);
                   if (moves.some(m => m.row === kingPos!.row && m.col === kingPos!.col)) {
                      return true;
                   }
@@ -297,73 +301,6 @@ export const useGameLogic = ({
       return false;
   };
 
-  const showCellInfo = (r: number, c: number) => {
-    const cell = board[r][c];
-    const piece = cell.piece;
-    const effect = cell.tileEffect;
-    const tileInfo = getTileEffectInfo(settings.language, effect);
-
-    // Boss Info logic
-    if (piece && piece.type === PieceType.KING && piece.side === Side.BLACK && activeBoss !== BossType.NONE) {
-        const bossInfo = getBossInfo(settings.language, activeBoss);
-        if (bossInfo) {
-            setInfoModalContent({
-                title: `BOSS: ${bossInfo.name}`,
-                content: React.createElement('div', { className: "space-y-4" }, [
-                    React.createElement('p', { key: 'desc', className: "italic text-yellow-400" }, bossInfo.desc),
-                    React.createElement('p', { key: 'ability', className: "whitespace-pre-wrap" }, bossInfo.ability)
-                ])
-            });
-            return;
-        }
-    }
-
-    if (piece) {
-       const contentChildren = [];
-       
-       // Status
-       contentChildren.push(React.createElement('p', { key: 'status' }, [
-         React.createElement('strong', { key: 's-label' }, t.tooltips.status + ' '),
-         (piece.frozenTurns || 0) > 0 
-           ? React.createElement('span', { key: 's-val', className: "text-blue-400 mr-2" }, t.tooltips.frozen.replace('{0}', String(piece.frozenTurns)))
-           : React.createElement('span', { key: 's-val', className: "text-green-400 mr-2" }, t.tooltips.active),
-         (piece.immortalTurns || 0) > 0 
-           ? React.createElement('span', { key: 's-immo', className: "text-yellow-400" }, t.tooltips.immortal.replace('{0}', String(piece.immortalTurns! > 100 ? '∞' : piece.immortalTurns)))
-           : null
-       ]));
-
-       // Effect override
-       if (piece.tempMoveOverride) {
-         contentChildren.push(React.createElement('p', { key: 'effect' }, [
-           React.createElement('strong', { key: 'e-label' }, t.tooltips.effect + ' '),
-           React.createElement('span', { key: 'e-val', className: "text-purple-400" }, t.tooltips.movesLike.replace('{0}', t.pieces[piece.tempMoveOverride]))
-         ]));
-       }
-
-       // Terrain info inside piece info
-       if (effect !== TileEffect.NONE) {
-          contentChildren.push(React.createElement('div', { key: 'terrain', className: "pt-4 border-t border-slate-600" }, [
-             React.createElement('p', { key: 't-head', className: "text-xs text-slate-400 uppercase tracking-widest mb-1" }, t.tooltips.currentTerrain),
-             React.createElement('p', { key: 't-name', className: "font-bold text-yellow-500" }, tileInfo.name),
-             React.createElement('p', { key: 't-desc' }, tileInfo.desc)
-          ]));
-       }
-
-       setInfoModalContent({
-           title: `${piece.side === Side.WHITE ? t.game.mainMenu.replace('Main Menu', 'Player') : 'Enemy'} ${t.pieces[piece.type]}`,
-           content: React.createElement('div', { className: "space-y-4" }, contentChildren)
-       });
-       return;
-    }
-
-    if (effect !== TileEffect.NONE) {
-        setInfoModalContent({
-            title: tileInfo.name,
-            content: React.createElement('p', null, tileInfo.desc)
-        });
-    }
-  };
-
   const spawnRelicPiece = (boardState: Cell[][], side: Side, type: PieceType) => {
       const size = boardState.length;
       const baseRows = side === Side.WHITE ? [size - 1, size - 2] : [0, 1];
@@ -392,13 +329,118 @@ export const useGameLogic = ({
   };
 
   const executeMove = (from: Position, to: Position) => {
-    const newBoard = [...board.map(row => row.map(cell => ({...cell})))];
+    // We work on a copy, but for Swarm logic we might need to manipulate other pieces.
+    // Deep copy first.
+    const newBoard = board.map(row => row.map(cell => ({
+        ...cell, 
+        piece: cell.piece ? { ...cell.piece } : null
+    })));
+    
     const piece = newBoard[from.row][from.col].piece!;
     let target = newBoard[to.row][to.col].piece;
     let nextEnPassantTarget: Position | null = null;
     let enemyKilled = false;
     let selfKilled = false;
 
+    // --- Elephant Swarm Logic ---
+    if (piece.type === PieceType.ELEPHANT) {
+        const deltaRow = to.row - from.row;
+        const deltaCol = to.col - from.col;
+        const size = newBoard.length;
+        
+        // Find contiguous row of elephants
+        const swarm: Position[] = [];
+        const checked = new Set<string>();
+        const queue = [from];
+        checked.add(`${from.row},${from.col}`);
+
+        while (queue.length > 0) {
+            const curr = queue.pop()!;
+            swarm.push(curr);
+            
+            // Check Left
+            if (curr.col > 0) {
+                const leftPos = { row: curr.row, col: curr.col - 1 };
+                const leftKey = `${leftPos.row},${leftPos.col}`;
+                if (!checked.has(leftKey)) {
+                    const leftP = newBoard[leftPos.row][leftPos.col].piece;
+                    if (leftP && leftP.type === PieceType.ELEPHANT && leftP.side === piece.side) {
+                        checked.add(leftKey);
+                        queue.push(leftPos);
+                    }
+                }
+            }
+            // Check Right
+            if (curr.col < size - 1) {
+                const rightPos = { row: curr.row, col: curr.col + 1 };
+                const rightKey = `${rightPos.row},${rightPos.col}`;
+                if (!checked.has(rightKey)) {
+                    const rightP = newBoard[rightPos.row][rightPos.col].piece;
+                    if (rightP && rightP.type === PieceType.ELEPHANT && rightP.side === piece.side) {
+                        checked.add(rightKey);
+                        queue.push(rightPos);
+                    }
+                }
+            }
+        }
+
+        // Move all swarm members except the primary one
+        if (swarm.length >= 3) {
+            swarm.forEach(pos => {
+                if (pos.row === from.row && pos.col === from.col) return; // Skip self, handled below
+                
+                const targetR = pos.row + deltaRow;
+                const targetC = pos.col + deltaCol;
+                
+                if (targetR >= 0 && targetR < size && targetC >= 0 && targetC < size) {
+                    const targetCell = newBoard[targetR][targetC];
+                    let canSwarmMove = false;
+                    if (targetCell.tileEffect === TileEffect.WALL) canSwarmMove = true;
+                    else if (!targetCell.piece) canSwarmMove = true;
+                    else if (targetCell.piece && targetCell.piece.side !== piece.side) canSwarmMove = true;
+
+                    if (canSwarmMove) {
+                        if (targetCell.tileEffect === TileEffect.WALL) {
+                            targetCell.tileEffect = TileEffect.NONE;
+                        }
+                        if (targetCell.piece) {
+                            setGold(g => g + 10);
+                        }
+                        
+                        targetCell.piece = { ...newBoard[pos.row][pos.col].piece!, hasMoved: true };
+                        newBoard[pos.row][pos.col].piece = null;
+                    }
+                }
+            });
+        }
+    }
+
+    // --- Elemental Dragon Trail Logic ---
+    if (piece.type === PieceType.DRAGON && piece.variant) {
+        let effect: TileEffect = TileEffect.NONE;
+        if (piece.variant === 'LAVA') effect = TileEffect.LAVA;
+        if (piece.variant === 'ABYSS') effect = TileEffect.HOLE;
+        if (piece.variant === 'FROZEN') effect = TileEffect.FROZEN;
+
+        if (effect !== TileEffect.NONE) {
+            // Save current state to revert later
+            const originalEffect = newBoard[from.row][from.col].tileEffect;
+            // Only apply trail if the tile doesn't already have a permanent obstacle (like wall) or another effect
+            // Actually, elemental dragons override terrain temporarily.
+            newBoard[from.row][from.col].tileEffect = effect;
+            tempTileEffects.current.push({ pos: from, originalEffect, variant: effect, turnsLeft: 1 });
+        }
+    }
+
+    // --- Wall Breaking Logic (Ship / Elephant) ---
+    if (newBoard[to.row][to.col].tileEffect === TileEffect.WALL) {
+        if (piece.type === PieceType.SHIP || piece.type === PieceType.ELEPHANT) {
+            newBoard[to.row][to.col].tileEffect = TileEffect.NONE;
+            soundManager.playSfx('capture'); // Sound of breaking
+        }
+    }
+
+    // Standard Move Logic
     if (piece.type === PieceType.PAWN && !target && from.col !== to.col && enPassantTarget) {
         if (to.row === enPassantTarget.row && to.col === enPassantTarget.col) {
             const direction = piece.side === Side.WHITE ? -1 : 1;
@@ -425,17 +467,18 @@ export const useGameLogic = ({
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined };
     newBoard[from.row][from.col].piece = null;
 
-    // Apply Passive Boss Effects
+    // Boss Passive: Frost Giant
     if (activeBoss === BossType.FROST_GIANT && piece.side === Side.WHITE) {
-        // Frost Giant Passive: Moving freezes you. 
         if (newBoard[to.row][to.col].piece) {
             newBoard[to.row][to.col].piece!.frozenTurns = 2;
         }
     }
 
+    // Terrain Effects
+    const ignoresTerrain = piece.type === PieceType.DRAGON;
     const destEffect = newBoard[to.row][to.col].tileEffect;
-    if (destEffect === TileEffect.LAVA) {
-        // Check if piece is immortal
+    
+    if (destEffect === TileEffect.LAVA && !ignoresTerrain) {
         if (!(newBoard[to.row][to.col].piece!.immortalTurns && newBoard[to.row][to.col].piece!.immortalTurns! > 0)) {
             newBoard[to.row][to.col].piece = null; 
             selfKilled = true; 
@@ -450,7 +493,7 @@ export const useGameLogic = ({
 
     if (newBoard[to.row][to.col].piece && piece.type === PieceType.PAWN && to.row === 0) {
         newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
-        soundManager.playSfx('spawn'); // Promotion sound
+        soundManager.playSfx('spawn');
     }
 
     if (enemyKilled) {
@@ -470,8 +513,7 @@ export const useGameLogic = ({
         }
     }
 
-    // Decrement Player Effects at start of turn (handled via executeMove end of logic as per existing style, but actually should happen on turn switch)
-    // The previous logic decremented frozenTurns here. 
+    // Decrement Player Effects
     newBoard.forEach(row => row.forEach(cell => {
         if (cell.piece && cell.piece.side === Side.WHITE) {
             if ((cell.piece.frozenTurns || 0) > 0) cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
@@ -485,7 +527,6 @@ export const useGameLogic = ({
     setLastMoveTo(to);
     setSelectedPiecePos(null);
     setValidMoves([]);
-    // Clear enemy selection on player move
     setSelectedEnemyPos(null);
     setEnemyValidMoves([]);
     setEnPassantTarget(nextEnPassantTarget);
@@ -510,6 +551,7 @@ export const useGameLogic = ({
   const endPlayerTurn = (currentBoard: Cell[][], currentEnPassantTarget: Position | null) => {
     setTurn(Side.BLACK);
     setTurnCount(c => c + 1);
+    
     setTimeout(() => executeEnemyTurn(currentBoard, currentEnPassantTarget), 800);
   };
 
@@ -526,11 +568,9 @@ export const useGameLogic = ({
           }
       }
 
-      // Cleanup old tiles (except walls for Stone Golem, they persist or build up)
       if (activeBoss !== BossType.STONE_GOLEM) {
           bossTiles.forEach(pos => {
               if (boardState[pos.row] && boardState[pos.row][pos.col]) {
-                  // Only remove if it's still the effect we set (basic check)
                   if (boardState[pos.row][pos.col].tileEffect !== TileEffect.NONE && 
                       boardState[pos.row][pos.col].tileEffect !== TileEffect.WALL) {
                          boardState[pos.row][pos.col].tileEffect = TileEffect.NONE;
@@ -541,9 +581,7 @@ export const useGameLogic = ({
 
       const newTiles: Position[] = [];
 
-      // Undead Lord Logic: Rotate Immortality
       if (activeBoss === BossType.UNDEAD_LORD && turnCount % 5 === 0) {
-          // Clear current immortal
           for(let r=0; r<size; r++){
               for(let c=0; c<size; c++){
                   const p = boardState[r][c].piece;
@@ -552,7 +590,6 @@ export const useGameLogic = ({
                   }
               }
           }
-          // Set new immortal
           const candidates: Position[] = [];
           for(let r=0; r<size; r++){
               for(let c=0; c<size; c++){
@@ -565,21 +602,18 @@ export const useGameLogic = ({
           if(candidates.length > 0) {
               const chosen = candidates[Math.floor(Math.random() * candidates.length)];
               boardState[chosen.row][chosen.col].piece!.immortalTurns = 999;
-              // Visual/Audio cue
               soundManager.playSfx('spawn');
           }
       }
 
       if (activeBoss === BossType.STONE_GOLEM) {
-          // Walls every 5 turns
           if (turnCount % 5 === 0) {
-              const wallCount = Math.floor(Math.random() * 3) + 2; // 2-4 walls
+              const wallCount = Math.floor(Math.random() * 3) + 2; 
               for(let i=0; i<wallCount; i++) {
                   if(emptyTiles.length === 0) break;
                   const idx = Math.floor(Math.random() * emptyTiles.length);
                   const pos = emptyTiles.splice(idx, 1)[0];
                   boardState[pos.row][pos.col].tileEffect = TileEffect.WALL;
-                  // Walls persist
               }
               soundManager.playSfx('spawn'); 
           }
@@ -592,7 +626,7 @@ export const useGameLogic = ({
       if (activeBoss === BossType.LAVA_TITAN) effectToApply = TileEffect.LAVA;
 
       if (effectToApply !== TileEffect.NONE) {
-          const count = Math.floor(Math.random() * 3) + 2; // 2-4 tiles
+          const count = Math.floor(Math.random() * 3) + 2; 
           for(let i=0; i<count; i++) {
               if(emptyTiles.length === 0) break;
               const idx = Math.floor(Math.random() * emptyTiles.length);
@@ -606,9 +640,8 @@ export const useGameLogic = ({
   };
 
   const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null) => {
-    // Apply Boss Active Abilities at start of enemy turn
     const { board: boardAfterBoss, newTiles } = applyBossAbilities([...currentBoard]);
-    setBossTiles(newTiles); // Update tracked tiles for next cleanup
+    setBossTiles(newTiles);
 
     const boardCopy = boardAfterBoss.map(row => row.map(cell => ({
         ...cell,
@@ -626,7 +659,7 @@ export const useGameLogic = ({
         if (p?.side === Side.BLACK) {
             if ((p.frozenTurns || 0) > 0) {
             } else {
-            let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget);
+            let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget, null); 
             if (isEnemyMoveLimited) {
                 moves = moves.filter(m => Math.abs(m.row - r) <= 1 && Math.abs(m.col - c) <= 1);
             }
@@ -636,13 +669,22 @@ export const useGameLogic = ({
     }
     }
 
-    if (enemies.length === 0) {
+    // Pass turn back to player function
+    const passTurn = () => {
         boardCopy.forEach(row => row.forEach(cell => {
             if (cell.piece && cell.piece.side === Side.BLACK) {
                 if ((cell.piece.frozenTurns || 0) > 0) cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
                 if ((cell.piece.immortalTurns || 0) > 0 && cell.piece.immortalTurns! < 100) cell.piece.immortalTurns = (cell.piece.immortalTurns || 0) - 1;
             }
         }));
+
+        // Clean up temp effects from Player's Dragons using the Ref
+        tempTileEffects.current.forEach(effect => {
+            if (boardCopy[effect.pos.row][effect.pos.col].tileEffect === effect.variant) {
+                boardCopy[effect.pos.row][effect.pos.col].tileEffect = effect.originalEffect;
+            }
+        });
+        tempTileEffects.current = [];
 
         setTurn(Side.WHITE);
         setTurnCount(c => c + 1);
@@ -652,6 +694,11 @@ export const useGameLogic = ({
         setEnPassantTarget(null);
         calculateCheckState(boardCopy);
         setBoard(boardCopy); 
+    };
+
+    if (enemies.length === 0) {
+        setLastEnemyMoveType(null);
+        passTurn();
         return;
     }
 
@@ -673,7 +720,6 @@ export const useGameLogic = ({
             const isEP = e.piece.type === PieceType.PAWN && playerEnPassantTarget && m.row === playerEnPassantTarget.row && m.col === playerEnPassantTarget.col;
             
             if (target?.side === Side.WHITE || isEP) {
-               // Cannot capture immortal pieces check already done in getValidMoves
                let val = 1;
                if (target) {
                    if (target.type === PieceType.QUEEN) val = 9;
@@ -703,6 +749,9 @@ export const useGameLogic = ({
       if (bestMove) {
         const movingPiece = boardCopy[bestMove.from.row][bestMove.from.col].piece!;
         const targetPiece = boardCopy[bestMove.to.row][bestMove.to.col].piece;
+        
+        setLastEnemyMoveType(movingPiece.type);
+
         let playerPieceKilled = false;
         
         if (movingPiece.type === PieceType.PAWN && playerEnPassantTarget && bestMove.to.row === playerEnPassantTarget.row && bestMove.to.col === playerEnPassantTarget.col) {
@@ -720,12 +769,15 @@ export const useGameLogic = ({
             nextEnPassantTarget = { row: (bestMove.from.row + bestMove.to.row) / 2, col: bestMove.from.col };
         }
 
+        if (boardCopy[bestMove.to.row][bestMove.to.col].tileEffect === TileEffect.WALL && (movingPiece.type === PieceType.SHIP || movingPiece.type === PieceType.ELEPHANT)) {
+            boardCopy[bestMove.to.row][bestMove.to.col].tileEffect = TileEffect.NONE;
+        }
+
         boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
         boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
 
         const effect = boardCopy[bestMove.to.row][bestMove.to.col].tileEffect;
-        if (effect === TileEffect.LAVA) {
-            // Check immortality for enemy too (though card is for player, boss logic might apply later)
+        if (effect === TileEffect.LAVA && movingPiece.type !== PieceType.DRAGON) {
             if (!(boardCopy[bestMove.to.row][bestMove.to.col].piece!.immortalTurns && boardCopy[bestMove.to.row][bestMove.to.col].piece!.immortalTurns! > 0)) {
                 boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
                 soundManager.playSfx('capture');
@@ -754,14 +806,9 @@ export const useGameLogic = ({
 
         setLastMoveFrom(bestMove.from);
         setLastMoveTo(bestMove.to);
+      } else {
+          setLastEnemyMoveType(null);
       }
-
-      boardCopy.forEach(row => row.forEach(cell => {
-          if (cell.piece && cell.piece.side === Side.BLACK) {
-              if ((cell.piece.frozenTurns || 0) > 0) cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
-              if ((cell.piece.immortalTurns || 0) > 0 && cell.piece.immortalTurns! < 100) cell.piece.immortalTurns = (cell.piece.immortalTurns || 0) - 1;
-          }
-      }));
 
       setEnPassantTarget(nextEnPassantTarget);
       
@@ -781,13 +828,7 @@ export const useGameLogic = ({
           }, 0);
       }
 
-      setTurn(Side.WHITE);
-      setTurnCount(c => c + 1);
-      setCardsPlayed(0); 
-      drawCard();
-      setIsEnemyMoveLimited(false);
-      calculateCheckState(boardCopy);
-      setBoard(boardCopy);
+      passTurn();
   };
 
   const handleSquareClick = (r: number, c: number) => {
@@ -802,7 +843,6 @@ export const useGameLogic = ({
       return;
     }
 
-    // Check for valid move FIRST to allow capturing enemies
     const isMoveValid = validMoves.some(m => m.row === r && m.col === c);
     if (selectedPiecePos && isMoveValid) {
       executeMove(selectedPiecePos, { row: r, col: c });
@@ -810,7 +850,6 @@ export const useGameLogic = ({
     }
 
     if (isSelfPiece) {
-      // Clear enemy selection
       setSelectedEnemyPos(null);
       setEnemyValidMoves([]);
 
@@ -819,14 +858,13 @@ export const useGameLogic = ({
         setValidMoves([]);
       } else {
         setSelectedPiecePos({ row: r, col: c });
-        const moves = getValidMoves(board, clickedPiece!, { row: r, col: c }, enPassantTarget);
+        const moves = getValidMoves(board, clickedPiece!, { row: r, col: c }, enPassantTarget, lastEnemyMoveType);
         setValidMoves(moves);
       }
       return;
     }
 
     if (isEnemyPiece) {
-       // Clear player selection
        setSelectedPiecePos(null);
        setValidMoves([]);
 
@@ -835,14 +873,12 @@ export const useGameLogic = ({
            setEnemyValidMoves([]);
        } else {
            setSelectedEnemyPos({ row: r, col: c });
-           // Visualize moves for enemy. Pass null for enPassantTarget as they cannot capture their own shadow
-           const moves = getValidMoves(board, clickedPiece!, { row: r, col: c }, null);
+           const moves = getValidMoves(board, clickedPiece!, { row: r, col: c }, null, null);
            setEnemyValidMoves(moves);
        }
        return;
     }
 
-    // Deselect everything on clicking empty non-valid space
     setSelectedPiecePos(null);
     setValidMoves([]);
     setSelectedEnemyPos(null);
@@ -850,7 +886,26 @@ export const useGameLogic = ({
   };
 
   const handleSquareDoubleClick = (r: number, c: number) => {
-      showCellInfo(r, c);
+      const cell = board[r][c];
+      const piece = cell.piece;
+      const effect = cell.tileEffect;
+      if (piece) {
+          let content = `Type: ${t.pieces[piece.type]}`;
+          if (piece.variant) {
+              content += `\nElement: ${piece.variant}`;
+          }
+          if ((piece.frozenTurns || 0) > 0) content += `\nFrozen: ${piece.frozenTurns} turns`;
+          if ((piece.immortalTurns || 0) > 0) content += `\nImmortal: ${piece.immortalTurns} turns`;
+          
+          if (piece.type === PieceType.KING && piece.side === Side.BLACK && activeBoss !== BossType.NONE) {
+              const bossData = t.bosses[activeBoss];
+              content += `\n\n[BOSS DETECTED]\nName: ${bossData.name}\n${bossData.desc}\nAbility: ${bossData.ability}`;
+          }
+
+          setInfoModalContent({ title: t.pieces[piece.type], content });
+      } else if (effect !== TileEffect.NONE) {
+          setInfoModalContent({ title: t.tiles[effect].name, content: t.tiles[effect].desc });
+      }
   };
 
   const handleCardClick = (card: Card) => {
@@ -904,7 +959,7 @@ export const useGameLogic = ({
     } else if (card.type === CardType.EFFECT_LIMIT) {
       setIsEnemyMoveLimited(true);
       played = true;
-      soundManager.playSfx('frozen'); // Reuse frozen sound for limit
+      soundManager.playSfx('frozen'); 
     }
     if (played) {
       setBoard(newBoard);
@@ -925,13 +980,40 @@ export const useGameLogic = ({
                 alert("Cannot spawn on an obstacle.");
                 return;
             }
-            const spawnType = type.replace('SPAWN_', '') as PieceType;
-            newBoard[r][c].piece = { id: uuidv4(), type: spawnType, side: Side.WHITE, hasMoved: false, frozenTurns: 0, immortalTurns: 0 };
+            
+            let spawnType = PieceType.PAWN;
+            let variant: 'LAVA' | 'ABYSS' | 'FROZEN' | undefined = undefined;
+
+            if (type === CardType.SPAWN_QUEEN) spawnType = PieceType.QUEEN;
+            else if (type === CardType.SPAWN_ROOK) spawnType = PieceType.ROOK;
+            else if (type === CardType.SPAWN_BISHOP) spawnType = PieceType.BISHOP;
+            else if (type === CardType.SPAWN_KNIGHT) spawnType = PieceType.KNIGHT;
+            else if (type === CardType.SPAWN_PAWN) spawnType = PieceType.PAWN;
+            else if (type === CardType.SPAWN_FOOL) spawnType = PieceType.FOOL;
+            else if (type === CardType.SPAWN_SHIP) spawnType = PieceType.SHIP;
+            else if (type === CardType.SPAWN_ELEPHANT) spawnType = PieceType.ELEPHANT;
+            else if (type.includes('DRAGON')) {
+                spawnType = PieceType.DRAGON;
+                if (type === CardType.SPAWN_DRAGON_LAVA) variant = 'LAVA';
+                if (type === CardType.SPAWN_DRAGON_ABYSS) variant = 'ABYSS';
+                if (type === CardType.SPAWN_DRAGON_FROZEN) variant = 'FROZEN';
+            }
+
+            newBoard[r][c].piece = { 
+                id: uuidv4(), 
+                type: spawnType, 
+                side: Side.WHITE, 
+                hasMoved: false, 
+                frozenTurns: 0, 
+                immortalTurns: 0,
+                variant
+            };
             
             if (cell.tileEffect === TileEffect.FROZEN) { 
                 newBoard[r][c].piece!.frozenTurns = 2;
             }
-            if (cell.tileEffect === TileEffect.LAVA) {
+            
+            if (cell.tileEffect === TileEffect.LAVA && spawnType !== PieceType.DRAGON) {
                 newBoard[r][c].piece = null;
             }
 
@@ -983,9 +1065,9 @@ export const useGameLogic = ({
 
     if (type === CardType.EFFECT_IMMORTAL) {
         if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
-            newBoard[r][c].piece = { ...piece, immortalTurns: 2 }; // Set to 2: Decrements after player move -> 1. Lasts through enemy turn.
+            newBoard[r][c].piece = { ...piece, immortalTurns: 2 }; 
             setBoard(newBoard);
-            soundManager.playSfx('spawn'); // reusing spawn sound as 'buff' sound
+            soundManager.playSfx('spawn'); 
             consumeCard(selectedCardId);
         }
         return;
@@ -1027,7 +1109,7 @@ export const useGameLogic = ({
     gameState: {
       board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, 
       deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent,
-      selectedEnemyPos, enemyValidMoves, checkState, activeBoss
+      selectedEnemyPos, enemyValidMoves, checkState, activeBoss, lastEnemyMoveType
     },
     actions: {
       initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, 

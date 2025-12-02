@@ -2,6 +2,8 @@
 
 
 
+
+
 import React from 'react';
 import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language, BossType } from './types';
 import { TRANSLATIONS } from './utils/locales';
@@ -22,6 +24,15 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.SPAWN_BISHOP, cost: 50 },
   { type: CardType.SPAWN_PAWN, cost: 20 },
   { type: CardType.SPAWN_PAWN, cost: 20 },
+  
+  { type: CardType.SPAWN_FOOL, cost: 35 },
+  { type: CardType.SPAWN_SHIP, cost: 45 },
+  { type: CardType.SPAWN_ELEPHANT, cost: 30 },
+  { type: CardType.SPAWN_DRAGON, cost: 75 },
+  { type: CardType.SPAWN_DRAGON_LAVA, cost: 90 },
+  { type: CardType.SPAWN_DRAGON_ABYSS, cost: 90 },
+  { type: CardType.SPAWN_DRAGON_FROZEN, cost: 90 },
+
   { type: CardType.EFFECT_SWITCH, cost: 30 },
   { type: CardType.EFFECT_FREEZE, cost: 40 },
   { type: CardType.EFFECT_LIMIT, cost: 45 },
@@ -57,6 +68,14 @@ export const STARTER_DECKS_CONFIG = [
     id: "Experiment",
     cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_IMMORTAL]
   },
+  {
+    id: "Mystic",
+    cards: [CardType.SPAWN_DRAGON, CardType.SPAWN_ELEPHANT, CardType.SPAWN_ELEPHANT, CardType.SPAWN_ELEPHANT, CardType.SPAWN_FOOL, CardType.SPAWN_SHIP, CardType.SPAWN_PAWN]
+  },
+  {
+    id: "Elemental",
+    cards: [CardType.SPAWN_DRAGON, CardType.SPAWN_DRAGON_LAVA, CardType.SPAWN_DRAGON_ABYSS, CardType.SPAWN_DRAGON_FROZEN, CardType.SPAWN_PAWN]
+  }
 ];
 
 export const getStarterDecks = (lang: Language) => {
@@ -81,7 +100,7 @@ export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.KNIGHT]: 20,
   [PieceType.ROOK]: 15,
   [PieceType.PAWN]: 10,
-  [PieceType.ELEPHANT]: 15,
+  [PieceType.ELEPHANT]: 20,
   [PieceType.GIRAFFE]: 25,
   [PieceType.UNICORN]: 30,
   [PieceType.ZEBRA]: 25,
@@ -90,12 +109,12 @@ export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.COMMONER]: 15,
   [PieceType.CHAMPION]: 40,
   [PieceType.WIZARD]: 35,
-  [PieceType.FOOL]: 10,
+  [PieceType.FOOL]: 15,
   [PieceType.ARCHBISHOP]: 50,
   [PieceType.CHANCELLOR]: 50,
   [PieceType.AMAZON]: 75,
-  [PieceType.DRAGON]: 40,
-  [PieceType.SHIP]: 20,
+  [PieceType.DRAGON]: 60,
+  [PieceType.SHIP]: 30,
 };
 
 export const RELIC_INFO: Record<RelicType, { basePrice: number; icon: string }> = {

@@ -2,6 +2,8 @@
 
 
 
+
+
 import { Cell, Piece, PieceType, Side, Position, TileEffect } from '../types';
 import { TEST_GENERATE_SPECIAL_TILES } from '../constants';
 
@@ -49,24 +51,54 @@ export const getValidMoves = (
   piece: Piece,
   currentPos: Position,
   enPassantTarget: Position | null = null,
-  ignoreCheck: boolean = false 
+  lastMovedPieceType: PieceType | null = null // New parameter for Fool
 ): Position[] => {
   if ((piece.frozenTurns || 0) > 0) return [];
+
+  // Infinite recursion check for Fool copying Fool (shouldn't happen in standard play but good safety)
+  if (piece.type === PieceType.FOOL && lastMovedPieceType === PieceType.FOOL) return [];
 
   const moves: Position[] = [];
   const size = board.length;
   const direction = piece.side === Side.WHITE ? -1 : 1; // White moves UP (-1), Black moves DOWN (+1)
 
   // Use override type if available (from Borrow card)
-  const effectiveType = piece.tempMoveOverride || piece.type;
+  let effectiveType = piece.tempMoveOverride || piece.type;
+
+  // Fool Logic: Mimic last moved piece type
+  if (effectiveType === PieceType.FOOL) {
+      if (lastMovedPieceType) {
+          effectiveType = lastMovedPieceType;
+      } else {
+          return []; // Cannot move if no enemy moved yet
+      }
+  }
+
+  // Ship & Elephant can enter walls (to break them)
+  const canBreakWall = piece.type === PieceType.SHIP || piece.type === PieceType.ELEPHANT;
+  
+  // Dragons (and variants) can enter Abyss/Lava without dying immediately (handled in executeMove, here we just allow validity)
+  const ignoresTerrain = piece.type === PieceType.DRAGON;
+
+  // Ship cannot capture
+  const canCapture = piece.type !== PieceType.SHIP;
 
   const isMoveableTo = (r: number, c: number): boolean => {
      if (!isValidPos({row: r, col: c}, size)) return false;
      const tile = board[r][c];
-     if (tile.tileEffect === TileEffect.WALL) return false;
-     if (tile.tileEffect === TileEffect.HOLE) return false; // Cannot land on hole
+     
+     if (tile.tileEffect === TileEffect.WALL && !canBreakWall) return false;
+     
+     if (tile.tileEffect === TileEffect.HOLE && !ignoresTerrain) {
+         // Sliders usually skip over holes in logic below, but strictly 'landing' on hole is normally bad
+         // But here we define valid moves. 'HOLE' usually means you can't land.
+         // Unless you are a dragon.
+         return false; 
+     }
+     
      // Cannot capture immortal pieces
      if (tile.piece && tile.piece.side !== piece.side && (tile.piece.immortalTurns || 0) > 0) return false;
+     
      return true;
   };
 
@@ -76,22 +108,27 @@ export const getValidMoves = (
     
     const cell = board[r][c];
     
-    // WALL blocks movement and line of sight
-    if (cell.tileEffect === TileEffect.WALL) return false;
+    // WALL blocks movement unless we can break it
+    if (cell.tileEffect === TileEffect.WALL) {
+        if (canBreakWall) {
+            moves.push({ row: r, col: c });
+        }
+        return false; // Stop sliding at wall (either blocked or break it)
+    }
 
     const target = cell.piece;
     if (target) {
       if (target.side !== piece.side) {
-        // Can capture? Only if not HOLE and not IMMORTAL
-        if (cell.tileEffect !== TileEffect.HOLE && !(target.immortalTurns && target.immortalTurns > 0)) {
+        // Can capture? 
+        if (canCapture && cell.tileEffect !== TileEffect.HOLE && !(target.immortalTurns && target.immortalTurns > 0)) {
            moves.push({ row: r, col: c }); 
         }
       }
       return false; // Blocked by piece (enemy or friendly)
     }
     
-    // HOLE: Cannot land, but if we are here (and not blocked by piece/wall), we can pass through (return true)
-    if (cell.tileEffect !== TileEffect.HOLE) {
+    // HOLE: Cannot land unless ignoresTerrain.
+    if (cell.tileEffect !== TileEffect.HOLE || ignoresTerrain) {
         moves.push({ row: r, col: c }); // Empty and valid
     }
     
@@ -121,36 +158,54 @@ export const getValidMoves = (
     }
 
     // Capture (Diagonal) including En Passant
-    [[fwdR, currentPos.col - 1], [fwdR, currentPos.col + 1]].forEach(([r, c]) => {
-      if (isValidPos({ row: r, col: c }, size)) {
-        const cell = board[r][c];
-        if (cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE) return;
+    if (canCapture) {
+        [[fwdR, currentPos.col - 1], [fwdR, currentPos.col + 1]].forEach(([r, c]) => {
+        if (isValidPos({ row: r, col: c }, size)) {
+            const cell = board[r][c];
+            if (cell.tileEffect === TileEffect.WALL || cell.tileEffect === TileEffect.HOLE) return;
 
-        const target = cell.piece;
-        // Normal Capture
-        if (target && target.side !== piece.side) {
-          if (!(target.immortalTurns && target.immortalTurns > 0)) {
-             moves.push({ row: r, col: c });
-          }
-        } 
-        // En Passant Capture
-        else if (enPassantTarget && enPassantTarget.row === r && enPassantTarget.col === c) {
-           // Check if the pawn being captured is immortal (needs board check, assumed simpler here for now)
-           // But En Passant captures the piece 'behind' movement.
-           // For simplicity, let's assume if you can EP, you can. 
-           // Technically should check if victim is immortal.
-           const victimRow = r - direction;
-           const victim = board[victimRow][c].piece;
-           if (victim && !(victim.immortalTurns && victim.immortalTurns > 0)) {
-               moves.push({ row: r, col: c });
-           }
+            const target = cell.piece;
+            // Normal Capture
+            if (target && target.side !== piece.side) {
+            if (!(target.immortalTurns && target.immortalTurns > 0)) {
+                moves.push({ row: r, col: c });
+            }
+            } 
+            // En Passant Capture
+            else if (enPassantTarget && enPassantTarget.row === r && enPassantTarget.col === c) {
+            const victimRow = r - direction;
+            const victim = board[victimRow][c].piece;
+            if (victim && !(victim.immortalTurns && victim.immortalTurns > 0)) {
+                moves.push({ row: r, col: c });
+            }
+            }
         }
+        });
+    }
+  }
+
+  // Elephant: Forward 1 only (uses direction), can break wall.
+  if (effectiveType === PieceType.ELEPHANT) {
+      const fwdR = currentPos.row + direction;
+      // Capture forward or move forward or break wall forward
+      if (isValidPos({ row: fwdR, col: currentPos.col }, size)) {
+          const cell = board[fwdR][currentPos.col];
+          if (cell.tileEffect === TileEffect.WALL) {
+              moves.push({ row: fwdR, col: currentPos.col }); // Break wall
+          } else if (cell.tileEffect !== TileEffect.HOLE) {
+              if (cell.piece) {
+                  if (cell.piece.side !== piece.side && !(cell.piece.immortalTurns && cell.piece.immortalTurns > 0)) {
+                      moves.push({ row: fwdR, col: currentPos.col }); // Capture
+                  }
+              } else {
+                  moves.push({ row: fwdR, col: currentPos.col }); // Move
+              }
+          }
       }
-    });
   }
 
   const directions: number[][] = [];
-  if (effectiveType === PieceType.ROOK || effectiveType === PieceType.QUEEN) {
+  if (effectiveType === PieceType.ROOK || effectiveType === PieceType.QUEEN || effectiveType === PieceType.SHIP) {
     directions.push([0, 1], [0, -1], [1, 0], [-1, 0]);
   }
   if (effectiveType === PieceType.BISHOP || effectiveType === PieceType.QUEEN) {
@@ -161,17 +216,13 @@ export const getValidMoves = (
       const r = currentPos.row + dr;
       const c = currentPos.col + dc;
       if (isMoveableTo(r, c)) {
-         // Special check for King move - simple addMove logic might need isMoveableTo wrapper?
-         // addMove handles capture logic inside.
-         // But isMoveableTo checks obstacle logic before even trying.
-         // Let's rely on addMove but double check blocking.
          addMove(r, c);
       }
     });
   }
   
-  // Sliding moves logic for Rook, Bishop, Queen
-  if (effectiveType === PieceType.ROOK || effectiveType === PieceType.BISHOP || effectiveType === PieceType.QUEEN) {
+  // Sliding moves logic for Rook, Bishop, Queen, Ship
+  if (effectiveType === PieceType.ROOK || effectiveType === PieceType.BISHOP || effectiveType === PieceType.QUEEN || effectiveType === PieceType.SHIP) {
     directions.forEach(([dr, dc]) => {
       let r = currentPos.row + dr;
       let c = currentPos.col + dc;
@@ -182,7 +233,7 @@ export const getValidMoves = (
     });
   }
 
-  if (effectiveType === PieceType.KNIGHT) {
+  if (effectiveType === PieceType.KNIGHT || effectiveType === PieceType.DRAGON) {
     const jumps = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
     jumps.forEach(([dr, dc]) => {
         const r = currentPos.row + dr;
