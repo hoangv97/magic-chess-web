@@ -76,6 +76,14 @@ export enum CardType {
   SPAWN_DRAGON_ABYSS = 'SPAWN_DRAGON_ABYSS',
   SPAWN_DRAGON_FROZEN = 'SPAWN_DRAGON_FROZEN',
 
+  SPAWN_CHANCELLOR = 'SPAWN_CHANCELLOR',
+  SPAWN_ARCHBISHOP = 'SPAWN_ARCHBISHOP',
+  SPAWN_MANN = 'SPAWN_MANN',
+  SPAWN_AMAZON = 'SPAWN_AMAZON',
+  SPAWN_CENTAUR = 'SPAWN_CENTAUR',
+  SPAWN_ZEBRA = 'SPAWN_ZEBRA',
+  SPAWN_CHAMPION = 'SPAWN_CHAMPION',
+
   EFFECT_SWITCH = 'EFFECT_SWITCH', // Switch 2 player pieces
   EFFECT_FREEZE = 'EFFECT_FREEZE', // Freeze random enemy
   EFFECT_LIMIT = 'EFFECT_LIMIT', // Limit enemy moves (implementation: reduce range or random skip?) -> Let's do: Enemy pieces move range = 1

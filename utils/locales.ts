@@ -8,6 +8,8 @@
 
 
 
+
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 
 export const TRANSLATIONS = {
@@ -102,6 +104,14 @@ export const TRANSLATIONS = {
       [CardType.SPAWN_DRAGON_ABYSS]: { title: "Abyss Dragon", desc: "Leaves temporary Abyss trail." },
       [CardType.SPAWN_DRAGON_FROZEN]: { title: "Frozen Dragon", desc: "Leaves temporary Frozen trail." },
 
+      [CardType.SPAWN_CHANCELLOR]: { title: "Summon Chancellor", desc: "Moves like Rook + Knight." },
+      [CardType.SPAWN_ARCHBISHOP]: { title: "Summon Archbishop", desc: "Moves like Bishop + Knight." },
+      [CardType.SPAWN_MANN]: { title: "Summon Mann", desc: "Moves like Rook + Bishop." },
+      [CardType.SPAWN_AMAZON]: { title: "Summon Amazon", desc: "Moves like Queen + Knight." },
+      [CardType.SPAWN_CENTAUR]: { title: "Summon Centaur", desc: "Moves like King + Knight." },
+      [CardType.SPAWN_ZEBRA]: { title: "Summon Zebra", desc: "Moves like Pawn + Knight." },
+      [CardType.SPAWN_CHAMPION]: { title: "Summon Champion", desc: "Moves like Pawn + Bishop." },
+
       [CardType.EFFECT_SWITCH]: { title: "Swap Tactics", desc: "Switch positions of two of your pieces." },
       [CardType.EFFECT_FREEZE]: { title: "Glacial Glare", desc: "Freeze a random enemy piece for one turn." },
       [CardType.EFFECT_LIMIT]: { title: "Muddy Terrain", desc: "Limit enemy movement range to 1 tile next turn." },
@@ -163,6 +173,7 @@ export const TRANSLATIONS = {
         "Divine": { name: "Divine", desc: "Diagonal control with a Bishop." },
         "Skirmish": { name: "Skirmish", desc: "Agile movement with Knight and Bishop." },
         "Experiment": { name: "Experiment", desc: "Experimental deck for strategic testing." },
+        "Elite": { name: "Elite", desc: "Experimental deck for elite testing." },
         "Mystic": { name: "Mystic", desc: "Command magical creatures like Dragons and Fools." },
         "Elemental": { name: "Elemental", desc: "Control the elements with special Dragons." }
       }
@@ -178,6 +189,13 @@ export const TRANSLATIONS = {
       [PieceType.SHIP]: "Ship",
       [PieceType.ELEPHANT]: "Elephant",
       [PieceType.DRAGON]: "Dragon",
+      [PieceType.CHANCELLOR]: "Chancellor",
+      [PieceType.ARCHBISHOP]: "Archbishop",
+      [PieceType.MANN]: "Mann",
+      [PieceType.AMAZON]: "Amazon",
+      [PieceType.CENTAUR]: "Centaur",
+      [PieceType.ZEBRA]: "Zebra",
+      [PieceType.CHAMPION]: "Champion",
     },
     tooltips: {
       frozen: "❄️ Frozen ({0} turns left)",
@@ -283,6 +301,14 @@ export const TRANSLATIONS = {
       [CardType.SPAWN_DRAGON_ABYSS]: { title: "Rồng Hư Vô", desc: "Để lại vệt hư vô tạm thời." },
       [CardType.SPAWN_DRAGON_FROZEN]: { title: "Rồng Băng", desc: "Để lại vệt băng tạm thời." },
 
+      [CardType.SPAWN_CHANCELLOR]: { title: "Triệu Hồi Tể Tướng", desc: "Di chuyển như Xe + Mã." },
+      [CardType.SPAWN_ARCHBISHOP]: { title: "Triệu Hồi Giám Mục", desc: "Di chuyển như Tượng + Mã." },
+      [CardType.SPAWN_MANN]: { title: "Triệu Hồi Mann", desc: "Di chuyển như Xe + Tượng." },
+      [CardType.SPAWN_AMAZON]: { title: "Triệu Hồi Amazon", desc: "Di chuyển như Hậu + Mã." },
+      [CardType.SPAWN_CENTAUR]: { title: "Triệu Hồi Nhân Mã", desc: "Di chuyển như Vua + Mã." },
+      [CardType.SPAWN_ZEBRA]: { title: "Triệu Hồi Ngựa Vằn", desc: "Di chuyển như Tốt + Mã." },
+      [CardType.SPAWN_CHAMPION]: { title: "Triệu Hồi Chiến Binh", desc: "Di chuyển như Tốt + Tượng." },
+
       [CardType.EFFECT_SWITCH]: { title: "Hoán Đổi", desc: "Đổi vị trí hai quân của bạn." },
       [CardType.EFFECT_FREEZE]: { title: "Ánh Nhìn Băng Giá", desc: "Đóng băng một quân địch ngẫu nhiên." },
       [CardType.EFFECT_LIMIT]: { title: "Địa Hình Bùn Lầy", desc: "Giới hạn di chuyển địch còn 1 ô." },
@@ -344,6 +370,7 @@ export const TRANSLATIONS = {
         "Divine": { name: "Thần Thánh", desc: "Kiểm soát đường chéo với quân Tượng." },
         "Skirmish": { name: "Tiền Đạo", desc: "Linh hoạt với quân Mã và Tượng." },
         "Experiment": { name: "Thử Nghiệm", desc: "Bộ bài thử nghiệm chiến thuật." },
+        "Elite": { name: "Tinh Hoa", desc: "Bộ bài thử nghiệm chiến thuật." },
         "Mystic": { name: "Huyền Bí", desc: "Điều khiển sinh vật phép thuật." },
         "Elemental": { name: "Nguyên Tố", desc: "Sử dụng rồng nguyên tố." }
       }
@@ -359,6 +386,13 @@ export const TRANSLATIONS = {
       [PieceType.SHIP]: "Tàu",
       [PieceType.ELEPHANT]: "Voi",
       [PieceType.DRAGON]: "Rồng",
+      [PieceType.CHANCELLOR]: "Tể Tướng",
+      [PieceType.ARCHBISHOP]: "Giám Mục",
+      [PieceType.MANN]: "Mann",
+      [PieceType.AMAZON]: "Amazon",
+      [PieceType.CENTAUR]: "Nhân Mã",
+      [PieceType.ZEBRA]: "Ngựa Vằn",
+      [PieceType.CHAMPION]: "Chiến Binh",
     },
     tooltips: {
       frozen: "❄️ Đóng băng (còn {0} lượt)",

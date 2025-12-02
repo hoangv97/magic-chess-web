@@ -4,6 +4,8 @@
 
 
 
+
+
 import React from 'react';
 import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language, BossType } from './types';
 import { TRANSLATIONS } from './utils/locales';
@@ -32,6 +34,14 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.SPAWN_DRAGON_LAVA, cost: 90 },
   { type: CardType.SPAWN_DRAGON_ABYSS, cost: 90 },
   { type: CardType.SPAWN_DRAGON_FROZEN, cost: 90 },
+
+  { type: CardType.SPAWN_CHANCELLOR, cost: 85 },
+  { type: CardType.SPAWN_ARCHBISHOP, cost: 85 },
+  { type: CardType.SPAWN_MANN, cost: 110 },
+  { type: CardType.SPAWN_AMAZON, cost: 160 },
+  { type: CardType.SPAWN_CENTAUR, cost: 70 },
+  { type: CardType.SPAWN_ZEBRA, cost: 60 },
+  { type: CardType.SPAWN_CHAMPION, cost: 65 },
 
   { type: CardType.EFFECT_SWITCH, cost: 30 },
   { type: CardType.EFFECT_FREEZE, cost: 40 },
@@ -69,13 +79,17 @@ export const STARTER_DECKS_CONFIG = [
     cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_IMMORTAL]
   },
   {
+    id: "Elite",
+    cards: [CardType.SPAWN_CHANCELLOR, CardType.SPAWN_ARCHBISHOP, CardType.SPAWN_MANN, CardType.SPAWN_AMAZON, CardType.SPAWN_CENTAUR, CardType.SPAWN_ZEBRA, CardType.SPAWN_CHAMPION]
+  },
+  {
     id: "Mystic",
     cards: [CardType.SPAWN_DRAGON, CardType.SPAWN_ELEPHANT, CardType.SPAWN_ELEPHANT, CardType.SPAWN_ELEPHANT, CardType.SPAWN_FOOL, CardType.SPAWN_SHIP, CardType.SPAWN_PAWN]
   },
   {
     id: "Elemental",
     cards: [CardType.SPAWN_DRAGON, CardType.SPAWN_DRAGON_LAVA, CardType.SPAWN_DRAGON_ABYSS, CardType.SPAWN_DRAGON_FROZEN, CardType.SPAWN_PAWN]
-  }
+  },
 ];
 
 export const getStarterDecks = (lang: Language) => {

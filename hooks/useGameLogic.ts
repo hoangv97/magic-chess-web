@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -441,7 +443,8 @@ export const useGameLogic = ({
     }
 
     // Standard Move Logic
-    if (piece.type === PieceType.PAWN && !target && from.col !== to.col && enPassantTarget) {
+    // Pawn, Zebra, Champion use pawn capture logic for En Passant if applicable (though Zebra/Champion move logic for EP is rare, we allow it if they made a pawn-like move)
+    if ((piece.type === PieceType.PAWN || piece.type === PieceType.ZEBRA || piece.type === PieceType.CHAMPION) && !target && from.col !== to.col && enPassantTarget) {
         if (to.row === enPassantTarget.row && to.col === enPassantTarget.col) {
             const direction = piece.side === Side.WHITE ? -1 : 1;
             const victimRow = to.row - direction; 
@@ -454,7 +457,7 @@ export const useGameLogic = ({
         }
     }
 
-    if (piece.type === PieceType.PAWN && Math.abs(from.row - to.row) === 2) {
+    if ((piece.type === PieceType.PAWN || piece.type === PieceType.ZEBRA || piece.type === PieceType.CHAMPION) && Math.abs(from.row - to.row) === 2) {
         nextEnPassantTarget = { row: (from.row + to.row) / 2, col: from.col };
     }
 
@@ -491,6 +494,7 @@ export const useGameLogic = ({
         }
     }
 
+    // Promotion logic - Only for PAWN type
     if (newBoard[to.row][to.col].piece && piece.type === PieceType.PAWN && to.row === 0) {
         newBoard[to.row][to.col].piece!.type = PieceType.QUEEN;
         soundManager.playSfx('spawn');
@@ -992,6 +996,15 @@ export const useGameLogic = ({
             else if (type === CardType.SPAWN_FOOL) spawnType = PieceType.FOOL;
             else if (type === CardType.SPAWN_SHIP) spawnType = PieceType.SHIP;
             else if (type === CardType.SPAWN_ELEPHANT) spawnType = PieceType.ELEPHANT;
+            
+            else if (type === CardType.SPAWN_CHANCELLOR) spawnType = PieceType.CHANCELLOR;
+            else if (type === CardType.SPAWN_ARCHBISHOP) spawnType = PieceType.ARCHBISHOP;
+            else if (type === CardType.SPAWN_MANN) spawnType = PieceType.MANN;
+            else if (type === CardType.SPAWN_AMAZON) spawnType = PieceType.AMAZON;
+            else if (type === CardType.SPAWN_CENTAUR) spawnType = PieceType.CENTAUR;
+            else if (type === CardType.SPAWN_ZEBRA) spawnType = PieceType.ZEBRA;
+            else if (type === CardType.SPAWN_CHAMPION) spawnType = PieceType.CHAMPION;
+
             else if (type.includes('DRAGON')) {
                 spawnType = PieceType.DRAGON;
                 if (type === CardType.SPAWN_DRAGON_LAVA) variant = 'LAVA';

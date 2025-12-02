@@ -4,6 +4,8 @@
 
 
 
+
+
 import { Cell, Piece, PieceType, Side, Position, TileEffect } from '../types';
 import { TEST_GENERATE_SPECIAL_TILES } from '../constants';
 
@@ -135,7 +137,14 @@ export const getValidMoves = (
     return true;
   };
 
-  if (effectiveType === PieceType.PAWN) {
+  // Movement Capability Flags
+  const hasPawnMoves = effectiveType === PieceType.PAWN || effectiveType === PieceType.ZEBRA || effectiveType === PieceType.CHAMPION;
+  const hasRookMoves = effectiveType === PieceType.ROOK || effectiveType === PieceType.QUEEN || effectiveType === PieceType.SHIP || effectiveType === PieceType.CHANCELLOR || effectiveType === PieceType.MANN || effectiveType === PieceType.AMAZON;
+  const hasBishopMoves = effectiveType === PieceType.BISHOP || effectiveType === PieceType.QUEEN || effectiveType === PieceType.ARCHBISHOP || effectiveType === PieceType.MANN || effectiveType === PieceType.AMAZON || effectiveType === PieceType.CHAMPION;
+  const hasKnightMoves = effectiveType === PieceType.KNIGHT || effectiveType === PieceType.DRAGON || effectiveType === PieceType.CHANCELLOR || effectiveType === PieceType.ARCHBISHOP || effectiveType === PieceType.AMAZON || effectiveType === PieceType.CENTAUR || effectiveType === PieceType.ZEBRA;
+  const hasKingMoves = effectiveType === PieceType.KING || effectiveType === PieceType.CENTAUR;
+
+  if (hasPawnMoves) {
     // Forward 1
     const fwdR = currentPos.row + direction;
     if (isValidPos({ row: fwdR, col: currentPos.col }, size)) {
@@ -205,13 +214,13 @@ export const getValidMoves = (
   }
 
   const directions: number[][] = [];
-  if (effectiveType === PieceType.ROOK || effectiveType === PieceType.QUEEN || effectiveType === PieceType.SHIP) {
+  if (hasRookMoves) {
     directions.push([0, 1], [0, -1], [1, 0], [-1, 0]);
   }
-  if (effectiveType === PieceType.BISHOP || effectiveType === PieceType.QUEEN) {
+  if (hasBishopMoves) {
     directions.push([1, 1], [1, -1], [-1, 1], [-1, -1]);
   }
-  if (effectiveType === PieceType.KING) {
+  if (hasKingMoves) {
     [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([dr, dc]) => {
       const r = currentPos.row + dr;
       const c = currentPos.col + dc;
@@ -221,8 +230,8 @@ export const getValidMoves = (
     });
   }
   
-  // Sliding moves logic for Rook, Bishop, Queen, Ship
-  if (effectiveType === PieceType.ROOK || effectiveType === PieceType.BISHOP || effectiveType === PieceType.QUEEN || effectiveType === PieceType.SHIP) {
+  // Sliding moves logic for Rook, Bishop, Queen, Ship etc
+  if (hasRookMoves || hasBishopMoves) {
     directions.forEach(([dr, dc]) => {
       let r = currentPos.row + dr;
       let c = currentPos.col + dc;
@@ -233,7 +242,7 @@ export const getValidMoves = (
     });
   }
 
-  if (effectiveType === PieceType.KNIGHT || effectiveType === PieceType.DRAGON) {
+  if (hasKnightMoves) {
     const jumps = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
     jumps.forEach(([dr, dc]) => {
         const r = currentPos.row + dr;
