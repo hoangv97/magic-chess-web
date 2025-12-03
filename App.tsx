@@ -4,16 +4,20 @@
 
 
 
+
+
 import React, { useState, useEffect } from 'react';
 import { GameSettings, BossType } from './types';
 import { MainMenu } from './components/screens/MainMenu';
 import { SettingsScreen } from './components/screens/SettingsScreen';
 import { WikiScreen } from './components/screens/WikiScreen';
+import { CustomGameSetup } from './components/screens/CustomGameSetup';
+import { CreditsScreen } from './components/screens/CreditsScreen';
 import { CampaignGame } from './components/CampaignGame';
 import { CustomGame } from './components/CustomGame';
 import { soundManager } from './utils/soundManager';
 
-type AppMode = 'MENU' | 'SETTINGS' | 'CAMPAIGN' | 'CUSTOM' | 'WIKI';
+type AppMode = 'MENU' | 'SETTINGS' | 'CAMPAIGN' | 'CUSTOM' | 'WIKI' | 'CUSTOM_SETUP' | 'CREDITS';
 
 const DEFAULT_SETTINGS: GameSettings = { 
   boardSize: 8, 
@@ -81,9 +85,9 @@ export default function App() {
                soundManager.playSfx('click');
                setMode('CAMPAIGN');
              }}
-             initGame={() => {
+             onCustomSetup={() => {
                soundManager.playSfx('click');
-               setMode('CUSTOM');
+               setMode('CUSTOM_SETUP');
              }}
              onOpenSettings={() => {
                soundManager.playSfx('click');
@@ -93,7 +97,26 @@ export default function App() {
                soundManager.playSfx('click');
                setMode('WIKI');
              }}
+             onCredits={() => {
+               soundManager.playSfx('click');
+               setMode('CREDITS');
+             }}
            />
+        )}
+
+        {mode === 'CUSTOM_SETUP' && (
+            <CustomGameSetup 
+              settings={settings}
+              setSettings={setSettings}
+              onStart={() => {
+                  soundManager.playSfx('click');
+                  setMode('CUSTOM');
+              }}
+              onBack={() => {
+                  soundManager.playSfx('click');
+                  setMode('MENU');
+              }}
+            />
         )}
 
         {mode === 'SETTINGS' && (
@@ -110,6 +133,16 @@ export default function App() {
 
         {mode === 'WIKI' && (
            <WikiScreen 
+             settings={settings}
+             onBack={() => {
+               soundManager.playSfx('click');
+               setMode('MENU');
+             }}
+           />
+        )}
+
+        {mode === 'CREDITS' && (
+           <CreditsScreen 
              settings={settings}
              onBack={() => {
                soundManager.playSfx('click');

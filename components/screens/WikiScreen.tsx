@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { GameSettings, CardType, BossType, RelicType, TileEffect } from '../../types';
 import { TRANSLATIONS } from '../../utils/locales';
-import { getDeckTemplate, getRelicInfo, getTileEffectInfo } from '../../constants';
+import { getDeckTemplate, getRelicInfo, getTileEffectInfo, getBossIcon } from '../../constants';
 import { Button } from '../ui/Button';
 import { CardComponent } from '../ui/CardComponent';
 
@@ -17,18 +17,30 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
 
   const deckTemplate = getDeckTemplate(settings.language);
 
-  const TabButton = ({ id, label }: { id: typeof activeTab, label: string }) => (
-    <button
-      onClick={() => setActiveTab(id)}
-      className={`px-4 py-2 font-bold transition-all border-b-4 ${
-        activeTab === id 
-          ? 'border-yellow-400 text-yellow-400' 
-          : 'border-transparent text-slate-400 hover:text-slate-200'
-      }`}
-    >
-      {label}
-    </button>
-  );
+  const TabButton = ({ id, label }: { id: typeof activeTab, label: string }) => {
+    let count = undefined;
+    if (id === 'CARDS') {
+      count = Object.values(CardType).length;
+    } else if (id === 'BOSSES') {
+      count = Object.values(BossType).filter(b => b !== BossType.NONE).length;
+    } else if (id === 'RELICS') {
+      count = Object.values(RelicType).length;
+    } else if (id === 'TERRAIN') {
+      count = Object.values(TileEffect).length;
+    }
+    return (
+      <button
+        onClick={() => setActiveTab(id)}
+        className={`px-4 py-2 font-bold transition-all border-b-4 ${
+          activeTab === id 
+            ? 'border-yellow-400 text-yellow-400' 
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+        }`}
+      >
+        {label} {count ? `(${count})` : ''}
+      </button>
+    );
+  }
 
   return (
     <div className="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center">
@@ -92,8 +104,13 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
                 const info = TRANSLATIONS[settings.language].bosses[type];
                 return (
                   <div key={type} className="bg-slate-800 p-6 rounded-lg border border-red-900/50 shadow-lg flex flex-col gap-2 relative overflow-hidden group hover:border-red-500 transition-colors">
-                    <div className="absolute -right-4 -top-4 text-9xl opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">☠️</div>
-                    <h3 className="text-2xl font-bold text-red-400">{info.name}</h3>
+                    <div className="absolute -right-4 -top-4 text-9xl opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
+                      {getBossIcon(type)}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-4xl">{getBossIcon(type)}</div>
+                      <h3 className="text-2xl font-bold text-red-400">{info.name}</h3>
+                    </div>
                     <p className="text-slate-400 italic mb-2">{info.desc}</p>
                     <div className="mt-auto pt-4 border-t border-slate-700">
                       <span className="text-xs font-bold bg-red-900 text-red-100 px-2 py-1 rounded">ABILITY</span>

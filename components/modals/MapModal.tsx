@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { MapNode, GameSettings, BossType, MapNodeType } from '../../types';
 import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
-import { DEBUG_MODE } from '../../constants';
+import { DEBUG_MODE, getBossIcon } from '../../constants';
 
 interface MapModalProps {
   mapNodes: MapNode[];
@@ -50,18 +50,8 @@ export const MapModal: React.FC<MapModalProps> = ({
     return currentNode?.next.includes(node.id);
   };
 
-  const getBossIcon = (type?: BossType) => {
-      switch(type) {
-          case BossType.FROST_GIANT: return '❄️';
-          case BossType.VOID_BRINGER: return '🕳️';
-          case BossType.LAVA_TITAN: return '🌋';
-          case BossType.STONE_GOLEM: return '🗿';
-          default: return '☠️';
-      }
-  };
-
   const getNodeIcon = (node: MapNode) => {
-      if (node.type === MapNodeType.BOSS) return getBossIcon(node.bossType);
+      if (node.type === MapNodeType.BOSS) return getBossIcon(node.bossType || BossType.NONE);
       if (node.type === MapNodeType.SHOP) return '💰';
       if (node.type === MapNodeType.REST) return '🔥';
       if (node.type === MapNodeType.UNKNOWN) return '❓';

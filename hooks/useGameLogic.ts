@@ -565,19 +565,22 @@ export const useGameLogic = ({
         }
         
         // --- Hydra Boss Logic: Spawn replacement enemy on kill ---
-        if (activeBoss === BossType.HYDRA) {
+        if (activeBoss === BossType.HYDRA) {            
             const emptySpots: Position[] = [];
             const size = newBoard.length;
-            for(let r=0; r<size; r++) {
+            const enemyHalfLimit = Math.floor(size / 2);
+
+            for(let r=0; r < enemyHalfLimit; r++) {
                 for(let c=0; c<size; c++) {
-                    if (!newBoard[r][c].piece && newBoard[r][c].tileEffect !== TileEffect.WALL && newBoard[r][c].tileEffect !== TileEffect.HOLE) {
+                    // Ensure empty, no special tile (NONE), and on enemy half
+                    if (!newBoard[r][c].piece && newBoard[r][c].tileEffect === TileEffect.NONE) {
                         emptySpots.push({row:r, col:c});
                     }
                 }
             }
             if (emptySpots.length > 0) {
                 const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
-                const hydraSpawns = [PieceType.PAWN, PieceType.KNIGHT];
+                const hydraSpawns = [PieceType.PAWN, PieceType.KNIGHT, PieceType.ROOK, PieceType.BISHOP, PieceType.QUEEN];
                 newBoard[spot.row][spot.col].piece = {
                     id: uuidv4(),
                     type: hydraSpawns[Math.floor(Math.random() * hydraSpawns.length)],

@@ -9,14 +9,32 @@ export const TRANSLATIONS = {
       title: "CARD CHESS EVOLUTION",
       newGame: "NEW GAME",
       startCampaign: "👑 Start Campaign",
-      customGame: "Custom Game",
+      customGame: "⚔️ Custom Game",
       settings: "Settings",
       wiki: "Game Wiki",
+      credits: "Credits",
       boardSize: "Board Size",
       enemies: "Enemies",
       playerCount: "Player pieces",
       startCustom: "Start Custom Game",
       selectBoss: "Select Boss"
+    },
+    customSetup: {
+      title: "CUSTOM GAME SETUP",
+      boardSize: "Board Size",
+      enemies: "Enemy Count",
+      playerCount: "Player Pieces",
+      selectBoss: "Select Boss",
+      start: "Start Battle",
+      back: "Back"
+    },
+    credits: {
+      title: "CREDITS",
+      dev: "Game Design & Development",
+      art: "Art & Assets",
+      music: "Sound & Music",
+      thanks: "Special Thanks",
+      back: "Back to Menu"
     },
     settings: {
       title: "SETTINGS",
@@ -283,14 +301,32 @@ export const TRANSLATIONS = {
       title: "CỜ VUA TIẾN HÓA",
       newGame: "TRÒ CHƠI MỚI",
       startCampaign: "👑 Chiến Dịch",
-      customGame: "Chế Độ Tùy Chọn",
+      customGame: "⚔️ Tùy Chỉnh",
       settings: "Cài Đặt",
       wiki: "Bách Khoa Toàn Thư",
+      credits: "Tác Giả",
       boardSize: "Kích Thước Bàn",
       enemies: "Số Lượng Kẻ Thù",
       playerCount: "Số lượng Quân",
       startCustom: "Bắt Đầu",
       selectBoss: "Chọn Trùm"
+    },
+    customSetup: {
+      title: "THIẾT LẬP TRẬN ĐẤU",
+      boardSize: "Kích Thước Bàn",
+      enemies: "Kẻ Thù",
+      playerCount: "Quân Của Bạn",
+      selectBoss: "Chọn Trùm",
+      start: "Vào Trận",
+      back: "Quay Lại"
+    },
+    credits: {
+      title: "ĐỘI NGŨ THỰC HIỆN",
+      dev: "Thiết Kế & Lập Trình",
+      art: "Hình Ảnh & Tài Nguyên",
+      music: "Âm Thanh",
+      thanks: "Lời Cảm Ơn",
+      back: "Quay Lại Menu"
     },
     settings: {
       title: "CÀI ĐẶT",
