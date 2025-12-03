@@ -10,6 +10,8 @@
 
 
 
+
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 
 export const TRANSLATIONS = {
@@ -20,6 +22,7 @@ export const TRANSLATIONS = {
       startCampaign: "👑 Start Campaign",
       customGame: "Custom Game",
       settings: "Settings",
+      wiki: "Game Wiki",
       boardSize: "Board Size",
       enemies: "Enemies",
       playerCount: "Player pieces",
@@ -45,6 +48,23 @@ export const TRANSLATIONS = {
       pieceSets: {
         STANDARD: "Standard",
         SIMPLE: "Simple"
+      }
+    },
+    wiki: {
+      title: "GAME WIKI",
+      tabs: {
+        rules: "Rules",
+        cards: "Cards",
+        bosses: "Bosses",
+        relics: "Relics",
+        terrain: "Terrain"
+      },
+      rules: {
+        objective: { title: "Objective", desc: "Defeat the enemy King (Black) or eliminate all enemy units to win. If your King (White) dies or you run out of resources (cards/units), you lose." },
+        gameplay: { title: "Gameplay", desc: "The game is turn-based. On your turn, you can move ONE piece AND play up to 3 cards. Cards cost Gold to play in campaign mode, or are free in custom mode depending on settings." },
+        economy: { title: "Economy", desc: "In Campaign Mode, you earn Gold by defeating enemy pieces. Gold is used in the Merchant's Camp between levels to buy new Cards and Relics." },
+        movement: { title: "Movement", desc: "Pieces move according to their type. Standard chess moves apply, with some custom fairy chess pieces like the Dragon, Elephant, or Chancellor." },
+        elements: { title: "Elements", desc: "Some units and tiles have elemental properties. Ice freezes units. Lava destroys non-flying units. Abyss blocks ground movement." }
       }
     },
     header: {
@@ -217,6 +237,7 @@ export const TRANSLATIONS = {
       startCampaign: "👑 Chiến Dịch",
       customGame: "Chế Độ Tùy Chọn",
       settings: "Cài Đặt",
+      wiki: "Bách Khoa Toàn Thư",
       boardSize: "Kích Thước Bàn",
       enemies: "Số Lượng Kẻ Thù",
       playerCount: "Số lượng Quân",
@@ -242,6 +263,23 @@ export const TRANSLATIONS = {
       pieceSets: {
         STANDARD: "Tiêu Chuẩn",
         SIMPLE: "Đơn Giản"
+      }
+    },
+    wiki: {
+      title: "BÁCH KHOA TOÀN THƯ",
+      tabs: {
+        rules: "Luật Chơi",
+        cards: "Thẻ Bài",
+        bosses: "Trùm Cuối",
+        relics: "Cổ Vật",
+        terrain: "Địa Hình"
+      },
+      rules: {
+        objective: { title: "Mục Tiêu", desc: "Đánh bại Vua địch (Đen) hoặc tiêu diệt toàn bộ quân địch để thắng. Nếu Vua của bạn (Trắng) chết hoặc bạn hết tài nguyên, bạn sẽ thua." },
+        gameplay: { title: "Cách Chơi", desc: "Trò chơi theo lượt. Trong lượt của bạn, bạn có thể di chuyển MỘT quân cờ VÀ sử dụng tối đa 3 thẻ bài. Thẻ bài tốn Vàng trong chế độ chiến dịch." },
+        economy: { title: "Kinh Tế", desc: "Trong chế độ Chiến Dịch, bạn kiếm Vàng bằng cách tiêu diệt quân địch. Vàng được dùng trong Trại Thương Nhân để mua Thẻ và Cổ Vật mới." },
+        movement: { title: "Di Chuyển", desc: "Các quân cờ di chuyển theo loại của chúng. Quy tắc cờ vua tiêu chuẩn được áp dụng, cùng với một số quân cờ biến thể như Rồng, Voi hoặc Tể Tướng." },
+        elements: { title: "Nguyên Tố", desc: "Một số đơn vị và ô có tính chất nguyên tố. Băng đóng băng đơn vị. Dung nham tiêu diệt đơn vị không bay. Vực thẳm chặn di chuyển trên mặt đất." }
       }
     },
     header: {

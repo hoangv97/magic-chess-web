@@ -3,6 +3,8 @@
 
 
 
+
+
 import React from 'react';
 import { GameSettings, BossType } from '../../types';
 import { Button } from '../ui/Button';
@@ -14,9 +16,10 @@ interface MainMenuProps {
   startCampaign: () => void;
   initGame: (customMode: boolean) => void;
   onOpenSettings: () => void;
+  onOpenWiki: () => void;
 }
 
-export const MainMenu: React.FC<MainMenuProps> = ({ settings, setSettings, startCampaign, initGame, onOpenSettings }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ settings, setSettings, startCampaign, initGame, onOpenSettings, onOpenWiki }) => {
   const t = TRANSLATIONS[settings.language].mainMenu;
   const bosses = Object.values(BossType);
   const bossNames = TRANSLATIONS[settings.language].bosses;
@@ -32,12 +35,20 @@ export const MainMenu: React.FC<MainMenuProps> = ({ settings, setSettings, start
         {t.startCampaign}
       </Button>
 
-      <Button
-        onClick={onOpenSettings}
-        className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 py-3 mb-6"
-      >
-        ⚙️ {t.settings}
-      </Button>
+      <div className="flex gap-4 mb-6">
+        <Button
+          onClick={onOpenSettings}
+          className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-3"
+        >
+          ⚙️ {t.settings}
+        </Button>
+        <Button
+          onClick={onOpenWiki}
+          className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-3"
+        >
+          📖 {t.wiki}
+        </Button>
+      </div>
       
       <div className="border-t border-slate-700 my-6"></div>
       

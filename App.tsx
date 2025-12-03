@@ -2,15 +2,18 @@
 
 
 
+
+
 import React, { useState, useEffect } from 'react';
 import { GameSettings, BossType } from './types';
 import { MainMenu } from './components/screens/MainMenu';
 import { SettingsScreen } from './components/screens/SettingsScreen';
+import { WikiScreen } from './components/screens/WikiScreen';
 import { CampaignGame } from './components/CampaignGame';
 import { CustomGame } from './components/CustomGame';
 import { soundManager } from './utils/soundManager';
 
-type AppMode = 'MENU' | 'SETTINGS' | 'CAMPAIGN' | 'CUSTOM';
+type AppMode = 'MENU' | 'SETTINGS' | 'CAMPAIGN' | 'CUSTOM' | 'WIKI';
 
 const DEFAULT_SETTINGS: GameSettings = { 
   boardSize: 8, 
@@ -86,6 +89,10 @@ export default function App() {
                soundManager.playSfx('click');
                setMode('SETTINGS');
              }}
+             onOpenWiki={() => {
+               soundManager.playSfx('click');
+               setMode('WIKI');
+             }}
            />
         )}
 
@@ -98,6 +105,16 @@ export default function App() {
                setMode('MENU');
              }}
              onReset={resetSettings}
+           />
+        )}
+
+        {mode === 'WIKI' && (
+           <WikiScreen 
+             settings={settings}
+             onBack={() => {
+               soundManager.playSfx('click');
+               setMode('MENU');
+             }}
            />
         )}
 
