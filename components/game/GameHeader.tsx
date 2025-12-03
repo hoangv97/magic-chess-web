@@ -71,9 +71,9 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 </Button>
               )}
               
-              <Button className="bg-red-900/50 hover:bg-red-800 text-xs border border-red-700" onClick={onResign}>{t.resign}</Button>
             </>
           )}
+          <Button className="bg-red-900/50 hover:bg-red-800 text-xs border border-red-700" onClick={onResign}>{t.resign}</Button>
         </div>
       ) : null}
     </header>

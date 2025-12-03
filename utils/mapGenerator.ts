@@ -1,10 +1,6 @@
 
-
-
-
-
 import { v4 as uuidv4 } from 'uuid';
-import { MapNode, BossType } from '../types';
+import { MapNode, BossType, MapNodeType } from '../types';
 
 export const generateCampaignMap = (): MapNode[] => {
   const nodes: MapNode[] = [];
@@ -12,7 +8,7 @@ export const generateCampaignMap = (): MapNode[] => {
   const TOTAL_ZONES = 5; 
   const TOTAL_LEVELS = TOTAL_ZONES * LEVELS_PER_ZONE;
   const STEP_X = 120; // Pixels between levels
-  const BOSS_FREQUENCY = 3;
+  const BOSS_FREQUENCY = 10;
 
   let prevNodes: MapNode[] = [];
 
@@ -58,10 +54,26 @@ export const generateCampaignMap = (): MapNode[] => {
 
       let bossType = BossType.NONE;
       let name = undefined;
+      let type = MapNodeType.BATTLE;
 
       if (isBoss) {
           name = 'Boss';
           bossType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
+          type = MapNodeType.BOSS;
+      } else if (level === 1) {
+          type = MapNodeType.BATTLE;
+      } else {
+          // Randomize node type for non-boss levels
+          const rand = Math.random();
+          if (rand < 0.50) {
+              type = MapNodeType.BATTLE;
+          } else if (rand < 0.65) {
+              type = MapNodeType.SHOP;
+          } else if (rand < 0.80) {
+              type = MapNodeType.REST;
+          } else {
+              type = MapNodeType.UNKNOWN;
+          }
       }
 
       const newNode: MapNode = {
@@ -71,7 +83,8 @@ export const generateCampaignMap = (): MapNode[] => {
         y,
         next: [],
         name,
-        bossType
+        bossType,
+        type
       };
       
       nodes.push(newNode);

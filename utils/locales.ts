@@ -1,3 +1,4 @@
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 
 export const TRANSLATIONS = {
@@ -87,6 +88,19 @@ export const TRANSLATIONS = {
       upgrade: "Upgrade to Lvl",
       newArtifact: "New Artifact",
       tooExpensive: "TOO EXPENSIVE"
+    },
+    restSite: {
+        title: "Rest Site",
+        desc: "You find a safe campfire. Do you wish to trade with a traveler or lighten your load?",
+        tradeTitle: "Trade Offer",
+        tradeDesc: "Give 1 card, Choose 1 of 3 random cards.",
+        removeTitle: "Purge",
+        removeDesc: "Remove 1 card from your deck.",
+        leave: "Leave",
+        tradeSelect: "Select a card to trade away",
+        removeSelect: "Select a card to remove",
+        actionTrade: "Trade",
+        actionRemove: "Remove"
     },
     map: {
       title: "CAMPAIGN MAP",
@@ -310,6 +324,19 @@ export const TRANSLATIONS = {
       upgrade: "Nâng cấp cấp",
       newArtifact: "Cổ vật mới",
       tooExpensive: "KHÔNG ĐỦ VÀNG"
+    },
+    restSite: {
+        title: "Trạm Nghỉ",
+        desc: "Bạn tìm thấy một đống lửa trại an toàn. Bạn muốn trao đổi với lữ khách hay giảm bớt hành lý?",
+        tradeTitle: "Trao Đổi",
+        tradeDesc: "Đổi 1 lá bài lấy 1 trong 3 lá ngẫu nhiên.",
+        removeTitle: "Thanh Trừ",
+        removeDesc: "Xóa 1 lá bài khỏi bộ bài.",
+        leave: "Rời Đi",
+        tradeSelect: "Chọn bài để đổi",
+        removeSelect: "Chọn bài để xóa",
+        actionTrade: "Đổi",
+        actionRemove: "Xóa"
     },
     map: {
       title: "BẢN ĐỒ CHIẾN DỊCH",

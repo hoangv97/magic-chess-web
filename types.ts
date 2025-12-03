@@ -130,6 +130,14 @@ export enum BossType {
   UNDEAD_LORD = 'UNDEAD_LORD'
 }
 
+export enum MapNodeType {
+  BATTLE = 'BATTLE',
+  BOSS = 'BOSS',
+  SHOP = 'SHOP',
+  REST = 'REST',
+  UNKNOWN = 'UNKNOWN'
+}
+
 export interface MapNode {
   id: string;
   level: number;
@@ -138,6 +146,7 @@ export interface MapNode {
   next: string[];
   name?: string;
   bossType?: BossType;
+  type: MapNodeType;
 }
 
 export type Language = 'en' | 'vi';
@@ -173,4 +182,6 @@ export type GamePhase =
   | 'GAME_OVER_WIN' 
   | 'GAME_OVER_LOSS'
   | 'REWARD'
-  | 'SHOP';
+  | 'SHOP'
+  | 'REST_SITE'
+  | 'EVENT_RESULT';

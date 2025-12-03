@@ -1,10 +1,9 @@
 
-
-
 import React, { useEffect, useRef } from 'react';
-import { MapNode, GameSettings, BossType } from '../../types';
+import { MapNode, GameSettings, BossType, MapNodeType } from '../../types';
 import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
+import { DEBUG_MODE } from '../../constants';
 
 interface MapModalProps {
   mapNodes: MapNode[];
@@ -24,7 +23,6 @@ export const MapModal: React.FC<MapModalProps> = ({
   
   const currentNode = mapNodes.find(n => n.id === currentNodeId);
   const currentLevel = currentNode ? currentNode.level : 1;
-  const maxVisibleLevel = currentLevel + 10;
   
   const zones: { name: string, startX: number, endX: number }[] = [];
   for (let i = 0; i < 5; i++) {
@@ -45,6 +43,7 @@ export const MapModal: React.FC<MapModalProps> = ({
 
   const isNodeAvailable = (node: MapNode) => {
     if (isReadOnly) return false;
+    if (DEBUG_MODE) return true;
     if (!currentNodeId) {
       return node.level === 1;
     }
@@ -59,6 +58,27 @@ export const MapModal: React.FC<MapModalProps> = ({
           case BossType.STONE_GOLEM: return '🗿';
           default: return '☠️';
       }
+  };
+
+  const getNodeIcon = (node: MapNode) => {
+      if (node.type === MapNodeType.BOSS) return getBossIcon(node.bossType);
+      if (node.type === MapNodeType.SHOP) return '💰';
+      if (node.type === MapNodeType.REST) return '🔥';
+      if (node.type === MapNodeType.UNKNOWN) return '❓';
+      return '⚔️';
+  };
+
+  const getNodeColorClass = (node: MapNode, isAvailable: boolean, isCompleted: boolean, isCurrent: boolean) => {
+      if (isCompleted) return 'bg-green-800 border-green-500 text-green-200';
+      if (isCurrent) return 'bg-blue-600 border-blue-400 text-white scale-125 shadow-[0_0_20px_rgba(59,130,246,0.6)]';
+      if (isAvailable) {
+          if (node.type === MapNodeType.BOSS) return 'bg-red-900/80 border-red-500 text-white hover:scale-125 animate-bounce';
+          if (node.type === MapNodeType.SHOP) return 'bg-yellow-700/80 border-yellow-400 text-white hover:scale-125 animate-bounce';
+          if (node.type === MapNodeType.REST) return 'bg-orange-800/80 border-orange-400 text-white hover:scale-125 animate-bounce';
+          if (node.type === MapNodeType.UNKNOWN) return 'bg-purple-800/80 border-purple-400 text-white hover:scale-125 animate-bounce';
+          return 'bg-slate-700/80 border-slate-400 text-white animate-bounce hover:scale-125 hover:bg-slate-600';
+      }
+      return 'bg-slate-800 border-slate-600 text-slate-600';
   };
 
   return (
@@ -126,8 +146,7 @@ export const MapModal: React.FC<MapModalProps> = ({
                  const isCompleted = completedNodes.includes(node.id);
                  const isCurrent = currentNodeId === node.id;
                  const isAvailable = isNodeAvailable(node);
-                 const isLocked = !isCompleted && !isCurrent && !isAvailable;
-                 const isBoss = node.name === 'Boss';
+                 const isBoss = node.type === MapNodeType.BOSS;
 
                  if (!isVisible) return null;
 
@@ -144,20 +163,18 @@ export const MapModal: React.FC<MapModalProps> = ({
                        <div className={`
                           flex items-center justify-center rounded-full border-2 shadow-lg transition-transform duration-300
                           ${isBoss ? 'w-16 h-16 text-2xl' : 'w-10 h-10 text-sm'}
-                          ${isAvailable ? 'hover:scale-125 bg-yellow-900/80 border-yellow-400 animate-bounce' : ''}
-                          ${isCompleted ? 'bg-green-800 border-green-500 text-green-200' : ''}
-                          ${isCurrent ? 'bg-blue-600 border-blue-400 text-white scale-125 shadow-[0_0_20px_rgba(59,130,246,0.6)]' : ''}
-                          ${isLocked ? 'bg-slate-800 border-slate-600 text-slate-600' : ''}
+                          ${getNodeColorClass(node, isAvailable, isCompleted, isCurrent)}
                        `}>
-                          {isCompleted ? '✓' : isCurrent ? '📍' : isAvailable ? '⚔️' : isLocked ? '🔒' : ''}
-                          {isBoss && !isCompleted && !isCurrent && !isAvailable && getBossIcon(node.bossType)}
+                          {isCompleted ? '✓' : isCurrent ? '📍' : getNodeIcon(node)}
                        </div>
 
                        <div className={`
                           mt-2 text-[10px] font-bold px-2 py-1 rounded bg-black/80 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity
-                          ${isCurrent ? 'opacity-100 bg-blue-900' : ''}
+                          ${isCurrent ? 'opacity-100 bg-blue-900' : isAvailable ? 'opacity-100' : ''}
                        `}>
                           Lvl {node.level} {isBoss ? `- ${node.bossType?.replace('_', ' ')}` : ''}
+                          <br/>
+                          <span className="text-[9px] text-slate-300 uppercase">{node.type}</span>
                        </div>
                     </div>
                  );

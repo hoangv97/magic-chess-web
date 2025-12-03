@@ -34,12 +34,12 @@ export const Shop: React.FC<ShopProps> = ({
         </div>
         
         {shopRelics.length > 0 && (
-          <div className="mb-12 w-full max-w-4xl">
+          <div className="mb-12 w-full max-w-7xl">
               <h3 className="text-xl font-bold text-purple-400 mb-4 border-b border-purple-500/30 pb-2 flex items-center justify-between">
                   <span>{t.relics}</span>
                   {hasRelicDiscount && <span className="text-sm bg-green-600 text-white px-2 py-1 rounded animate-pulse">50% OFF!</span>}
               </h3>
-              <div className="flex gap-6 justify-center">
+              <div className="flex flex-wrap gap-6 justify-center">
                   {shopRelics.map((relic, idx) => {
                        const info = getRelicInfo(settings.language, relic.type);
                        const existing = relics.find(r => r.type === relic.type);
@@ -73,7 +73,7 @@ export const Shop: React.FC<ShopProps> = ({
           </div>
         )}
 
-        <div className="w-full max-w-4xl mb-12">
+        <div className="w-full max-w-7xl mb-12">
            <h3 className="text-xl font-bold text-yellow-400 mb-4 border-b border-yellow-500/30 pb-2 flex items-center justify-between">
                <span>{t.cards}</span>
                {hasCardDiscount && <span className="text-sm bg-green-600 text-white px-2 py-1 rounded animate-pulse">50% OFF!</span>}
