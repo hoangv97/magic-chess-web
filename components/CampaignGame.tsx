@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType } from '../types';
@@ -109,7 +106,8 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       setShopCards(shop);
 
       const shopR: Relic[] = [];
-      const relicTypes = [RelicType.LAST_WILL, RelicType.NECROMANCY];
+      const relicTypes = Object.values(RelicType);
+      
       for(let i = 0; i < RELICS_IN_SHOP; i++) {
           const type = relicTypes[Math.floor(Math.random() * relicTypes.length)];
           shopR.push({ type, level: 1 });
@@ -120,9 +118,16 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   };
 
   const buyCard = (card: Card) => {
-      if (gold >= card.cost) {
+      // Check for discount
+      let cost = card.cost;
+      const hasDiscount = relics.some(r => r.type === RelicType.DISCOUNT_CARD);
+      if (hasDiscount) {
+          cost = Math.floor(cost * 0.5);
+      }
+
+      if (gold >= cost) {
           soundManager.playSfx('buy');
-          setGold(prev => prev - card.cost);
+          setGold(prev => prev - cost);
           setMasterDeck(prev => [...prev, card]);
           setShopCards(prev => prev.filter(c => c.id !== card.id));
       } else {
@@ -134,7 +139,13 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       const info = getRelicInfo(settings.language, relic.type);
       const existing = relics.find(r => r.type === relic.type);
       const currentLevel = existing ? existing.level : 0;
-      const cost = info.basePrice * (currentLevel + 1);
+      let cost = info.basePrice * (currentLevel + 1);
+
+      // Check for discount
+      const hasDiscount = relics.some(r => r.type === RelicType.DISCOUNT_RELIC);
+      if (hasDiscount) {
+          cost = Math.floor(cost * 0.5);
+      }
 
       if (gold >= cost) {
           soundManager.playSfx('buy');

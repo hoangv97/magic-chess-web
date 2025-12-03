@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 import React from 'react';
 import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language, BossType } from './types';
 import { TRANSLATIONS } from './utils/locales';
@@ -132,14 +124,16 @@ export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
 };
 
 export const RELIC_INFO: Record<RelicType, { basePrice: number; icon: string }> = {
-  [RelicType.LAST_WILL]: { 
-    basePrice: 150, 
-    icon: "⚰️"
-  },
-  [RelicType.NECROMANCY]: { 
-    basePrice: 250, 
-    icon: "💀"
-  }
+  [RelicType.LAST_WILL]: { basePrice: 150, icon: "⚰️" },
+  [RelicType.NECROMANCY]: { basePrice: 250, icon: "💀" },
+  [RelicType.MIDAS_TOUCH]: { basePrice: 300, icon: "💰" },
+  [RelicType.DISCOUNT_CARD]: { basePrice: 200, icon: "🏷️" },
+  [RelicType.DISCOUNT_RELIC]: { basePrice: 200, icon: "🏺" },
+  [RelicType.START_PAWN]: { basePrice: 100, icon: "♟️" },
+  [RelicType.START_ROOK]: { basePrice: 250, icon: "♜" },
+  [RelicType.START_KNIGHT]: { basePrice: 200, icon: "♞" },
+  [RelicType.START_BISHOP]: { basePrice: 200, icon: "♝" },
+  [RelicType.START_QUEEN]: { basePrice: 400, icon: "♛" },
 };
 
 export const getRelicInfo = (lang: Language, type: RelicType) => {
@@ -149,8 +143,14 @@ export const getRelicInfo = (lang: Language, type: RelicType) => {
     ...base,
     name: trans.name,
     description: (lvl: number) => {
-        const piece = TRANSLATIONS[lang].pieces[RELIC_LEVEL_REWARDS[Math.min(lvl, 5)]];
-        return trans.desc.replace('{0}', piece);
+        let desc = trans.desc;
+        if (type === RelicType.LAST_WILL || type === RelicType.NECROMANCY) {
+           const piece = TRANSLATIONS[lang].pieces[RELIC_LEVEL_REWARDS[Math.min(lvl, 5)]];
+           desc = desc.replace('{0}', piece);
+        } else if (type === RelicType.START_PAWN || type === RelicType.START_ROOK || type === RelicType.START_KNIGHT || type === RelicType.START_BISHOP || type === RelicType.START_QUEEN) {
+           desc = desc.replace('{0}', String(lvl));
+        }
+        return desc;
     }
   };
 };

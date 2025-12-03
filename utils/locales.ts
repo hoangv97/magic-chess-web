@@ -1,17 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 
 export const TRANSLATIONS = {
@@ -143,7 +129,15 @@ export const TRANSLATIONS = {
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Martyr's Sigil", desc: "Spawn a {0} on base row when your piece dies." },
-      [RelicType.NECROMANCY]: { name: "Soul Harvester", desc: "Spawn a {0} on base row when an enemy dies." }
+      [RelicType.NECROMANCY]: { name: "Soul Harvester", desc: "Spawn a {0} on base row when an enemy dies." },
+      [RelicType.MIDAS_TOUCH]: { name: "Midas Touch", desc: "Earn 2x Gold from killing enemies." },
+      [RelicType.DISCOUNT_CARD]: { name: "Merchant's Guild", desc: "50% off all Cards in the shop." },
+      [RelicType.DISCOUNT_RELIC]: { name: "Archaeologist", desc: "50% off all Relics in the shop." },
+      [RelicType.START_PAWN]: { name: "Militia", desc: "Start every game with {0} extra Pawn(s)." },
+      [RelicType.START_ROOK]: { name: "Castle Guard", desc: "Start every game with {0} extra Rook(s)." },
+      [RelicType.START_KNIGHT]: { name: "Cavalry", desc: "Start every game with {0} extra Knight(s)." },
+      [RelicType.START_BISHOP]: { name: "Clergy", desc: "Start every game with {0} extra Bishop(s)." },
+      [RelicType.START_QUEEN]: { name: "Royal Escort", desc: "Start every game with {0} extra Queen(s)." },
     },
     tiles: {
       [TileEffect.NONE]: { name: "Grass", desc: "Standard terrain. No special effects." },
@@ -358,7 +352,15 @@ export const TRANSLATIONS = {
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Dấu Ấn Tử Sĩ", desc: "Tạo {0} khi quân bạn chết." },
-      [RelicType.NECROMANCY]: { name: "Lưỡi Hái Linh Hồn", desc: "Tạo {0} khi quân địch chết." }
+      [RelicType.NECROMANCY]: { name: "Lưỡi Hái Linh Hồn", desc: "Tạo {0} khi quân địch chết." },
+      [RelicType.MIDAS_TOUCH]: { name: "Bàn Tay Midas", desc: "Nhân đôi vàng khi diệt địch." },
+      [RelicType.DISCOUNT_CARD]: { name: "Hội Thương Buôn", desc: "Giảm giá 50% Thẻ Bài." },
+      [RelicType.DISCOUNT_RELIC]: { name: "Nhà Khảo Cổ", desc: "Giảm giá 50% Cổ Vật." },
+      [RelicType.START_PAWN]: { name: "Dân Quân", desc: "Bắt đầu mỗi trận với thêm {0} Tốt." },
+      [RelicType.START_ROOK]: { name: "Vệ Binh Hoàng Gia", desc: "Bắt đầu mỗi trận với thêm {0} Xe." },
+      [RelicType.START_KNIGHT]: { name: "Kỵ Binh", desc: "Bắt đầu mỗi trận với thêm {0} Mã." },
+      [RelicType.START_BISHOP]: { name: "Giáo Sĩ", desc: "Bắt đầu mỗi trận với thêm {0} Tượng." },
+      [RelicType.START_QUEEN]: { name: "Hộ Vệ Nữ Hoàng", desc: "Bắt đầu mỗi trận với thêm {0} Hậu." },
     },
     tiles: {
       [TileEffect.NONE]: { name: "Cỏ", desc: "Địa hình thường." },

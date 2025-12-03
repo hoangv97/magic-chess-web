@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -159,6 +156,7 @@ export const useGameLogic = ({
         }
     }
 
+    // Place Player Pieces (Custom Mode or Campaign Relics)
     if (!campaignMode) {
         let playersPlaced = 0;
         const playerTypes = [PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.PAWN];
@@ -179,6 +177,40 @@ export const useGameLogic = ({
             playersPlaced++;
         }
         }
+    } else {
+        // Handle Starter Piece Relics for Campaign
+        const starterRelics = relics.filter(r => [
+            RelicType.START_PAWN, RelicType.START_ROOK, RelicType.START_KNIGHT, 
+            RelicType.START_BISHOP, RelicType.START_QUEEN
+        ].includes(r.type));
+
+        starterRelics.forEach(relic => {
+            let type = PieceType.PAWN;
+            if (relic.type === RelicType.START_ROOK) type = PieceType.ROOK;
+            if (relic.type === RelicType.START_KNIGHT) type = PieceType.KNIGHT;
+            if (relic.type === RelicType.START_BISHOP) type = PieceType.BISHOP;
+            if (relic.type === RelicType.START_QUEEN) type = PieceType.QUEEN;
+
+            const count = relic.level; 
+            let placed = 0;
+            let loopSafety = 0;
+            while(placed < count && loopSafety < 100) {
+                loopSafety++;
+                const r = (size - 2) + Math.floor(Math.random() * 2);
+                const c = Math.floor(Math.random() * size);
+                if (r >= 0 && r < size && c >= 0 && c < size && !newBoard[r][c].piece) {
+                    newBoard[r][c].piece = {
+                        id: uuidv4(),
+                        type,
+                        side: Side.WHITE,
+                        hasMoved: false,
+                        frozenTurns: 0,
+                        immortalTurns: 0
+                    };
+                    placed++;
+                }
+            }
+        });
     }
 
     let gameDeck: Card[] = [];
@@ -406,7 +438,10 @@ export const useGameLogic = ({
                             targetCell.tileEffect = TileEffect.NONE;
                         }
                         if (targetCell.piece) {
-                            setGold(g => g + 10);
+                            // Check for Midas Touch
+                            const midas = relics.find(r => r.type === RelicType.MIDAS_TOUCH);
+                            const goldMultiplier = midas ? 2 : 1;
+                            setGold(g => g + (10 * goldMultiplier));
                         }
                         
                         targetCell.piece = { ...newBoard[pos.row][pos.col].piece!, hasMoved: true };
@@ -463,7 +498,12 @@ export const useGameLogic = ({
 
     if (target && target.side === Side.BLACK) {
         const goldReward = PIECE_GOLD_VALUES[target.type] || 10;
-        setGold(prev => prev + goldReward);
+        
+        // Midas Touch Logic
+        const midas = relics.find(r => r.type === RelicType.MIDAS_TOUCH);
+        const goldMultiplier = midas ? 2 : 1;
+
+        setGold(prev => prev + (goldReward * goldMultiplier));
         enemyKilled = true;
     }
 
