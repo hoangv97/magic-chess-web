@@ -1,5 +1,4 @@
 
-
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
@@ -22,6 +21,7 @@ interface UseGameLogicProps {
   setGold: React.Dispatch<React.SetStateAction<number>>;
   onWin: () => void;
   onLoss: () => void;
+  onPieceKilled?: (piece: Piece) => void;
 }
 
 export const useGameLogic = ({
@@ -30,7 +30,8 @@ export const useGameLogic = ({
   relics,
   setGold,
   onWin,
-  onLoss
+  onLoss,
+  onPieceKilled
 }: UseGameLogicProps) => {
   const [board, setBoard] = useState<Cell[][]>([]);
   const [turn, setTurn] = useState<Side>(Side.WHITE);
@@ -48,6 +49,7 @@ export const useGameLogic = ({
   
   // New States for Advanced Mechanics
   const [lastEnemyMoveType, setLastEnemyMoveType] = useState<PieceType | null>(null);
+  const [lastPlayerSpawnedType, setLastPlayerSpawnedType] = useState<PieceType | null>(null); // For Mirror Mage
   // Changed to useRef to avoid stale closure issues in setTimeout callbacks
   const tempTileEffects = useRef<{ pos: Position, originalEffect: TileEffect, variant: TileEffect, turnsLeft: number }[]>([]);
   const [deadPieces, setDeadPieces] = useState<PieceType[]>([]);
@@ -250,6 +252,7 @@ export const useGameLogic = ({
     setBossTiles([]);
     setLastEnemyMoveType(null);
     setDeadPieces([]);
+    setLastPlayerSpawnedType(null);
     tempTileEffects.current = [];
     
     // Resume music if enabled
@@ -560,6 +563,31 @@ export const useGameLogic = ({
         if (necromancy) {
             spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
         }
+        
+        // --- Hydra Boss Logic: Spawn replacement enemy on kill ---
+        if (activeBoss === BossType.HYDRA) {
+            const emptySpots: Position[] = [];
+            const size = newBoard.length;
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
+                    if (!newBoard[r][c].piece && newBoard[r][c].tileEffect !== TileEffect.WALL && newBoard[r][c].tileEffect !== TileEffect.HOLE) {
+                        emptySpots.push({row:r, col:c});
+                    }
+                }
+            }
+            if (emptySpots.length > 0) {
+                const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+                const hydraSpawns = [PieceType.PAWN, PieceType.KNIGHT];
+                newBoard[spot.row][spot.col].piece = {
+                    id: uuidv4(),
+                    type: hydraSpawns[Math.floor(Math.random() * hydraSpawns.length)],
+                    side: Side.BLACK,
+                    hasMoved: false,
+                    frozenTurns: 0,
+                    immortalTurns: 0
+                };
+            }
+        }
     } else {
         soundManager.playSfx('move');
     }
@@ -648,6 +676,42 @@ export const useGameLogic = ({
 
       const newTiles: Position[] = [];
 
+      // --- Chaos Lord: Spawn random piece every 5 turns ---
+      if (activeBoss === BossType.CHAOS_LORD && turnCount % 5 === 0) {
+          if (emptyTiles.length > 0) {
+              const spot = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+              const chaosPool = [PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT, PieceType.PAWN];
+              boardState[spot.row][spot.col].piece = {
+                  id: uuidv4(),
+                  type: chaosPool[Math.floor(Math.random() * chaosPool.length)],
+                  side: Side.BLACK,
+                  hasMoved: false,
+                  frozenTurns: 0,
+                  immortalTurns: 0
+              };
+              soundManager.playSfx('spawn');
+          }
+      }
+
+      // --- Mind Controller: Turn random player piece into enemy every 5 turns ---
+      if (activeBoss === BossType.MIND_CONTROLLER && turnCount % 5 === 0) {
+          const playerPieces: Position[] = [];
+          for(let r=0; r<size; r++) {
+              for(let c=0; c<size; c++) {
+                  const p = boardState[r][c].piece;
+                  if (p && p.side === Side.WHITE && p.type !== PieceType.KING) {
+                      playerPieces.push({row:r, col:c});
+                  }
+              }
+          }
+          if (playerPieces.length > 0) {
+              const victimPos = playerPieces[Math.floor(Math.random() * playerPieces.length)];
+              const victim = boardState[victimPos.row][victimPos.col].piece!;
+              victim.side = Side.BLACK; // Wololo
+              soundManager.playSfx('spawn');
+          }
+      }
+
       if (activeBoss === BossType.UNDEAD_LORD && turnCount % 5 === 0) {
           for(let r=0; r<size; r++){
               for(let c=0; c<size; c++){
@@ -715,6 +779,31 @@ export const useGameLogic = ({
         piece: cell.piece ? { ...cell.piece } : null
     })));
 
+    // --- Mirror Mage: Spawn copy of player's last spawned unit ---
+    if (activeBoss === BossType.MIRROR_MAGE && lastPlayerSpawnedType) {
+        const size = boardCopy.length;
+        const emptySpots: Position[] = [];
+        for(let r=0; r<size; r++) {
+            for(let c=0; c<size; c++) {
+                if(!boardCopy[r][c].piece && boardCopy[r][c].tileEffect !== TileEffect.WALL) {
+                    emptySpots.push({row:r, col:c});
+                }
+            }
+        }
+        if (emptySpots.length > 0) {
+            const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+            boardCopy[spot.row][spot.col].piece = {
+                id: uuidv4(),
+                type: lastPlayerSpawnedType,
+                side: Side.BLACK,
+                hasMoved: false,
+                frozenTurns: 0,
+                immortalTurns: 0
+            };
+            soundManager.playSfx('spawn');
+        }
+    }
+
     setBoard(boardCopy); 
 
     const size = boardCopy.length;
@@ -759,6 +848,7 @@ export const useGameLogic = ({
         drawCard();
         setIsEnemyMoveLimited(false);
         setEnPassantTarget(null);
+        setLastPlayerSpawnedType(null); // Reset spawn tracker
         calculateCheckState(boardCopy);
         setBoard(boardCopy); 
     };
@@ -827,17 +917,20 @@ export const useGameLogic = ({
         setLastEnemyMoveType(movingPiece.type);
 
         let playerPieceKilled = false;
+        let killedPiece: Piece | null = null;
         
         if (movingPiece.type === PieceType.PAWN && playerEnPassantTarget && bestMove.to.row === playerEnPassantTarget.row && bestMove.to.col === playerEnPassantTarget.col) {
              const direction = 1;
              const victimRow = bestMove.to.row - direction;
              if (boardCopy[victimRow][bestMove.to.col].piece) {
                  playerPieceKilled = true;
-                 setDeadPieces(prev => [...prev, boardCopy[victimRow][bestMove.to.col].piece!.type]);
+                 killedPiece = boardCopy[victimRow][bestMove.to.col].piece!;
+                 setDeadPieces(prev => [...prev, killedPiece!.type]);
              }
              boardCopy[victimRow][bestMove.to.col].piece = null;
         } else if (targetPiece && targetPiece.side === Side.WHITE) {
             playerPieceKilled = true;
+            killedPiece = targetPiece;
             setDeadPieces(prev => [...prev, targetPiece.type]);
         }
 
@@ -877,12 +970,43 @@ export const useGameLogic = ({
             soundManager.playSfx('spawn');
         }
 
-        if (playerPieceKilled) {
+        if (playerPieceKilled && killedPiece) {
              soundManager.playSfx('capture');
+             
              const lastWill = relics.find(r => r.type === RelicType.LAST_WILL);
              if (lastWill) {
                  spawnRelicPiece(boardCopy, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
              }
+
+             // Trigger callback for Soul Eater mechanic
+             if (onPieceKilled) {
+                 onPieceKilled(killedPiece);
+             }
+
+             // --- Blood King Boss: Spawn new enemy on kill ---
+             if (activeBoss === BossType.BLOOD_KING) {
+                 const emptySpots: Position[] = [];
+                 for(let r=0; r<size; r++) {
+                     for(let c=0; c<size; c++) {
+                         if (!boardCopy[r][c].piece && boardCopy[r][c].tileEffect !== TileEffect.WALL) {
+                             emptySpots.push({row:r, col:c});
+                         }
+                     }
+                 }
+                 if (emptySpots.length > 0) {
+                     const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+                     const pool = [PieceType.PAWN, PieceType.KNIGHT, PieceType.BISHOP];
+                     boardCopy[spot.row][spot.col].piece = {
+                         id: uuidv4(),
+                         type: pool[Math.floor(Math.random() * pool.length)],
+                         side: Side.BLACK,
+                         hasMoved: false,
+                         frozenTurns: 0,
+                         immortalTurns: 0
+                     };
+                 }
+             }
+
         } else {
              soundManager.playSfx('move');
         }
@@ -1174,6 +1298,9 @@ export const useGameLogic = ({
             if (cell.tileEffect === TileEffect.LAVA && spawnType !== PieceType.DRAGON) {
                 newBoard[r][c].piece = null;
             }
+
+            // Track for Mirror Mage
+            setLastPlayerSpawnedType(spawnType);
 
             setBoard(newBoard);
             soundManager.playSfx('spawn');

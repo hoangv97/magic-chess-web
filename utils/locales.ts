@@ -201,6 +201,36 @@ export const TRANSLATIONS = {
         name: "Undead Lord", 
         desc: "A master of death who shields his minions.",
         ability: "ACTIVE: Grants immortality to a random minion. The chosen one changes every 5 turns." 
+      },
+      [BossType.CHAOS_LORD]: { 
+        name: "Chaos Lord", 
+        desc: "A being of pure unpredictability.",
+        ability: "ACTIVE: Summons a random piece to the battlefield every 5 turns." 
+      },
+      [BossType.MIRROR_MAGE]: { 
+        name: "Mirror Mage", 
+        desc: "A sorcerer who mocks your every move.",
+        ability: "REACTIVE: When you summon a piece, he summons a copy of it." 
+      },
+      [BossType.SOUL_EATER]: { 
+        name: "Soul Devourer", 
+        desc: "It hungers for the essence of your army.",
+        ability: "PASSIVE: When your piece dies, you lose a card from your deck." 
+      },
+      [BossType.BLOOD_KING]: { 
+        name: "Blood King", 
+        desc: "A tyrant who fuels his army with blood.",
+        ability: "REACTIVE: When he kills your piece, a new enemy is born." 
+      },
+      [BossType.HYDRA]: { 
+        name: "The Hydra", 
+        desc: "Cut off one head, two more shall take its place...",
+        ability: "REACTIVE: When an enemy piece dies, another spawns to replace it." 
+      },
+      [BossType.MIND_CONTROLLER]: { 
+        name: "Hypnotist", 
+        desc: "Master of the mind.",
+        ability: "ACTIVE: Takes control of one of your units every 5 turns." 
       }
     },
     deckSelection: {
@@ -445,6 +475,36 @@ export const TRANSLATIONS = {
         name: "Chúa Tể Bất Tử", 
         desc: "Kẻ ban phát sự bất tử.",
         ability: "CHỦ ĐỘNG: Ban sự bất tử cho một lính ngẫu nhiên. Thay đổi mỗi 5 lượt." 
+      },
+      [BossType.CHAOS_LORD]: { 
+        name: "Chúa Tể Hỗn Mang", 
+        desc: "Hiện thân của sự khó lường.",
+        ability: "CHỦ ĐỘNG: Triệu hồi một quân cờ ngẫu nhiên mỗi 5 lượt." 
+      },
+      [BossType.MIRROR_MAGE]: { 
+        name: "Pháp Sư Gương", 
+        desc: "Kẻ nhạo báng mọi nước đi của bạn.",
+        ability: "PHẢN ĐÒN: Khi bạn triệu hồi quân, hắn cũng triệu hồi bản sao." 
+      },
+      [BossType.SOUL_EATER]: { 
+        name: "Kẻ Ăn Linh Hồn", 
+        desc: "Hắn đói khát linh hồn quân đội của bạn.",
+        ability: "BỊ ĐỘNG: Khi quân bạn chết, bạn mất một lá bài." 
+      },
+      [BossType.BLOOD_KING]: { 
+        name: "Huyết Vương", 
+        desc: "Kẻ bạo chúa nuôi quân bằng máu.",
+        ability: "PHẢN ĐÒN: Khi hắn giết quân bạn, một kẻ thù mới được sinh ra." 
+      },
+      [BossType.HYDRA]: { 
+        name: "Mãng Xà Hydra", 
+        desc: "Chặt một đầu, mọc hai đầu...",
+        ability: "PHẢN ĐÒN: Khi một quân địch chết, một quân khác sẽ thay thế." 
+      },
+      [BossType.MIND_CONTROLLER]: { 
+        name: "Kẻ Thôi Miên", 
+        desc: "Bậc thầy tâm trí.",
+        ability: "CHỦ ĐỘNG: Chiếm quyền kiểm soát một quân của bạn mỗi 5 lượt." 
       }
     },
     deckSelection: {

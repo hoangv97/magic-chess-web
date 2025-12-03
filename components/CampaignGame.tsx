@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType } from '../types';
+import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, PieceType, CardType } from '../types';
 import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { useGameLogic } from '../hooks/useGameLogic';
@@ -22,6 +22,32 @@ interface CampaignGameProps {
   settings: GameSettings;
   onExit: () => void;
 }
+
+const getCardTypeFromPiece = (piece: Piece): CardType | null => {
+    switch (piece.type) {
+        case PieceType.PAWN: return CardType.SPAWN_PAWN;
+        case PieceType.KNIGHT: return CardType.SPAWN_KNIGHT;
+        case PieceType.BISHOP: return CardType.SPAWN_BISHOP;
+        case PieceType.ROOK: return CardType.SPAWN_ROOK;
+        case PieceType.QUEEN: return CardType.SPAWN_QUEEN;
+        case PieceType.FOOL: return CardType.SPAWN_FOOL;
+        case PieceType.SHIP: return CardType.SPAWN_SHIP;
+        case PieceType.ELEPHANT: return CardType.SPAWN_ELEPHANT;
+        case PieceType.CHANCELLOR: return CardType.SPAWN_CHANCELLOR;
+        case PieceType.ARCHBISHOP: return CardType.SPAWN_ARCHBISHOP;
+        case PieceType.MANN: return CardType.SPAWN_MANN;
+        case PieceType.AMAZON: return CardType.SPAWN_AMAZON;
+        case PieceType.CENTAUR: return CardType.SPAWN_CENTAUR;
+        case PieceType.ZEBRA: return CardType.SPAWN_ZEBRA;
+        case PieceType.CHAMPION: return CardType.SPAWN_CHAMPION;
+        case PieceType.DRAGON:
+            if (piece.variant === 'LAVA') return CardType.SPAWN_DRAGON_LAVA;
+            if (piece.variant === 'ABYSS') return CardType.SPAWN_DRAGON_ABYSS;
+            if (piece.variant === 'FROZEN') return CardType.SPAWN_DRAGON_FROZEN;
+            return CardType.SPAWN_DRAGON;
+        default: return null;
+    }
+};
 
 export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) => {
   // Campaign State
@@ -77,13 +103,37 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
     setPhase('GAME_OVER_LOSS');
   };
 
+  const handlePieceKilled = (piece: Piece) => {
+      // Check if current boss is Soul Eater
+      const currentNode = mapNodes.find(n => n.id === currentMapNodeId);
+      const isSoulEater = currentNode?.bossType === BossType.SOUL_EATER;
+      
+      if (isSoulEater) {
+          const cardType = getCardTypeFromPiece(piece);
+          if (cardType) {
+              setMasterDeck(prev => {
+                  const idx = prev.findIndex(c => c.type === cardType);
+                  if (idx > -1) {
+                      const newDeck = [...prev];
+                      newDeck.splice(idx, 1);
+                      // Visual or audio feedback could be added here if desired, 
+                      // but logic happens silently affecting next game.
+                      return newDeck;
+                  }
+                  return prev;
+              });
+          }
+      }
+  };
+
   const { gameState, actions } = useGameLogic({
     settings,
     isCampaign: true,
     relics,
     setGold,
     onWin: handleWin,
-    onLoss: handleLoss
+    onLoss: handleLoss,
+    onPieceKilled: handlePieceKilled
   });
 
   const selectStarterDeck = (index: number) => {

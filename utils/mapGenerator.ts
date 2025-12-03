@@ -1,4 +1,5 @@
 
+
 import { v4 as uuidv4 } from 'uuid';
 import { MapNode, BossType, MapNodeType } from '../types';
 
@@ -8,7 +9,7 @@ export const generateCampaignMap = (): MapNode[] => {
   const TOTAL_ZONES = 5; 
   const TOTAL_LEVELS = TOTAL_ZONES * LEVELS_PER_ZONE;
   const STEP_X = 120; // Pixels between levels
-  const BOSS_FREQUENCY = 10;
+  const BOSS_FREQUENCY = 5;
 
   let prevNodes: MapNode[] = [];
 
@@ -18,7 +19,13 @@ export const generateCampaignMap = (): MapNode[] => {
       BossType.VOID_BRINGER, 
       BossType.LAVA_TITAN, 
       BossType.STONE_GOLEM,
-      BossType.UNDEAD_LORD
+      BossType.UNDEAD_LORD,
+      BossType.CHAOS_LORD,
+      BossType.MIRROR_MAGE,
+      BossType.SOUL_EATER,
+      BossType.BLOOD_KING,
+      BossType.HYDRA,
+      BossType.MIND_CONTROLLER
   ];
 
   for (let level = 1; level <= TOTAL_LEVELS; level++) {
