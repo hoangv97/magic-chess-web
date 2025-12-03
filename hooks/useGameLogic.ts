@@ -1,13 +1,16 @@
+
+
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   Cell, Piece, PieceType, Side, Position, TileEffect, Card, CardType, GameSettings, Relic, RelicType, BossType 
 } from '../types';
 import { 
-  generateBoard, getValidMoves 
+  generateBoard, getValidMoves, isValidPos 
 } from '../utils/gameLogic';
 import { 
-  getDeckTemplate, PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN, RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, getTileEffectInfo, getBossInfo 
+  getDeckTemplate, PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN, RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, getTileEffectInfo, getBossInfo,
+  AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
 import { soundManager } from '../utils/soundManager';
@@ -47,6 +50,7 @@ export const useGameLogic = ({
   const [lastEnemyMoveType, setLastEnemyMoveType] = useState<PieceType | null>(null);
   // Changed to useRef to avoid stale closure issues in setTimeout callbacks
   const tempTileEffects = useRef<{ pos: Position, originalEffect: TileEffect, variant: TileEffect, turnsLeft: number }[]>([]);
+  const [deadPieces, setDeadPieces] = useState<PieceType[]>([]);
 
   // Enemy Visual State
   const [selectedEnemyPos, setSelectedEnemyPos] = useState<Position | null>(null);
@@ -245,6 +249,7 @@ export const useGameLogic = ({
     setActiveBoss(currentBoss);
     setBossTiles([]);
     setLastEnemyMoveType(null);
+    setDeadPieces([]);
     tempTileEffects.current = [];
     
     // Resume music if enabled
@@ -463,7 +468,6 @@ export const useGameLogic = ({
             // Save current state to revert later
             const originalEffect = newBoard[from.row][from.col].tileEffect;
             // Only apply trail if the tile doesn't already have a permanent obstacle (like wall) or another effect
-            // Actually, elemental dragons override terrain temporarily.
             newBoard[from.row][from.col].tileEffect = effect;
             tempTileEffects.current.push({ pos: from, originalEffect, variant: effect, turnsLeft: 1 });
         }
@@ -496,7 +500,12 @@ export const useGameLogic = ({
         nextEnPassantTarget = { row: (from.row + to.row) / 2, col: from.col };
     }
 
+    // --- Mimic Logic & Capture ---
     if (target && target.side === Side.BLACK) {
+        if (piece.mimic) {
+            piece.type = target.type;
+        }
+
         const goldReward = PIECE_GOLD_VALUES[target.type] || 10;
         
         // Midas Touch Logic
@@ -523,6 +532,11 @@ export const useGameLogic = ({
     
     if (destEffect === TileEffect.LAVA && !ignoresTerrain) {
         if (!(newBoard[to.row][to.col].piece!.immortalTurns && newBoard[to.row][to.col].piece!.immortalTurns! > 0)) {
+            // Check suicide mode - no effect since it killed itself
+            const p = newBoard[to.row][to.col].piece!;
+            if (p.side === Side.WHITE) {
+                setDeadPieces(prev => [...prev, p.type]);
+            }
             newBoard[to.row][to.col].piece = null; 
             selfKilled = true; 
             soundManager.playSfx('capture');
@@ -557,11 +571,20 @@ export const useGameLogic = ({
         }
     }
 
-    // Decrement Player Effects
+    // Decrement Player Effects & Ascended Death
     newBoard.forEach(row => row.forEach(cell => {
         if (cell.piece && cell.piece.side === Side.WHITE) {
             if ((cell.piece.frozenTurns || 0) > 0) cell.piece.frozenTurns = (cell.piece.frozenTurns || 0) - 1;
             if ((cell.piece.immortalTurns || 0) > 0) cell.piece.immortalTurns = (cell.piece.immortalTurns || 0) - 1;
+            if ((cell.piece.ascendedTurns || 0) > 0) {
+                cell.piece.ascendedTurns = (cell.piece.ascendedTurns || 0) - 1;
+                if (cell.piece.ascendedTurns === 0) {
+                    const pieceType = cell.piece.type;
+                    setDeadPieces(prev => [...prev, pieceType]);
+                    cell.piece = null;
+                    soundManager.playSfx('loss'); // Died of old age
+                }
+            }
         }
     }));
 
@@ -791,7 +814,14 @@ export const useGameLogic = ({
       let nextEnPassantTarget: Position | null = null;
 
       if (bestMove) {
-        const movingPiece = boardCopy[bestMove.from.row][bestMove.from.col].piece!;
+        const movingPiece = boardCopy[bestMove.from.row][bestMove.from.col].piece;
+        
+        // Safety check to prevent crash if piece is somehow missing
+        if (!movingPiece) {
+            passTurn();
+            return;
+        }
+
         const targetPiece = boardCopy[bestMove.to.row][bestMove.to.col].piece;
         
         setLastEnemyMoveType(movingPiece.type);
@@ -803,10 +833,12 @@ export const useGameLogic = ({
              const victimRow = bestMove.to.row - direction;
              if (boardCopy[victimRow][bestMove.to.col].piece) {
                  playerPieceKilled = true;
+                 setDeadPieces(prev => [...prev, boardCopy[victimRow][bestMove.to.col].piece!.type]);
              }
              boardCopy[victimRow][bestMove.to.col].piece = null;
         } else if (targetPiece && targetPiece.side === Side.WHITE) {
             playerPieceKilled = true;
+            setDeadPieces(prev => [...prev, targetPiece.type]);
         }
 
         if (movingPiece.type === PieceType.PAWN && Math.abs(bestMove.from.row - bestMove.to.row) === 2) {
@@ -819,6 +851,13 @@ export const useGameLogic = ({
 
         boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
         boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
+
+        // --- Check for Suicide Mode (Trapped) ---
+        if (targetPiece && targetPiece.side === Side.WHITE && targetPiece.trapped) {
+            // The attacker also dies
+            boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
+            soundManager.playSfx('capture'); // Double death
+        }
 
         const effect = boardCopy[bestMove.to.row][bestMove.to.col].tileEffect;
         if (effect === TileEffect.LAVA && movingPiece.type !== PieceType.DRAGON) {
@@ -940,6 +979,9 @@ export const useGameLogic = ({
           }
           if ((piece.frozenTurns || 0) > 0) content += `\nFrozen: ${piece.frozenTurns} turns`;
           if ((piece.immortalTurns || 0) > 0) content += `\nImmortal: ${piece.immortalTurns} turns`;
+          if (piece.trapped) content += `\nStatus: Trapped (Suicide Mode)`;
+          if (piece.mimic) content += `\nStatus: Mimic`;
+          if (piece.ascendedTurns) content += `\nStatus: Ascended (${piece.ascendedTurns} turns left)`;
           
           if (piece.type === PieceType.KING && piece.side === Side.BLACK && activeBoss !== BossType.NONE) {
               const bossData = t.bosses[activeBoss];
@@ -974,8 +1016,14 @@ export const useGameLogic = ({
     setEnemyValidMoves([]);
 
     if (card.type.includes('SPAWN') || card.type === CardType.EFFECT_BACK_BASE) {
-      setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
-    } else if (card.type === CardType.EFFECT_SWITCH || card.type === CardType.EFFECT_IMMORTAL) {
+      if (card.type === CardType.SPAWN_REVIVE) {
+          playInstantCard(card);
+      } else {
+          setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
+      }
+    } else if (card.type === CardType.EFFECT_SWITCH || card.type === CardType.EFFECT_IMMORTAL || 
+               card.type === CardType.EFFECT_MIMIC || card.type === CardType.EFFECT_ASCEND || 
+               card.type === CardType.EFFECT_IMMORTAL_LONG || card.type === CardType.EFFECT_AREA_FREEZE) {
       setCardTargetMode({ type: card.type, step: 'SELECT_PIECE_1' });
     } else if (card.type.includes('BORROW')) {
       setCardTargetMode({ type: card.type, step: 'SELECT_PIECE_1' });
@@ -986,7 +1034,9 @@ export const useGameLogic = ({
 
   const playInstantCard = (card: Card) => {
     const newBoard = board.map(row => [...row]);
+    const size = newBoard.length;
     let played = false;
+
     if (card.type === CardType.EFFECT_FREEZE) {
       const enemies: Position[] = [];
       newBoard.forEach((row, r) => row.forEach((cell, c) => {
@@ -1004,7 +1054,62 @@ export const useGameLogic = ({
       setIsEnemyMoveLimited(true);
       played = true;
       soundManager.playSfx('frozen'); 
+    } else if (card.type === CardType.EFFECT_TRAP) {
+        const friends: Position[] = [];
+        newBoard.forEach((row, r) => row.forEach((cell, c) => {
+            if (cell.piece?.side === Side.WHITE && !cell.piece.trapped) friends.push({ row: r, col: c });
+        }));
+        if (friends.length > 0) {
+            const target = friends[Math.floor(Math.random() * friends.length)];
+            newBoard[target.row][target.col].piece!.trapped = true;
+            played = true;
+            soundManager.playSfx('spawn');
+        } else {
+            alert("No friendly pieces available for this effect.");
+        }
+    } else if (card.type === CardType.SPAWN_REVIVE) {
+        if (deadPieces.length === 0) {
+            alert("No dead pieces to revive!");
+            return;
+        }
+        
+        // Find empty spot in base rows
+        const baseRows = [size - 1, size - 2];
+        const validSpots: Position[] = [];
+        baseRows.forEach(r => {
+            for (let c = 0; c < size; c++) {
+                const cell = newBoard[r][c];
+                if (!cell.piece && cell.tileEffect !== TileEffect.WALL && cell.tileEffect !== TileEffect.HOLE) {
+                    validSpots.push({row: r, col: c});
+                }
+            }
+        });
+
+        if (validSpots.length > 0) {
+            // Pick random dead piece
+            const pieceType = deadPieces[Math.floor(Math.random() * deadPieces.length)];
+            // Remove from dead pool (first instance)
+            const index = deadPieces.indexOf(pieceType);
+            const newDeadPieces = [...deadPieces];
+            if (index > -1) newDeadPieces.splice(index, 1);
+            setDeadPieces(newDeadPieces);
+
+            const spot = validSpots[Math.floor(Math.random() * validSpots.length)];
+            newBoard[spot.row][spot.col].piece = {
+                id: uuidv4(),
+                type: pieceType,
+                side: Side.WHITE,
+                hasMoved: false,
+                frozenTurns: 0,
+                immortalTurns: 0
+            };
+            played = true;
+            soundManager.playSfx('spawn');
+        } else {
+            alert("No space in base rows to revive unit.");
+        }
     }
+
     if (played) {
       setBoard(newBoard);
       consumeCard(card.id);
@@ -1121,6 +1226,63 @@ export const useGameLogic = ({
             newBoard[r][c].piece = { ...piece, immortalTurns: 2 }; 
             setBoard(newBoard);
             soundManager.playSfx('spawn'); 
+            consumeCard(selectedCardId);
+        }
+        return;
+    }
+
+    // New Targeted Cards Logic
+    if (type === CardType.EFFECT_IMMORTAL_LONG) {
+        if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
+            newBoard[r][c].piece = { ...piece, immortalTurns: IMMORTAL_LONG_DURATION }; 
+            setBoard(newBoard);
+            soundManager.playSfx('spawn'); 
+            consumeCard(selectedCardId);
+        }
+        return;
+    }
+
+    if (type === CardType.EFFECT_MIMIC) {
+        if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
+            newBoard[r][c].piece = { ...piece, mimic: true }; 
+            setBoard(newBoard);
+            soundManager.playSfx('spawn'); 
+            consumeCard(selectedCardId);
+        }
+        return;
+    }
+
+    if (type === CardType.EFFECT_ASCEND) {
+        if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE && piece.type === PieceType.PAWN) {
+            const promotions = [PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT];
+            const promo = promotions[Math.floor(Math.random() * promotions.length)];
+            newBoard[r][c].piece = { ...piece, type: promo, ascendedTurns: ASCEND_DURATION }; 
+            setBoard(newBoard);
+            soundManager.playSfx('spawn'); 
+            consumeCard(selectedCardId);
+        } else if (piece?.type !== PieceType.PAWN) {
+            alert("Ascend can only be used on a Pawn.");
+        }
+        return;
+    }
+
+    if (type === CardType.EFFECT_AREA_FREEZE) {
+        if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const tr = r + dr;
+                    const tc = c + dc;
+                    if (isValidPos({ row: tr, col: tc }, size)) {
+                        const targetPiece = newBoard[tr][tc].piece;
+                        if (targetPiece && targetPiece.side === Side.BLACK) {
+                            targetPiece.frozenTurns = AREA_FREEZE_DURATION;
+                        }
+                    }
+                }
+            }
+            setBoard(newBoard);
+            soundManager.playSfx('frozen'); 
             consumeCard(selectedCardId);
         }
         return;

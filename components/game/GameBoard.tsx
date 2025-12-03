@@ -80,6 +80,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 (cardTargetMode.type.includes('SWITCH') && cell.piece?.side === Side.WHITE) ||
                 (cardTargetMode.type.includes('BORROW') && cell.piece?.side === Side.WHITE) ||
                 (cardTargetMode.type.includes('IMMORTAL') && cell.piece?.side === Side.WHITE) ||
+                (cardTargetMode.type.includes('MIMIC') && cell.piece?.side === Side.WHITE) ||
+                (cardTargetMode.type.includes('AREA_FREEZE') && cell.piece?.side === Side.WHITE) ||
+                (cardTargetMode.type.includes('ASCEND') && cell.piece?.side === Side.WHITE && cell.piece.type === PieceType.PAWN) ||
                 (cardTargetMode.type.includes('BACK') && cell.piece?.side === Side.WHITE && cell.piece.type !== PieceType.KING)
              );
 
@@ -157,6 +160,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                           {(cell.piece.variant) && <span className="text-orange-300 font-bold">Element: {cell.piece.variant}</span>}
                           {(cell.piece.frozenTurns || 0) > 0 && <span className="text-blue-300">{t.tooltips.frozen.replace('{0}', String(cell.piece.frozenTurns))}</span>}
                           {(cell.piece.immortalTurns || 0) > 0 && <span className="text-yellow-300">{t.tooltips.immortal.replace('{0}', String(cell.piece.immortalTurns! > 100 ? '∞' : cell.piece.immortalTurns))}</span>}
+                          {cell.piece.trapped && <span className="text-red-400 font-bold">Suicide Mode (Trap)</span>}
+                          {cell.piece.mimic && <span className="text-purple-400 font-bold">Mimic</span>}
+                          {cell.piece.ascendedTurns && <span className="text-cyan-400 font-bold">Ascended ({cell.piece.ascendedTurns} left)</span>}
+                          
                           {cell.piece.tempMoveOverride && <span className="text-purple-300">{t.tooltips.movesLike.replace('{0}', t.pieces[cell.piece.tempMoveOverride])}</span>}
                           {isBossPiece && <span className="text-red-500 font-bold uppercase">{t.tooltips.bossAbility}</span>}
                           {cell.tileEffect !== TileEffect.NONE && <span className="text-[9px] text-slate-400">{t.tooltips.on} {tileInfo.name}</span>}
@@ -247,6 +254,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                               transition={{ duration: 0.3 }}
                             >
                               🛡️
+                            </motion.div>
+                         )}
+                         {cell.piece.trapped && (
+                            <motion.div 
+                              initial={{ scale: 0 }} 
+                              animate={{ scale: 1 }}
+                              className="absolute -bottom-1 -left-1 text-sm drop-shadow-md bg-black rounded-full w-5 h-5 flex items-center justify-center border border-red-500 z-40"
+                            >
+                              ☠️
+                            </motion.div>
+                         )}
+                         {cell.piece.mimic && (
+                            <motion.div 
+                              initial={{ scale: 0 }} 
+                              animate={{ scale: 1 }}
+                              className="absolute -top-2 right-1/2 translate-x-1/2 text-sm drop-shadow-md bg-purple-800 rounded-full w-5 h-5 flex items-center justify-center border border-purple-400 z-40"
+                            >
+                              🎭
+                            </motion.div>
+                         )}
+                         {(cell.piece.ascendedTurns || 0) > 0 && (
+                            <motion.div 
+                              initial={{ scale: 0 }} 
+                              animate={{ scale: 1 }}
+                              className="absolute top-1/2 -right-3 -translate-y-1/2 text-[10px] font-bold bg-cyan-800 text-white rounded px-1 border border-cyan-400 z-40"
+                            >
+                              ⏳{cell.piece.ascendedTurns}
                             </motion.div>
                          )}
                          {cell.piece.tempMoveOverride && (

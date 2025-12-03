@@ -43,6 +43,11 @@ export interface Piece {
   frozenTurns?: number; // Replaced boolean with counter. 0 = not frozen.
   immortalTurns?: number; // If > 0, cannot be captured
   variant?: 'LAVA' | 'ABYSS' | 'FROZEN'; // For Elemental Dragons
+  
+  // New Mechanics
+  trapped?: boolean; // Suicide mode: kills attacker
+  mimic?: boolean; // Transforms into enemy on kill
+  ascendedTurns?: number; // Turns until death for Ascend card
 }
 
 export enum TileEffect {
@@ -92,6 +97,13 @@ export enum CardType {
   EFFECT_BORROW_BISHOP = 'EFFECT_BORROW_BISHOP',
   EFFECT_BACK_BASE = 'EFFECT_BACK_BASE', // Send own piece back to base row
   EFFECT_IMMORTAL = 'EFFECT_IMMORTAL', // Make own piece immortal for 1 turn
+  
+  EFFECT_TRAP = 'EFFECT_TRAP', // Suicide mode
+  SPAWN_REVIVE = 'SPAWN_REVIVE', // Respawn dead piece
+  EFFECT_AREA_FREEZE = 'EFFECT_AREA_FREEZE', // Freeze enemies around unit
+  EFFECT_MIMIC = 'EFFECT_MIMIC', // Transform on kill
+  EFFECT_ASCEND = 'EFFECT_ASCEND', // Pawn -> Major piece (3 turns life)
+  EFFECT_IMMORTAL_LONG = 'EFFECT_IMMORTAL_LONG', // Immortal 3 turns
 }
 
 export interface Card {

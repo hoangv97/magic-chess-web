@@ -35,7 +35,10 @@ export const CardComponent: React.FC<CardComponentProps> = ({ card, selected, on
           {card.type.includes('FREEZE') && '❄️'}
           {card.type.includes('LIMIT') && '🐌'}
           {card.type.includes('BORROW') && '🎭'}
+          {card.type.includes('MIMIC') && '🎭'}
           {card.type.includes('BACK') && '↩️'}
+          {card.type.includes('TRAP') && '☠️'}
+          {card.type.includes('ASCEND') && '⏳'}
         </span>
       </div>
       <div className="text-[9px] text-center leading-tight opacity-90 mb-1">

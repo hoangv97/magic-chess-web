@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId, BoardTheme, Language, BossType } from './types';
 import { TRANSLATIONS } from './utils/locales';
@@ -11,6 +13,10 @@ export const BOARD_THEMES: Record<BoardThemeId, BoardTheme> = {
   OCEAN: { name: 'Ocean', light: 'bg-[#dee3e6]', dark: 'bg-[#4b7399]', bg: 'bg-[#0f172a]', border: 'border-[#1e293b]' },
   DARK: { name: 'Dark', light: 'bg-[#7c818c]', dark: 'bg-[#444952]', bg: 'bg-[#18181b]', border: 'border-[#27272a]' }
 };
+
+export const AREA_FREEZE_DURATION = 2;
+export const ASCEND_DURATION = 3;
+export const IMMORTAL_LONG_DURATION = 3;
 
 export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.SPAWN_QUEEN, cost: 120 },
@@ -44,6 +50,14 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.EFFECT_BORROW_BISHOP, cost: 45 },
   { type: CardType.EFFECT_BACK_BASE, cost: 15 },
   { type: CardType.EFFECT_IMMORTAL, cost: 70 },
+
+  // New Cards
+  { type: CardType.EFFECT_TRAP, cost: 40 },
+  { type: CardType.SPAWN_REVIVE, cost: 100 },
+  { type: CardType.EFFECT_AREA_FREEZE, cost: 60 },
+  { type: CardType.EFFECT_MIMIC, cost: 75 },
+  { type: CardType.EFFECT_ASCEND, cost: 35 },
+  { type: CardType.EFFECT_IMMORTAL_LONG, cost: 120 },
 ];
 
 export const getDeckTemplate = (lang: Language) => {
@@ -69,7 +83,7 @@ export const STARTER_DECKS_CONFIG = [
   },
   {
     id: "Experiment",
-    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_IMMORTAL]
+    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN]
   },
   {
     id: "Elite",

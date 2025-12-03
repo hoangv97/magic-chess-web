@@ -1,5 +1,7 @@
 
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
+import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../constants';
 
 export const TRANSLATIONS = {
   en: {
@@ -140,6 +142,14 @@ export const TRANSLATIONS = {
       [CardType.EFFECT_BORROW_BISHOP]: { title: "Bishop's Sight", desc: "Target piece moves like a Bishop this turn." },
       [CardType.EFFECT_BACK_BASE]: { title: "Recall", desc: "Return one of your pieces to the base row." },
       [CardType.EFFECT_IMMORTAL]: { title: "Divine Shield", desc: "Make a piece immortal until your next turn." },
+
+      // New Cards
+      [CardType.EFFECT_TRAP]: { title: "Martyr's Curse", desc: "Turn a random piece into a suicide trap. If killed, the attacker dies too." },
+      [CardType.SPAWN_REVIVE]: { title: "Resurrection", desc: "Respawn a random dead piece at your base." },
+      [CardType.EFFECT_AREA_FREEZE]: { title: "Frost Nova", desc: `Freeze all enemies around a selected unit for ${AREA_FREEZE_DURATION} turns.` },
+      [CardType.EFFECT_MIMIC]: { title: "Doppelganger", desc: "When this unit kills an enemy, it permanently becomes that enemy type." },
+      [CardType.EFFECT_ASCEND]: { title: "Heroic Ascension", desc: `Promote a Pawn to a random major piece. It dies in ${ASCEND_DURATION} turns.` },
+      [CardType.EFFECT_IMMORTAL_LONG]: { title: "Aegis of Ages", desc: `Make a piece immortal for ${IMMORTAL_LONG_DURATION} turns.` },
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Martyr's Sigil", desc: "Spawn a {0} on base row when your piece dies." },
@@ -376,6 +386,14 @@ export const TRANSLATIONS = {
       [CardType.EFFECT_BORROW_BISHOP]: { title: "Tầm Nhìn Tượng", desc: "Quân mục tiêu di chuyển như Tượng lượt này." },
       [CardType.EFFECT_BACK_BASE]: { title: "Thu Hồi", desc: "Đưa một quân của bạn về hàng cuối." },
       [CardType.EFFECT_IMMORTAL]: { title: "Khiên Thần", desc: "Làm một quân bất tử cho đến lượt sau." },
+
+      // New Cards
+      [CardType.EFFECT_TRAP]: { title: "Lời Nguyền Tử Sĩ", desc: "Biến một quân thành bẫy. Kẻ tấn công sẽ chết theo." },
+      [CardType.SPAWN_REVIVE]: { title: "Hồi Sinh", desc: "Hồi sinh một quân đã chết ở hàng cuối." },
+      [CardType.EFFECT_AREA_FREEZE]: { title: "Tuyết Lở", desc: `Đóng băng mọi kẻ thù quanh một quân trong ${AREA_FREEZE_DURATION} lượt.` },
+      [CardType.EFFECT_MIMIC]: { title: "Kẻ Mạo Danh", desc: "Khi quân này giết địch, nó sẽ biến thành loại quân đó." },
+      [CardType.EFFECT_ASCEND]: { title: "Thăng Hoa", desc: `Biến Tốt thành quân cấp cao. Chết sau ${ASCEND_DURATION} lượt.` },
+      [CardType.EFFECT_IMMORTAL_LONG]: { title: "Bảo Hộ Vĩnh Cửu", desc: `Bất tử trong ${IMMORTAL_LONG_DURATION} lượt.` },
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Dấu Ấn Tử Sĩ", desc: "Tạo {0} khi quân bạn chết." },
