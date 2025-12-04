@@ -6,7 +6,7 @@ import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '.
 export const TRANSLATIONS = {
   en: {
     mainMenu: {
-      title: "CARD CHESS EVOLUTION",
+      title: "CHESS EVOLUTION",
       newGame: "NEW GAME",
       startCampaign: "👑 Start Campaign",
       customGame: "⚔️ Custom Game",

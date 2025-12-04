@@ -68,7 +68,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ settings, setSettings, start
       </div>
       
       <div className="mt-8 text-center text-[10px] text-slate-600">
-        v1.2.0 • Card Chess Evolution
+        v1.2.0 • Chess Evolution
       </div>
     </div>
   );

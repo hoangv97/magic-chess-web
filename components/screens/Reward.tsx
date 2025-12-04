@@ -17,9 +17,9 @@ export const Reward: React.FC<RewardProps> = ({ rewardCards, onSelectReward, set
      <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center">
         <h2 className="text-4xl font-black text-yellow-400 mb-4 animate-bounce">{t.victory}!</h2>
         <p className="text-xl text-white mb-8">Choose a card to add to your deck</p>
-        <div className="flex gap-6 mb-12">
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
            {rewardCards.map(card => (
-             <div key={card.id} className="scale-125">
+             <div key={card.id} className="">
                <CardComponent 
                  card={card} 
                  selected={false} 
