@@ -5,7 +5,7 @@ import { PieceType, CardType, Card, RelicType, MapNode, TileEffect, BoardThemeId
 import { TRANSLATIONS } from './utils/locales';
 
 export const TEST_GENERATE_SPECIAL_TILES = false;
-export const DEBUG_MODE = true;
+export const DEBUG_MODE = false;
 
 export const BOARD_THEMES: Record<BoardThemeId, BoardTheme> = {
   CLASSIC: { name: 'Classic', light: 'bg-[#f0d9b5]', dark: 'bg-[#b58863]', bg: 'bg-[#1a1c23]', border: 'border-[#2a2018]' },
