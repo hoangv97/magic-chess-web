@@ -9,7 +9,7 @@ export const generateCampaignMap = (): MapNode[] => {
   const TOTAL_ZONES = 5; 
   const TOTAL_LEVELS = TOTAL_ZONES * LEVELS_PER_ZONE;
   const STEP_X = 120; // Pixels between levels
-  const BOSS_FREQUENCY = 5;
+  const BOSS_FREQUENCY = 2;
 
   let prevNodes: MapNode[] = [];
 
