@@ -64,7 +64,15 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
   
   // Event State
-  const [eventData, setEventData] = useState<{title: string, desc: string, type: 'GOLD' | 'CARD' | 'RELIC' | 'NOTHING', gold?: number, card?: Card, relic?: Relic}>({
+  const [eventData, setEventData] = useState<{
+      title: string, 
+      desc: string, 
+      type: 'GOLD' | 'CARD' | 'RELIC' | 'NOTHING' | 'PICK_CARD', 
+      gold?: number, 
+      card?: Card, 
+      relic?: Relic,
+      choiceCards?: Card[]
+  }>({
       title: '', desc: '', type: 'NOTHING'
   });
 
@@ -186,18 +194,18 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   const resolveUnknownNode = (node: MapNode) => {
       const rand = Math.random();
       
-      if (rand < 0.4) {
+      if (rand < 0.35) {
           // It's a trap! (Battle)
           actions.initGame(true, masterDeck, node.level, BossType.NONE);
           setPhase('PLAYING');
-      } else if (rand < 0.5) {
+      } else if (rand < 0.45) {
           // It's a merchant
           initShop();
           setPhase('SHOP');
-      } else if (rand < 0.6) {
+      } else if (rand < 0.55) {
           // It's a rest site
           setPhase('REST_SITE');
-      } else if (rand < 0.75) {
+      } else if (rand < 0.70) {
           // Gold
           const amount = 50 + Math.floor(Math.random() * 100);
           setEventData({
@@ -207,8 +215,21 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
               gold: amount
           });
           setPhase('EVENT_RESULT');
-      } else if (rand < 0.9) {
-          // Card
+      } else if (rand < 0.85) {
+          // Mystery Pick (Pick 1 of 3)
+          const choices = Array.from({length: 3}).map(() => {
+              const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
+              return { ...t, id: uuidv4() };
+          });
+          setEventData({
+              title: "Fortune Teller",
+              desc: "A mysterious figure lays out three face-down cards. 'Choose your destiny,' they whisper.",
+              type: 'PICK_CARD',
+              choiceCards: choices
+          });
+          setPhase('EVENT_RESULT');
+      } else if (rand < 0.95) {
+          // Single Card
           const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
           const card = { ...t, id: uuidv4() };
           setEventData({
@@ -232,7 +253,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       }
   };
 
-  const handleEventClaim = () => {
+  const handleEventClaim = (pickedCard?: Card) => {
       if (currentMapNodeId) setCompletedMapNodeIds(prev => [...prev, currentMapNodeId]);
       
       if (eventData.type === 'GOLD' && eventData.gold) {
@@ -240,6 +261,9 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
           soundManager.playSfx('buy');
       } else if (eventData.type === 'CARD' && eventData.card) {
           setMasterDeck(prev => [...prev, eventData.card!]);
+          soundManager.playSfx('draw');
+      } else if (eventData.type === 'PICK_CARD' && pickedCard) {
+          setMasterDeck(prev => [...prev, pickedCard]);
           soundManager.playSfx('draw');
       } else if (eventData.type === 'RELIC' && eventData.relic) {
           const r = eventData.relic!;
@@ -445,6 +469,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
                   rewardGold={eventData.gold}
                   rewardCard={eventData.card}
                   rewardRelic={eventData.relic}
+                  choiceCards={eventData.choiceCards}
                   onContinue={handleEventClaim}
                   settings={settings}
               />
