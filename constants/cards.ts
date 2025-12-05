@@ -90,3 +90,64 @@ export const getStarterDecks = (lang: Language) => {
     description: TRANSLATIONS[lang].deckSelection.decks[deck.id as keyof typeof TRANSLATIONS['en']['deckSelection']['decks']]?.desc || '',
   }));
 };
+
+export const getCardIcon = (type: string) => {
+  if (type.includes('SPAWN')) return '⚔️';
+  if (type.includes('IMMORTAL')) return '🛡️';
+  if (type.includes('SWITCH')) return '🔄';
+  if (type.includes('FREEZE')) return '❄️';
+  if (type.includes('LIMIT')) return '🐌';
+  if (type.includes('BORROW')) return '🎭';
+  if (type.includes('MIMIC')) return '🎭';
+  if (type.includes('BACK')) return '↩️';
+  if (type.includes('TRAP')) return '☠️';
+  if (type.includes('ASCEND')) return '⏳';
+  return '✨';
+};
+
+const CLASSIC_SPAWNS = ['SPAWN_PAWN', 'SPAWN_KNIGHT', 'SPAWN_BISHOP', 'SPAWN_ROOK', 'SPAWN_QUEEN'];
+
+export const getCardTheme = (type: string) => {
+  const isUnit = type.startsWith('SPAWN') && type !== 'SPAWN_REVIVE';
+  const isClassicUnit = isUnit && CLASSIC_SPAWNS.includes(type);
+  const isLegendUnit = isUnit && !isClassicUnit;
+
+  if (isLegendUnit) {
+    return {
+      border: 'border-purple-500', 
+      headerBg: 'bg-[#502e66]',
+      bodyBg: 'bg-gradient-to-b from-[#502e66] to-[#2d1b39]',
+      ribbonBg: 'bg-purple-600',
+      descBg: 'bg-[#f3e8ff]', 
+      descText: 'text-[#3b0764]',
+      jewel: 'bg-purple-400',
+      glow: 'bg-purple-500/40',
+      typeLabel: 'LEGEND'
+    };
+  } else if (isClassicUnit) {
+    return {
+      border: 'border-slate-600',
+      headerBg: 'bg-slate-700',
+      bodyBg: 'bg-gradient-to-b from-slate-800 to-slate-900',
+      ribbonBg: 'bg-slate-600',
+      descBg: 'bg-slate-200',
+      descText: 'text-slate-900',
+      jewel: 'bg-cyan-500',
+      glow: 'bg-cyan-400/30',
+      typeLabel: 'UNIT'
+    };
+  } else {
+    // Spell
+    return {
+      border: 'border-red-900',
+      headerBg: 'bg-[#7f1d1d]',
+      bodyBg: 'bg-gradient-to-b from-[#450a0a] to-[#2b0505]', 
+      ribbonBg: 'bg-[#991b1b]',
+      descBg: 'bg-[#fef3c7]', 
+      descText: 'text-[#450a0a]',
+      jewel: 'bg-orange-500',
+      glow: 'bg-orange-500/30',
+      typeLabel: 'SPELL'
+    };
+  }
+};

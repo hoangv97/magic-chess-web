@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { GameSettings, CardType, BossType, RelicType, TileEffect } from '../../types';
 import { TRANSLATIONS } from '../../utils/locales';
-import { getDeckTemplate, getRelicInfo, getTileEffectInfo, getBossIcon } from '../../constants';
+import { getDeckTemplate, getRelicInfo, getTileEffectInfo, getBossIcon, getTileVisuals } from '../../constants';
 import { Button } from '../ui/Button';
 import { CardComponent } from '../ui/CardComponent';
 
@@ -144,19 +144,13 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Object.values(TileEffect).map((type) => {
                 const info = getTileEffectInfo(settings.language, type);
-                let colorClass = "bg-slate-700";
-                let icon = "";
-                if (type === TileEffect.HOLE) { colorClass = "bg-black border-slate-700"; icon="🕳️"; }
-                if (type === TileEffect.WALL) { colorClass = "bg-stone-600 border-stone-500"; icon="🧱"; }
-                if (type === TileEffect.FROZEN) { colorClass = "bg-cyan-900 border-cyan-500"; icon="❄️"; }
-                if (type === TileEffect.LAVA) { colorClass = "bg-red-900 border-red-500"; icon="🔥"; }
-                if (type === TileEffect.NONE) { colorClass = "bg-green-900/30 border-green-800"; icon="🌱"; }
+                const visuals = getTileVisuals(type);
 
                 return (
                   <div key={type} className="bg-slate-800 p-4 rounded-lg border border-slate-600 shadow-lg flex flex-col gap-3">
-                    <div className={`h-24 w-full rounded-lg ${colorClass} border-2 flex items-center justify-center text-4xl shadow-inner relative overflow-hidden`}>
-                       {icon}
-                       {type === TileEffect.LAVA && <div className="absolute inset-0 bg-red-500/20 animate-pulse"></div>}
+                    <div className={`h-24 w-full rounded-lg ${visuals.colorClass} border-2 flex items-center justify-center text-4xl shadow-inner relative overflow-hidden`}>
+                       {visuals.icon}
+                       {visuals.animation && <div className={visuals.animation}></div>}
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-white">{info.name}</h3>

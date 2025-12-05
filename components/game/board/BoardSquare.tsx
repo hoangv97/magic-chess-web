@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cell, Side, Position, PieceType, TileEffect, BossType } from '../../../types';
-import { getTileEffectInfo } from '../../../constants';
+import { getTileEffectInfo, PIECE_VARIANT_STYLES } from '../../../constants';
 import { getPieceIcon } from '../../assets/PieceSets';
 import { TRANSLATIONS } from '../../../utils/locales';
 
@@ -43,9 +44,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
   const hasTooltip = cell.piece || cell.tileEffect !== TileEffect.NONE;
   const tooltipPositionClass = r < 2 ? 'top-full mt-1' : 'bottom-full mb-1';
 
-  const variantStyle = cell.piece?.variant === 'LAVA' ? 'drop-shadow-[0_0_5px_rgba(255,50,0,0.8)] sepia(1) hue-rotate(-50deg) saturate(3)' :
-                       cell.piece?.variant === 'ABYSS' ? 'drop-shadow-[0_0_5px_rgba(100,0,255,0.8)] invert(0.8) hue-rotate(240deg)' :
-                       cell.piece?.variant === 'FROZEN' ? 'drop-shadow-[0_0_5px_rgba(0,255,255,0.8)] brightness(1.5) hue-rotate(180deg)' : '';
+  const variantStyle = cell.piece?.variant ? PIECE_VARIANT_STYLES[cell.piece.variant] : '';
 
   return (
     <div 

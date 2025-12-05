@@ -1,10 +1,9 @@
 
-
 import React, { useEffect, useRef } from 'react';
 import { MapNode, GameSettings, BossType, MapNodeType } from '../../types';
 import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
-import { DEBUG_MODE, getBossIcon } from '../../constants';
+import { DEBUG_MODE, MAP_ZONES_CONFIG, getNodeIcon, getNodeColorClass } from '../../constants';
 
 interface MapModalProps {
   mapNodes: MapNode[];
@@ -24,23 +23,24 @@ export const MapModal: React.FC<MapModalProps> = ({
   
   const currentNode = mapNodes.find(n => n.id === currentNodeId);
   const currentLevel = currentNode ? currentNode.level : 1;
+  const { LEVELS_PER_ZONE, ZONE_WIDTH } = MAP_ZONES_CONFIG;
   
   const zones: { name: string, startX: number, endX: number }[] = [];
   for (let i = 0; i < 5; i++) {
      zones.push({
        name: t.zones[i] || `Zone ${i+1}`,
-       startX: (i * 10 + 1) * 120,
-       endX: (i * 10 + 10) * 120
+       startX: (i * LEVELS_PER_ZONE + 1) * ZONE_WIDTH,
+       endX: (i * LEVELS_PER_ZONE + LEVELS_PER_ZONE) * ZONE_WIDTH
      });
   }
 
   useEffect(() => {
     if (scrollContainerRef.current) {
-      const targetX = currentLevel * 120;
+      const targetX = currentLevel * ZONE_WIDTH;
       const containerWidth = scrollContainerRef.current.clientWidth;
       scrollContainerRef.current.scrollLeft = targetX - containerWidth / 2 + 60; 
     }
-  }, [currentLevel, mapNodes]);
+  }, [currentLevel, mapNodes, ZONE_WIDTH]);
 
   const isNodeAvailable = (node: MapNode) => {
     if (isReadOnly) return false;
@@ -49,29 +49,6 @@ export const MapModal: React.FC<MapModalProps> = ({
       return node.level === 1;
     }
     return currentNode?.next.includes(node.id);
-  };
-
-  const getNodeIcon = (node: MapNode) => {
-      if (node.type === MapNodeType.BOSS) return getBossIcon(node.bossType || BossType.NONE);
-      if (node.type === MapNodeType.MINI_BOSS) return '👹';
-      if (node.type === MapNodeType.SHOP) return '💰';
-      if (node.type === MapNodeType.REST) return '🔥';
-      if (node.type === MapNodeType.UNKNOWN) return '❓';
-      return '⚔️';
-  };
-
-  const getNodeColorClass = (node: MapNode, isAvailable: boolean, isCompleted: boolean, isCurrent: boolean) => {
-      if (isCompleted) return 'bg-green-800 border-green-500 text-green-200';
-      if (isCurrent) return 'bg-blue-600 border-blue-400 text-white scale-125 shadow-[0_0_20px_rgba(59,130,246,0.6)]';
-      if (isAvailable) {
-          if (node.type === MapNodeType.BOSS) return 'bg-red-900/80 border-red-500 text-white hover:scale-125 animate-bounce';
-          if (node.type === MapNodeType.MINI_BOSS) return 'bg-orange-800/90 border-orange-500 text-white hover:scale-125 animate-bounce shadow-[0_0_15px_rgba(249,115,22,0.6)]';
-          if (node.type === MapNodeType.SHOP) return 'bg-yellow-700/80 border-yellow-400 text-white hover:scale-125 animate-bounce';
-          if (node.type === MapNodeType.REST) return 'bg-orange-800/80 border-orange-400 text-white hover:scale-125 animate-bounce';
-          if (node.type === MapNodeType.UNKNOWN) return 'bg-purple-800/80 border-purple-400 text-white hover:scale-125 animate-bounce';
-          return 'bg-slate-700/80 border-slate-400 text-white animate-bounce hover:scale-125 hover:bg-slate-600';
-      }
-      return 'bg-slate-800 border-slate-600 text-slate-600';
   };
 
   return (

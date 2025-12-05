@@ -38,3 +38,9 @@ export const PIECE_GOLD_VALUES: Record<PieceType, number> = {
   [PieceType.DRAGON]: 60,
   [PieceType.SHIP]: 30,
 };
+
+export const PIECE_VARIANT_STYLES = {
+  'LAVA': 'drop-shadow-[0_0_5px_rgba(255,50,0,0.8)] sepia(1) hue-rotate(-50deg) saturate(3)',
+  'ABYSS': 'drop-shadow-[0_0_5px_rgba(100,0,255,0.8)] invert(0.8) hue-rotate(240deg)',
+  'FROZEN': 'drop-shadow-[0_0_5px_rgba(0,255,255,0.8)] brightness(1.5) hue-rotate(180deg)',
+};
