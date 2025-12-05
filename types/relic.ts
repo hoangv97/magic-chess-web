@@ -1,0 +1,18 @@
+
+export enum RelicType {
+  LAST_WILL = 'LAST_WILL',
+  NECROMANCY = 'NECROMANCY',
+  MIDAS_TOUCH = 'MIDAS_TOUCH',
+  DISCOUNT_CARD = 'DISCOUNT_CARD',
+  DISCOUNT_RELIC = 'DISCOUNT_RELIC',
+  START_PAWN = 'START_PAWN',
+  START_ROOK = 'START_ROOK',
+  START_KNIGHT = 'START_KNIGHT',
+  START_BISHOP = 'START_BISHOP',
+  START_QUEEN = 'START_QUEEN',
+}
+
+export interface Relic {
+  type: RelicType;
+  level: number;
+}
