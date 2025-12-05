@@ -27,6 +27,7 @@ import {
   AREA_FREEZE_DURATION,
   ASCEND_DURATION,
   IMMORTAL_LONG_DURATION,
+  LEGEND_PIECE_POOL,
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
 import { soundManager } from '../utils/soundManager';
@@ -116,7 +117,8 @@ export const useGameLogic = ({
     campaignMode: boolean,
     campaignDeck?: Card[],
     level: number = 1,
-    bossType: BossType = BossType.NONE
+    bossType: BossType = BossType.NONE,
+    isElite: boolean = false
   ) => {
     let size = settings.boardSize;
     let eCount = settings.enemyCount;
@@ -126,6 +128,11 @@ export const useGameLogic = ({
     if (campaignMode) {
       size = Math.min(6 + Math.floor((level - 1) / 2), 12);
       eCount = Math.min(2 + level, 12);
+      
+      // Elite / Mini Boss Nodes get more enemies or tougher composition
+      if (isElite) {
+         eCount = Math.min(eCount + 2, 16); 
+      }
       pCount = 0;
     } else {
       currentBoss = settings.customBossType;
@@ -155,16 +162,33 @@ export const useGameLogic = ({
       immortalTurns: 0,
     };
 
-    // Place Random Enemies
-    let enemiesPlaced = 0;
-    let enemyPool = [PieceType.PAWN];
-    if (level >= 2) enemyPool.push(PieceType.KNIGHT);
-    if (level >= 3) enemyPool.push(PieceType.BISHOP);
-    if (level >= 4) enemyPool.push(PieceType.ROOK);
-    if (level >= 6) enemyPool.push(PieceType.QUEEN);
-
-    if (!campaignMode) {
-      enemyPool = [
+    // Determine Enemy Pool
+    let enemyPool: PieceType[] = [];
+    
+    if (campaignMode) {
+       if (isElite) {
+           // Elite / Mini Boss: Mostly Legend pieces
+           // Scaling: At lower levels, mix in fodder. Higher levels, remove fodder.
+           enemyPool = [...LEGEND_PIECE_POOL];
+           const fodderCount = Math.max(0, 10 - Math.floor(level / 2));
+           for(let i=0; i<fodderCount; i++) enemyPool.push(PieceType.PAWN);
+           for(let i=0; i<Math.floor(fodderCount/2); i++) enemyPool.push(PieceType.KNIGHT);
+       } else {
+           // Standard Battle
+           enemyPool = [PieceType.PAWN];
+           if (level >= 2) enemyPool.push(PieceType.KNIGHT);
+           if (level >= 3) enemyPool.push(PieceType.BISHOP);
+           if (level >= 4) enemyPool.push(PieceType.ROOK);
+           if (level >= 6) enemyPool.push(PieceType.QUEEN);
+           
+           // Small chance of legend in normal battle at high levels
+           if (level > 15) {
+               enemyPool.push(LEGEND_PIECE_POOL[Math.floor(Math.random() * LEGEND_PIECE_POOL.length)]);
+           }
+       }
+    } else {
+       // Custom Mode
+       enemyPool = [
         PieceType.ROOK,
         PieceType.KNIGHT,
         PieceType.BISHOP,
@@ -173,10 +197,12 @@ export const useGameLogic = ({
       ];
     }
 
+    // Place Random Enemies
+    let enemiesPlaced = 0;
     let safety = 0;
     while (enemiesPlaced < eCount && safety < 1000) {
       safety++;
-      const r = Math.floor(Math.random() * 2);
+      const r = Math.floor(Math.random() * 2);  // Enemy is always on top 2 rows
       const c = Math.floor(Math.random() * size);
       if (!newBoard[r][c].piece) {
         newBoard[r][c].piece = {

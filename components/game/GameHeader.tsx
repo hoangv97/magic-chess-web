@@ -34,7 +34,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
          {isCampaign && <p className="max-sm:hidden text-xs text-yellow-500 font-bold tracking-widest">{t.campaignLevel} {campaignLevel}</p>}
       </div>
       
-      {phase === 'PLAYING' || phase === 'SHOP' || phase === 'REWARD' ? (
+      {['PLAYING', 'SHOP', 'REWARD', 'MAP'].includes(phase) ? (
         <div className="flex gap-4 items-center">
           {/* Relics Bar */}
           {relics.length > 0 && (

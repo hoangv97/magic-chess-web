@@ -150,6 +150,7 @@ export enum BossType {
 
 export enum MapNodeType {
   BATTLE = 'BATTLE',
+  MINI_BOSS = 'MINI_BOSS',
   BOSS = 'BOSS',
   SHOP = 'SHOP',
   REST = 'REST',

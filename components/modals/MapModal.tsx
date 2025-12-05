@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useRef } from 'react';
 import { MapNode, GameSettings, BossType, MapNodeType } from '../../types';
 import { Button } from '../ui/Button';
@@ -52,6 +53,7 @@ export const MapModal: React.FC<MapModalProps> = ({
 
   const getNodeIcon = (node: MapNode) => {
       if (node.type === MapNodeType.BOSS) return getBossIcon(node.bossType || BossType.NONE);
+      if (node.type === MapNodeType.MINI_BOSS) return '👹';
       if (node.type === MapNodeType.SHOP) return '💰';
       if (node.type === MapNodeType.REST) return '🔥';
       if (node.type === MapNodeType.UNKNOWN) return '❓';
@@ -63,6 +65,7 @@ export const MapModal: React.FC<MapModalProps> = ({
       if (isCurrent) return 'bg-blue-600 border-blue-400 text-white scale-125 shadow-[0_0_20px_rgba(59,130,246,0.6)]';
       if (isAvailable) {
           if (node.type === MapNodeType.BOSS) return 'bg-red-900/80 border-red-500 text-white hover:scale-125 animate-bounce';
+          if (node.type === MapNodeType.MINI_BOSS) return 'bg-orange-800/90 border-orange-500 text-white hover:scale-125 animate-bounce shadow-[0_0_15px_rgba(249,115,22,0.6)]';
           if (node.type === MapNodeType.SHOP) return 'bg-yellow-700/80 border-yellow-400 text-white hover:scale-125 animate-bounce';
           if (node.type === MapNodeType.REST) return 'bg-orange-800/80 border-orange-400 text-white hover:scale-125 animate-bounce';
           if (node.type === MapNodeType.UNKNOWN) return 'bg-purple-800/80 border-purple-400 text-white hover:scale-125 animate-bounce';
@@ -72,7 +75,7 @@ export const MapModal: React.FC<MapModalProps> = ({
   };
 
   return (
-     <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center backdrop-blur-sm">
+     <div className="absolute top-20 inset-0 z-50 bg-slate-900/95 flex flex-col items-center justify-center backdrop-blur-sm">
         <div className="absolute top-4 right-4 z-20">
            {isReadOnly && <Button onClick={onClose} className="bg-slate-700">{t.close}</Button>}
         </div>

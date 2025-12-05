@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, PieceType, CardType } from '../types';
@@ -185,8 +186,14 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       } else if (node.type === MapNodeType.UNKNOWN) {
           resolveUnknownNode(node);
       } else {
-          // BATTLE or BOSS
-          actions.initGame(true, masterDeck, node.level, node.bossType || BossType.NONE);
+          // BATTLE, BOSS, or MINI_BOSS
+          actions.initGame(
+              true, 
+              masterDeck, 
+              node.level, 
+              node.bossType || BossType.NONE,
+              node.type === MapNodeType.MINI_BOSS // isElite
+          );
           setPhase('PLAYING');
       }
   };
@@ -196,7 +203,9 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
       
       if (rand < 0.35) {
           // It's a trap! (Battle)
-          actions.initGame(true, masterDeck, node.level, BossType.NONE);
+          // 20% chance of trap being an Elite fight
+          const isEliteTrap = Math.random() > 0.8;
+          actions.initGame(true, masterDeck, node.level, BossType.NONE, isEliteTrap);
           setPhase('PLAYING');
       } else if (rand < 0.45) {
           // It's a merchant
@@ -401,22 +410,28 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   return (
     <>
       {phase === 'DECK_SELECTION' && (
-          <div className="flex flex-col h-full">
-             <div className="shrink-0"><CommonHeader /></div>
+          <div className="flex flex-col h-full w-full">
+             <div className=""><CommonHeader /></div>
              <DeckSelection onSelectDeck={selectStarterDeck} settings={settings} />
           </div>
       )}
       
       {phase === 'MAP' && (
-           <MapModal 
-             mapNodes={mapNodes}
-             currentNodeId={currentMapNodeId}
-             completedNodes={completedMapNodeIds}
-             onNodeSelect={handleMapNodeSelect}
-             onClose={() => {}} 
-             isReadOnly={false}
-             settings={settings}
-           />
+        <div className="flex flex-col h-full w-full">
+             <div className=""><CommonHeader /></div>
+             <div className="">
+                <MapModal 
+                    mapNodes={mapNodes}
+                    currentNodeId={currentMapNodeId}
+                    completedNodes={completedMapNodeIds}
+                    onNodeSelect={handleMapNodeSelect}
+                    onClose={() => {}} 
+                    isReadOnly={false}
+                    settings={settings}
+                />
+             </div>
+           
+        </div>
       )}
 
       {phase === 'REWARD' && (

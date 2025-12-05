@@ -21,31 +21,53 @@ export const CardComponent: React.FC<CardComponentProps> = ({
   const displayCost = customCost !== undefined ? customCost : card.cost;
   const isDiscounted = customCost !== undefined && customCost < card.cost;
   
-  // Determine Card Type (Unit vs Spell)
+  // Determine Card Type
+  const CLASSIC_SPAWNS = ['SPAWN_PAWN', 'SPAWN_KNIGHT', 'SPAWN_BISHOP', 'SPAWN_ROOK', 'SPAWN_QUEEN'];
   const isUnit = card.type.startsWith('SPAWN') && card.type !== 'SPAWN_REVIVE';
+  const isClassicUnit = isUnit && CLASSIC_SPAWNS.includes(card.type);
+  const isLegendUnit = isUnit && !isClassicUnit;
 
   // Theme Configuration
-  const theme = isUnit ? {
-    border: 'border-slate-600',
-    headerBg: 'bg-slate-700',
-    bodyBg: 'bg-gradient-to-b from-slate-800 to-slate-900',
-    ribbonBg: 'bg-slate-600',
-    descBg: 'bg-slate-200',
-    descText: 'text-slate-900',
-    jewel: 'bg-cyan-500',
-    glow: 'bg-cyan-400/30',
-    typeLabel: 'UNIT'
-  } : {
-    border: 'border-red-900',
-    headerBg: 'bg-[#7f1d1d]', // Dark Red
-    bodyBg: 'bg-gradient-to-b from-[#450a0a] to-[#2b0505]', // Very dark red/brown
-    ribbonBg: 'bg-[#991b1b]',
-    descBg: 'bg-[#fef3c7]', // Amber-100 (Parchment look)
-    descText: 'text-[#450a0a]',
-    jewel: 'bg-orange-500',
-    glow: 'bg-orange-500/30',
-    typeLabel: 'SPELL'
-  };
+  let theme;
+  
+  if (isLegendUnit) {
+    theme = {
+      border: 'border-purple-500', // Gold border for distinction
+      headerBg: 'bg-[#502e66]',
+      bodyBg: 'bg-gradient-to-b from-[#502e66] to-[#2d1b39]',
+      ribbonBg: 'bg-purple-600',
+      descBg: 'bg-[#f3e8ff]', // Very light purple
+      descText: 'text-[#3b0764]',
+      jewel: 'bg-purple-400',
+      glow: 'bg-purple-500/40',
+      typeLabel: 'LEGEND'
+    };
+  } else if (isClassicUnit) {
+    theme = {
+      border: 'border-slate-600',
+      headerBg: 'bg-slate-700',
+      bodyBg: 'bg-gradient-to-b from-slate-800 to-slate-900',
+      ribbonBg: 'bg-slate-600',
+      descBg: 'bg-slate-200',
+      descText: 'text-slate-900',
+      jewel: 'bg-cyan-500',
+      glow: 'bg-cyan-400/30',
+      typeLabel: 'UNIT'
+    };
+  } else {
+    // Spell
+    theme = {
+      border: 'border-red-900',
+      headerBg: 'bg-[#7f1d1d]', // Dark Red
+      bodyBg: 'bg-gradient-to-b from-[#450a0a] to-[#2b0505]', // Very dark red/brown
+      ribbonBg: 'bg-[#991b1b]',
+      descBg: 'bg-[#fef3c7]', // Amber-100 (Parchment look)
+      descText: 'text-[#450a0a]',
+      jewel: 'bg-orange-500',
+      glow: 'bg-orange-500/30',
+      typeLabel: 'SPELL'
+    };
+  }
 
   const getIcon = (type: string) => {
     if (type.includes('SPAWN')) return '⚔️';

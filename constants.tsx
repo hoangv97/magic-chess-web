@@ -18,6 +18,20 @@ export const AREA_FREEZE_DURATION = 2;
 export const ASCEND_DURATION = 3;
 export const IMMORTAL_LONG_DURATION = 3;
 
+export const LEGEND_PIECE_POOL = [
+  PieceType.ELEPHANT,
+  PieceType.ZEBRA,
+  PieceType.FOOL,
+  PieceType.SHIP,
+  PieceType.CHANCELLOR,
+  PieceType.ARCHBISHOP,
+  PieceType.MANN,
+  PieceType.AMAZON,
+  PieceType.CENTAUR,
+  PieceType.CHAMPION,
+  PieceType.DRAGON
+];
+
 export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.SPAWN_QUEEN, cost: 120 },
   { type: CardType.SPAWN_ROOK, cost: 60 },

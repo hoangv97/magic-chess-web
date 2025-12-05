@@ -72,11 +72,13 @@ export const generateCampaignMap = (): MapNode[] => {
       } else {
           // Randomize node type for non-boss levels
           const rand = Math.random();
-          if (rand < 0.50) {
+          if (rand < 0.45) {
               type = MapNodeType.BATTLE;
-          } else if (rand < 0.65) {
+          } else if (rand < 0.55) {
+              type = MapNodeType.MINI_BOSS;
+          } else if (rand < 0.70) {
               type = MapNodeType.SHOP;
-          } else if (rand < 0.80) {
+          } else if (rand < 0.85) {
               type = MapNodeType.REST;
           } else {
               type = MapNodeType.UNKNOWN;
