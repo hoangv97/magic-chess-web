@@ -164,6 +164,7 @@ export default function App() {
         {mode === 'CAMPAIGN' && (
            <CampaignGame 
              settings={settings}
+             setSettings={setSettings}
              initialSaveData={loadedGameData}
              onExit={() => {
                soundManager.playSfx('click');
@@ -175,6 +176,7 @@ export default function App() {
         {mode === 'CUSTOM' && (
            <CustomGame 
              settings={settings}
+             setSettings={setSettings}
              onExit={() => {
                soundManager.playSfx('click');
                setMode('MENU');

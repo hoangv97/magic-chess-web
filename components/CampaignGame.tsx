@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { GameSettings, BossType, MapNodeType, SavedGameState } from '../types';
 import { useGameLogic } from '../hooks/useGameLogic';
 import { GameScreen } from './screens/GameScreen';
@@ -14,15 +14,18 @@ import { GameHeader } from './game/GameHeader';
 import { soundManager } from '../utils/soundManager';
 import { RelicDetailModal } from './modals/RelicDetailModal';
 import { useCampaignLogic } from '../hooks/useCampaignLogic';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 interface CampaignGameProps {
   settings: GameSettings;
+  setSettings: (settings: GameSettings) => void;
   onExit: () => void;
   initialSaveData?: SavedGameState | null;
 }
 
-export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit, initialSaveData }) => {
+export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSettings, onExit, initialSaveData }) => {
   const campaign = useCampaignLogic({ settings, initialSaveData });
+  const [showSettings, setShowSettings] = useState(false);
   
   const { gameState, actions } = useGameLogic({
     settings,
@@ -37,11 +40,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit, in
   const handleMapNodeSelect = (node: any) => {
       soundManager.playSfx('click');
       campaign.setCurrentMapNodeId(node.id);
-      // Auto-save logic handles ensuring we save relevant state when map updates, 
-      // but strictly we save when phase changes or significant events. 
-      // Saving just on selection isn't strictly necessary if we save on enter battle.
-      // But let's assume we proceed immediately.
-
+      
       if (node.type === MapNodeType.SHOP) {
           campaign.initShop();
           campaign.setPhase('SHOP');
@@ -85,6 +84,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit, in
         onRelicClick={(r) => campaign.setSelectedRelic(r)}
         onOpenMap={() => campaign.setShowMapModal(true)}
         settings={settings}
+        onOpenSettings={() => setShowSettings(true)}
     />
   );
 
@@ -199,6 +199,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit, in
           onSellRelic={(r) => {
               campaign.sellRelic(r);
           }}
+          onOpenSettings={() => setShowSettings(true)}
         />
       )}
 
@@ -217,6 +218,14 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit, in
             onSell={campaign.sellRelic}
             settings={settings}
           />
+      )}
+
+      {showSettings && (
+        <SettingsScreen 
+          settings={settings} 
+          setSettings={setSettings} 
+          onBack={() => setShowSettings(false)} 
+        />
       )}
     </>
   );

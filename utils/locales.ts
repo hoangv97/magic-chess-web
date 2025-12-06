@@ -45,7 +45,7 @@ export const TRANSLATIONS = {
       sound: "Sound & Music",
       volume: "Volume",
       enableSound: "Enable Audio",
-      back: "Back to Menu",
+      back: "Back",
       reset: "Reset All Settings",
       themes: {
         CLASSIC: "Classic (Brown)",
