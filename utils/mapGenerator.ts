@@ -1,9 +1,7 @@
 
-
-
-
 import { v4 as uuidv4 } from 'uuid';
 import { MapNode, BossType, MapNodeType } from '../types';
+import { getWeightedRandomItem } from './random';
 
 export const generateCampaignMap = (): MapNode[] => {
   const nodes: MapNode[] = [];
@@ -33,7 +31,7 @@ export const generateCampaignMap = (): MapNode[] => {
   ];
 
   for (let level = 1; level <= TOTAL_LEVELS; level++) {
-    // Boss appears every 3 levels
+    // Boss appears every 5 levels
     const isBoss = level % BOSS_FREQUENCY === 0;
     const isStartOfZone = (level - 1) % LEVELS_PER_ZONE === 0;
 
@@ -53,6 +51,50 @@ export const generateCampaignMap = (): MapNode[] => {
       }
     }
 
+    // Determine Types for nodes in this level
+    const nodeTypes: MapNodeType[] = [];
+
+    if (isBoss) {
+        nodeTypes.push(MapNodeType.BOSS);
+    } else if (level === 1) {
+        nodeTypes.push(MapNodeType.BATTLE);
+    } else {
+        if (nodeCount > 1) {
+            // Branching Rule:
+            // When appear branches, mini boss should appear with reward node like shop, rest, unknown.
+            // Other branches must not have mini boss anymore.
+            
+            const hasMiniBoss = Math.random() < 0.25; // 25% chance for a branching choice to include a high risk option
+            
+            if (hasMiniBoss) {
+                nodeTypes.push(MapNodeType.MINI_BOSS);
+                // The remaining nodes MUST be reward types
+                for (let i = 1; i < nodeCount; i++) {
+                    const rewardType = getWeightedRandomItem(
+                        [MapNodeType.BATTLE, MapNodeType.SHOP, MapNodeType.REST, MapNodeType.UNKNOWN],
+                        (t) => 1 // Equal weight for rewards
+                    );
+                    nodeTypes.push(rewardType);
+                }
+            } else {
+                // Standard distribution for splits (no mini boss forced)
+                for (let i = 0; i < nodeCount; i++) {
+                    nodeTypes.push(getRandomNodeType());
+                }
+            }
+            
+            // Shuffle to randomize positions (Top vs Bottom)
+            for (let i = nodeTypes.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [nodeTypes[i], nodeTypes[j]] = [nodeTypes[j], nodeTypes[i]];
+            }
+
+        } else {
+            // Single Node: Standard random
+            nodeTypes.push(getRandomNodeType());
+        }
+    }
+
     const currentLevelNodes: MapNode[] = [];
 
     for (let i = 0; i < nodeCount; i++) {
@@ -65,28 +107,11 @@ export const generateCampaignMap = (): MapNode[] => {
 
       let bossType = BossType.NONE;
       let name = undefined;
-      let type = MapNodeType.BATTLE;
+      const type = nodeTypes[i];
 
-      if (isBoss) {
+      if (type === MapNodeType.BOSS) {
           name = 'Boss';
           bossType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
-          type = MapNodeType.BOSS;
-      } else if (level === 1) {
-          type = MapNodeType.BATTLE;
-      } else {
-          // Randomize node type for non-boss levels
-          const rand = Math.random();
-          if (rand < 0.45) {
-              type = MapNodeType.BATTLE;
-          } else if (rand < 0.55) {
-              type = MapNodeType.MINI_BOSS;
-          } else if (rand < 0.70) {
-              type = MapNodeType.SHOP;
-          } else if (rand < 0.85) {
-              type = MapNodeType.REST;
-          } else {
-              type = MapNodeType.UNKNOWN;
-          }
       }
 
       const newNode: MapNode = {
@@ -125,4 +150,20 @@ export const generateCampaignMap = (): MapNode[] => {
   }
 
   return nodes;
+};
+
+const getRandomNodeType = (): MapNodeType => {
+    return getWeightedRandomItem(
+        [MapNodeType.BATTLE, MapNodeType.MINI_BOSS, MapNodeType.SHOP, MapNodeType.REST, MapNodeType.UNKNOWN],
+        (type) => {
+            switch(type) {
+                case MapNodeType.BATTLE: return 0.45;
+                case MapNodeType.MINI_BOSS: return 0.10;
+                case MapNodeType.SHOP: return 0.15;
+                case MapNodeType.REST: return 0.15;
+                case MapNodeType.UNKNOWN: return 0.15;
+                default: return 0;
+            }
+        }
+    );
 };

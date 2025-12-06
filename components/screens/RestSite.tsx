@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Card, GameSettings } from '../../types';
 import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
 import { CardComponent } from '../ui/CardComponent';
 import { getDeckTemplate } from '../../constants';
+import { getRandomCards } from '../../utils/random';
 
 interface RestSiteProps {
   deck: Card[];
@@ -24,10 +24,8 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
 
   const handleTradeSelect = (card: Card) => {
       const template = getDeckTemplate(settings.language);
-      const newCards = Array.from({length: 3}).map(() => {
-          const t = template[Math.floor(Math.random() * template.length)];
-          return { ...t, id: uuidv4() };
-      });
+      const newCards = getRandomCards(3, template, deck);
+      
       setCardToTrade(card);
       setTradeCards(newCards);
       setSelectedRewardId(null);

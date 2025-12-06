@@ -6,6 +6,7 @@ import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { soundManager } from '../utils/soundManager';
 import { saveToStorage, clearFromStorage, STORAGE_KEYS } from '../utils/storage';
+import { getRandomCards, getRandomRelic, getRandomRelics } from '../utils/random';
 
 export const getCardTypeFromPiece = (piece: Piece): CardType | null => {
     switch (piece.type) {
@@ -123,10 +124,8 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
         return;
     }
 
-    const rewards = Array.from({length: REWARD_CARDS}).map(() => {
-        const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
-        return { ...t, id: uuidv4() };
-    });
+    // Weighted rewards based on deck state
+    const rewards = getRandomCards(REWARD_CARDS, deckTemplate, masterDeck);
     setRewardCards(rewards);
     setPhase('REWARD');
   };
@@ -168,19 +167,13 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
   };
 
   const initShop = () => {
-      const shop = Array.from({length: CARDS_IN_SHOP}).map(() => {
-          const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
-          return { ...t, id: uuidv4() };
-      });
+      // Weighted Shop Cards
+      const shop = getRandomCards(CARDS_IN_SHOP, deckTemplate, masterDeck);
       setShopCards(shop);
 
-      const shopR: Relic[] = [];
+      // Weighted Shop Relics
       const relicTypes = Object.values(RelicType);
-      
-      for(let i = 0; i < RELICS_IN_SHOP; i++) {
-          const type = relicTypes[Math.floor(Math.random() * relicTypes.length)];
-          shopR.push({ type, level: 1 });
-      }
+      const shopR = getRandomRelics(RELICS_IN_SHOP, relicTypes, relics);
       setShopRelics(shopR);
   };
 
@@ -207,10 +200,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
           setPhase('EVENT_RESULT');
           return { type: 'EVENT' };
       } else if (rand < 0.85) {
-          const choices = Array.from({length: 3}).map(() => {
-              const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
-              return { ...t, id: uuidv4() };
-          });
+          const choices = getRandomCards(3, deckTemplate, masterDeck);
           setEventData({
               title: "Fortune Teller",
               desc: "A mysterious figure lays out three face-down cards. 'Choose your destiny,' they whisper.",
@@ -220,8 +210,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
           setPhase('EVENT_RESULT');
           return { type: 'EVENT' };
       } else if (rand < 0.95) {
-          const t = deckTemplate[Math.floor(Math.random() * deckTemplate.length)];
-          const card = { ...t, id: uuidv4() };
+          const card = getRandomCards(1, deckTemplate, masterDeck)[0];
           setEventData({
               title: "Lost Scroll",
               desc: "You find an ancient scroll containing a spell.",
@@ -232,12 +221,12 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
           return { type: 'EVENT' };
       } else {
           const relicTypes = Object.values(RelicType);
-          const type = relicTypes[Math.floor(Math.random() * relicTypes.length)];
+          const relic = getRandomRelic(relicTypes, relics);
           setEventData({
               title: "Ancient Artifact",
               desc: "Buried in the dirt, you find a strange object.",
               type: 'RELIC',
-              relic: { type, level: 1 }
+              relic: relic
           });
           setPhase('EVENT_RESULT');
           return { type: 'EVENT' };
