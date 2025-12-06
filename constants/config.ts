@@ -1,6 +1,6 @@
 
 export const TEST_GENERATE_SPECIAL_TILES = false;
-export const DEBUG_MODE = true;
+export const DEBUG_MODE = false;
 
 export const AREA_FREEZE_DURATION = 2;
 export const ASCEND_DURATION = 3;

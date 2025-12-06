@@ -16,18 +16,18 @@ export const generateCampaignMap = (): MapNode[] => {
   let prevNodes: MapNode[] = [];
 
   const bossTypes = [
-      // BossType.FROST_GIANT, 
-      // BossType.BLIZZARD_WITCH,
-      // BossType.VOID_BRINGER, 
-      // BossType.LAVA_TITAN, 
-      // BossType.STONE_GOLEM,
-      // BossType.UNDEAD_LORD,
-      // BossType.CHAOS_LORD,
-      // BossType.MIRROR_MAGE,
-      // BossType.SOUL_EATER,
-      // BossType.BLOOD_KING,
-      // BossType.HYDRA,
-      // BossType.MIND_CONTROLLER,
+      BossType.FROST_GIANT, 
+      BossType.BLIZZARD_WITCH,
+      BossType.VOID_BRINGER, 
+      BossType.LAVA_TITAN, 
+      BossType.STONE_GOLEM,
+      BossType.UNDEAD_LORD,
+      BossType.CHAOS_LORD,
+      BossType.MIRROR_MAGE,
+      BossType.SOUL_EATER,
+      BossType.BLOOD_KING,
+      BossType.HYDRA,
+      BossType.MIND_CONTROLLER,
       BossType.SILENCER,
       BossType.ILLUSIONIST
   ];
