@@ -142,7 +142,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
              {TRANSLATIONS[settings.language].settings.back}
           </Button>
        </div>
-       <div className="flex-grow overflow-y-auto">
+       <div className="flex-grow">
           <div className="flex flex-wrap gap-6 justify-center">
              {deck.map((card) => (
                 <div key={card.id} className="relative group">

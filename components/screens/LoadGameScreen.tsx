@@ -58,9 +58,9 @@ export const LoadGameScreen: React.FC<LoadGameScreenProps> = ({ settings, onCont
           <Button 
             onClick={() => {
                 if (saveData) {
-                    if (confirm("Starting a new game will overwrite your current save. Continue?")) {
+                    // if (confirm("Starting a new game will overwrite your current save. Continue?")) {
                         onNewGame();
-                    }
+                    // }
                 } else {
                     onNewGame();
                 }

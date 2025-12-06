@@ -6,6 +6,7 @@ import {
   GameSettings, Relic, RelicType, BossType,
 } from '../types';
 import { getValidMoves, isValidPos } from '../utils/gameLogic';
+import { getBestEnemyMove } from '../utils/aiLogic';
 import {
   PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN,
   RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT,
@@ -418,19 +419,6 @@ export const useGameLogic = ({
     }
     setBoard(boardCopy);
 
-    const size = boardCopy.length;
-    const enemies: { pos: Position; piece: Piece; moves: Position[] }[] = [];
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        const p = boardCopy[r][c].piece;
-        if (p?.side === Side.BLACK && (p.frozenTurns || 0) <= 0) {
-            let moves = getValidMoves(boardCopy, p, { row: r, col: c }, playerEnPassantTarget, null);
-            if (isEnemyMoveLimited) moves = moves.filter((m) => Math.abs(m.row - r) <= 1 && Math.abs(m.col - c) <= 1);
-            if (moves.length > 0) enemies.push({ pos: { row: r, col: c }, piece: p, moves });
-        }
-      }
-    }
-
     const passTurn = () => {
       boardCopy.forEach((row) => row.forEach((cell) => {
           if (cell.piece && cell.piece.side === Side.BLACK) {
@@ -455,56 +443,32 @@ export const useGameLogic = ({
       setBoard(boardCopy);
     };
 
-    if (enemies.length === 0) {
-      setLastEnemyMoveType(null);
-      passTurn();
-      return;
+    // Calculate Best AI Move using the new AI Logic
+    let bestMove = null;
+    
+    // Check if there are any movable pieces first to save computation
+    const hasMovablePieces = boardCopy.some(row => row.some(cell => 
+        cell.piece?.side === Side.BLACK && (cell.piece.frozenTurns || 0) <= 0
+    ));
+
+    if (hasMovablePieces) {
+        bestMove = getBestEnemyMove(boardCopy, activeBoss, lastMoveFrom, playerEnPassantTarget, lastEnemyMoveType);
     }
 
-    let bestMove: { from: Position; to: Position } | null = null;
-    for (const e of enemies) {
-      const kingKill = e.moves.find((m) => boardCopy[m.row][m.col].piece?.type === PieceType.KING);
-      if (kingKill) { bestMove = { from: e.pos, to: kingKill }; break; }
-    }
-
-    if (!bestMove) {
-      const captures: { from: Position; to: Position; value: number }[] = [];
-      enemies.forEach((e) => {
-        e.moves.forEach((m) => {
-          const target = boardCopy[m.row][m.col].piece;
-          const isEP = e.piece.type === PieceType.PAWN && playerEnPassantTarget && m.row === playerEnPassantTarget.row && m.col === playerEnPassantTarget.col;
-          if (target?.side === Side.WHITE || isEP) {
-            let val = 1;
-            if (target) {
-              if (target.type === PieceType.QUEEN) val = 9;
-              else if (target.type === PieceType.ROOK) val = 5;
-              else if (target.type === PieceType.BISHOP || target.type === PieceType.KNIGHT) val = 3;
-            }
-            captures.push({ from: e.pos, to: m, value: val });
-          }
-        });
-      });
-      if (captures.length > 0) {
-        captures.sort((a, b) => b.value - a.value);
-        bestMove = captures[0];
-      }
-    }
-
-    if (!bestMove) {
-      const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
-      const randomMove = randomEnemy.moves[Math.floor(Math.random() * randomEnemy.moves.length)];
-      bestMove = { from: randomEnemy.pos, to: randomMove };
-    }
-
+    // Apply Move if found
     let nextEnPassantTarget: Position | null = null;
+    const size = boardCopy.length;
+
     if (bestMove) {
       const movingPiece = boardCopy[bestMove.from.row][bestMove.from.col].piece;
       if (!movingPiece) { passTurn(); return; }
+      
       const targetPiece = boardCopy[bestMove.to.row][bestMove.to.col].piece;
       setLastEnemyMoveType(movingPiece.type);
       let playerPieceKilled = false;
       let killedPiece: Piece | null = null;
 
+      // En Passant Kill Logic
       if (movingPiece.type === PieceType.PAWN && playerEnPassantTarget && bestMove.to.row === playerEnPassantTarget.row && bestMove.to.col === playerEnPassantTarget.col) {
         const victimRow = bestMove.to.row - 1;
         if (boardCopy[victimRow][bestMove.to.col].piece) {
@@ -513,28 +477,35 @@ export const useGameLogic = ({
           setDeadPieces((prev) => [...prev, killedPiece!.type]);
         }
         boardCopy[victimRow][bestMove.to.col].piece = null;
-      } else if (targetPiece && targetPiece.side === Side.WHITE) {
+      } 
+      // Normal Kill Logic
+      else if (targetPiece && targetPiece.side === Side.WHITE) {
         playerPieceKilled = true;
         killedPiece = targetPiece;
         setDeadPieces((prev) => [...prev, targetPiece.type]);
       }
 
+      // Set En Passant Target for next turn if pawn moved 2 squares
       if (movingPiece.type === PieceType.PAWN && Math.abs(bestMove.from.row - bestMove.to.row) === 2) {
         nextEnPassantTarget = { row: (bestMove.from.row + bestMove.to.row) / 2, col: bestMove.from.col };
       }
 
+      // Handle Wall Breaking
       if (boardCopy[bestMove.to.row][bestMove.to.col].tileEffect === TileEffect.WALL && (movingPiece.type === PieceType.SHIP || movingPiece.type === PieceType.ELEPHANT)) {
         boardCopy[bestMove.to.row][bestMove.to.col].tileEffect = TileEffect.NONE;
       }
 
+      // Move Piece
       boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
       boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
 
+      // Handle Traps
       if (targetPiece && targetPiece.side === Side.WHITE && targetPiece.trapped) {
         boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
         soundManager.playSfx('capture');
       }
 
+      // Handle Tile Effects
       const effect = boardCopy[bestMove.to.row][bestMove.to.col].tileEffect;
       if (effect === TileEffect.LAVA && movingPiece.type !== PieceType.DRAGON) {
         if (!(boardCopy[bestMove.to.row][bestMove.to.col].piece!.immortalTurns && boardCopy[bestMove.to.row][bestMove.to.col].piece!.immortalTurns! > 0)) {
@@ -546,6 +517,7 @@ export const useGameLogic = ({
           soundManager.playSfx('frozen');
       }
 
+      // Promotion
       if (boardCopy[bestMove.to.row][bestMove.to.col].piece && movingPiece.type === PieceType.PAWN && bestMove.to.row === size - 1) {
         boardCopy[bestMove.to.row][bestMove.to.col].piece!.type = PieceType.QUEEN;
         soundManager.playSfx('spawn');
@@ -553,9 +525,13 @@ export const useGameLogic = ({
 
       if (playerPieceKilled && killedPiece) {
         soundManager.playSfx('capture');
+        // Relic: Last Will
         const lastWill = relics.find((r) => r.type === RelicType.LAST_WILL);
         if (lastWill) spawnRelicPiece(boardCopy, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
+        
         if (onPieceKilled) onPieceKilled(killedPiece);
+        
+        // Boss: Blood King
         if (activeBoss === BossType.BLOOD_KING) {
           const emptySpots: Position[] = [];
           for (let r = 0; r < Math.floor(size / 2); r++) {
@@ -581,6 +557,7 @@ export const useGameLogic = ({
     }
 
     setEnPassantTarget(nextEnPassantTarget);
+    
     if (checkLossCondition(boardCopy, deck, hand)) {
       setTimeout(() => {
         soundManager.playSfx('loss');
