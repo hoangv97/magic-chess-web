@@ -1,6 +1,8 @@
+
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, Side, GameSettings } from '../../types';
+import { Card, Side, GameSettings, BossType } from '../../types';
 import { MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { CardComponent } from '../ui/CardComponent';
 import { TRANSLATIONS } from '../../utils/locales';
@@ -14,12 +16,15 @@ interface PlayerHandProps {
   onCardClick: (card: Card) => void;
   onDeckClick: () => void;
   settings: GameSettings;
+  activeBoss?: BossType;
 }
 
 export const PlayerHand: React.FC<PlayerHandProps> = ({ 
-  hand, deckCount, selectedCardId, turn, cardsPlayed, onCardClick, onDeckClick, settings 
+  hand, deckCount, selectedCardId, turn, cardsPlayed, onCardClick, onDeckClick, settings, activeBoss 
 }) => {
   const t = TRANSLATIONS[settings.language].game;
+
+  const isUnitCard = (type: string) => type.startsWith('SPAWN') && type !== 'SPAWN_REVIVE';
 
   return (
     <div className="h-56 bg-slate-900 border-t border-slate-700 flex flex-col relative z-20 shrink-0">
@@ -52,6 +57,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
                       selected={selectedCardId === card.id} 
                       onClick={() => onCardClick(card)}
                       disabled={turn !== Side.WHITE}
+                      isHidden={activeBoss === BossType.ILLUSIONIST && isUnitCard(card.type)}
                     />
                   </motion.div>
                 ))}

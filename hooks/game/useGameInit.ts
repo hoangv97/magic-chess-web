@@ -1,5 +1,6 @@
+
 import { v4 as uuidv4 } from 'uuid';
-import { Cell, Side, PieceType, TileEffect, Card, Relic, RelicType, BossType } from '../../types';
+import { Cell, Side, PieceType, TileEffect, Card, Relic, RelicType, BossType, CardType } from '../../types';
 import { generateBoard } from '../../utils/gameLogic';
 import { getDeckTemplate, LEGEND_PIECE_POOL } from '../../constants';
 import { soundManager } from '../../utils/soundManager';
@@ -141,7 +142,29 @@ export const initializeGameBoard = (
       });
     }
 
-    const initialHand = gameDeck.splice(0, 3);
+    let initialHand: Card[] = [];
+    
+    if (currentBoss === BossType.SILENCER) {
+        // Silencer Boss: Ensure first 3 cards drawn are Units (not Spells)
+        const unitIndices: number[] = [];
+        for(let i=0; i < gameDeck.length; i++) {
+             // Check if unit (starts with SPAWN and not REVIVE)
+             const isUnit = gameDeck[i].type.startsWith('SPAWN') && gameDeck[i].type !== CardType.SPAWN_REVIVE;
+             if (isUnit) {
+                 unitIndices.push(i);
+                 if (unitIndices.length === 3) break;
+             }
+        }
+        
+        // Extract them (iterate backwards to safely splice)
+        for(let i = unitIndices.length - 1; i >= 0; i--) {
+            // Unshift to maintain order 1,2,3 at start of hand
+            initialHand.unshift(gameDeck.splice(unitIndices[i], 1)[0]);
+        }
+    } else {
+        initialHand = gameDeck.splice(0, 3);
+    }
+
     setBoard(newBoard);
     setDeck(gameDeck);
     setHand(initialHand);

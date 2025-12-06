@@ -2,6 +2,8 @@
 
 
 
+
+
 import React from 'react';
 import { GameHeader } from '../game/GameHeader';
 import { GameBoard } from '../game/GameBoard';
@@ -76,10 +78,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onCardClick={actions.handleCardClick}
         onDeckClick={() => actions.setShowDeckModal(true)}
         settings={settings}
+        activeBoss={gameState.activeBoss}
       />
 
       {gameState.showDeckModal && (
-          <DeckModal deck={gameState.deck} onClose={() => actions.setShowDeckModal(false)} />
+          <DeckModal 
+            deck={gameState.deck} 
+            onClose={() => actions.setShowDeckModal(false)} 
+            activeBoss={gameState.activeBoss}
+          />
       )}
 
       {gameState.selectedRelic && (

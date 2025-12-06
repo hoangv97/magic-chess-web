@@ -10,6 +10,7 @@ interface CardComponentProps {
   disabled: boolean;
   showCost?: boolean;
   customCost?: number; // Optional prop to override displayed cost
+  isHidden?: boolean; // New prop for Illusionist boss logic
 }
 
 export const CardComponent: React.FC<CardComponentProps> = ({ 
@@ -18,13 +19,31 @@ export const CardComponent: React.FC<CardComponentProps> = ({
   onClick, 
   disabled, 
   showCost = false, 
-  customCost 
+  customCost,
+  isHidden = false
 }) => {
   const displayCost = customCost !== undefined ? customCost : card.cost;
   const isDiscounted = customCost !== undefined && customCost < card.cost;
   
-  const theme = getCardTheme(card.type);
-  const icon = getCardIcon(card.type);
+  let theme = getCardTheme(card.type);
+  
+  if (isHidden) {
+      theme = {
+        border: 'border-slate-600',
+        headerBg: 'bg-slate-700',
+        bodyBg: 'bg-gradient-to-b from-slate-800 to-slate-900',
+        ribbonBg: 'bg-slate-600',
+        descBg: 'bg-slate-200',
+        descText: 'text-slate-900',
+        jewel: 'bg-cyan-500',
+        glow: 'bg-cyan-400/30',
+        typeLabel: 'UNIT'
+      };
+  }
+  
+  const displayTitle = isHidden ? "???" : card.title;
+  const displayDesc = isHidden ? "Identity hidden..." : card.description;
+  const displayIcon = isHidden ? "?" : getCardIcon(card.type);
 
   return (
     <div 
@@ -49,7 +68,7 @@ export const CardComponent: React.FC<CardComponentProps> = ({
       {/* Header (Title) */}
       <div className={`h-8 w-full ${theme.headerBg} flex items-center justify-center border-b ${theme.border} rounded-t-lg relative z-10`}>
         <span className="text-[10px] font-bold text-white uppercase tracking-wider truncate px-2 drop-shadow-md">
-          {card.title}
+          {displayTitle}
         </span>
       </div>
 
@@ -60,7 +79,7 @@ export const CardComponent: React.FC<CardComponentProps> = ({
          
          {/* Icon */}
          <div className="text-3xl z-10 drop-shadow-2xl transform transition-transform duration-300 group-hover:scale-110">
-            {icon}
+            {displayIcon}
          </div>
       </div>
 
@@ -71,8 +90,8 @@ export const CardComponent: React.FC<CardComponentProps> = ({
 
       {/* Description Box */}
       <div className={`h-[4.5rem] w-full ${theme.descBg} p-2 flex flex-col items-center justify-center text-center rounded-b-lg relative border-t ${theme.border}`}>
-         <p className={`text-[8px] font-bold leading-tight line-clamp-4 ${theme.descText}`}>
-            {card.description}
+         <p className={`text-[8px] font-bold leading-tight line-clamp-4 ${theme.descText} ${isHidden ? 'opacity-50 italic' : ''}`}>
+            {displayDesc}
          </p>
          
          {/* Rarity Jewel */}

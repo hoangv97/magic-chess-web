@@ -1,5 +1,6 @@
 
 
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../constants';
 
@@ -249,6 +250,16 @@ export const TRANSLATIONS = {
         name: "Hypnotist", 
         desc: "Master of the mind.",
         ability: "ACTIVE: Takes control of one of your units every 5 turns." 
+      },
+      [BossType.SILENCER]: { 
+        name: "The Silencer", 
+        desc: "A mage hunter who suppresses magic.",
+        ability: "PASSIVE: You cannot draw Spell cards. Only Units can be summoned." 
+      },
+      [BossType.ILLUSIONIST]: { 
+        name: "The Illusionist", 
+        desc: "He shrouds the battlefield in mystery.",
+        ability: "PASSIVE: Unit cards in your hand and deck are unidentified until played." 
       }
     },
     deckSelection: {
@@ -541,6 +552,16 @@ export const TRANSLATIONS = {
         name: "Kẻ Thôi Miên", 
         desc: "Bậc thầy tâm trí.",
         ability: "CHỦ ĐỘNG: Chiếm quyền kiểm soát một quân của bạn mỗi 5 lượt." 
+      },
+      [BossType.SILENCER]: { 
+        name: "Kẻ Câm Lặng", 
+        desc: "Thợ săn pháp sư.",
+        ability: "BỊ ĐỘNG: Bạn không thể rút bài Phép. Chỉ có thể triệu hồi Quân." 
+      },
+      [BossType.ILLUSIONIST]: { 
+        name: "Ảo Thuật Gia", 
+        desc: "Kẻ che giấu chiến trường.",
+        ability: "BỊ ĐỘNG: Thẻ quân trong tay và bộ bài bị ẩn danh tính." 
       }
     },
     deckSelection: {

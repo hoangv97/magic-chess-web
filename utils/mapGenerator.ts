@@ -1,5 +1,7 @@
 
 
+
+
 import { v4 as uuidv4 } from 'uuid';
 import { MapNode, BossType, MapNodeType } from '../types';
 
@@ -14,18 +16,20 @@ export const generateCampaignMap = (): MapNode[] => {
   let prevNodes: MapNode[] = [];
 
   const bossTypes = [
-      BossType.FROST_GIANT, 
-      BossType.BLIZZARD_WITCH,
-      BossType.VOID_BRINGER, 
-      BossType.LAVA_TITAN, 
-      BossType.STONE_GOLEM,
-      BossType.UNDEAD_LORD,
-      BossType.CHAOS_LORD,
-      BossType.MIRROR_MAGE,
-      BossType.SOUL_EATER,
-      BossType.BLOOD_KING,
-      BossType.HYDRA,
-      BossType.MIND_CONTROLLER
+      // BossType.FROST_GIANT, 
+      // BossType.BLIZZARD_WITCH,
+      // BossType.VOID_BRINGER, 
+      // BossType.LAVA_TITAN, 
+      // BossType.STONE_GOLEM,
+      // BossType.UNDEAD_LORD,
+      // BossType.CHAOS_LORD,
+      // BossType.MIRROR_MAGE,
+      // BossType.SOUL_EATER,
+      // BossType.BLOOD_KING,
+      // BossType.HYDRA,
+      // BossType.MIND_CONTROLLER,
+      BossType.SILENCER,
+      BossType.ILLUSIONIST
   ];
 
   for (let level = 1; level <= TOTAL_LEVELS; level++) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -117,14 +118,31 @@ export const useGameLogic = ({
   const drawCard = useCallback(() => {
     if (deck.length > 0 && hand.length < MAX_CARDS_IN_HAND) {
       const newDeck = [...deck];
-      const card = newDeck.pop();
-      setDeck(newDeck);
-      if (card) {
-        setHand((prev) => [...prev, card]);
-        soundManager.playSfx('draw');
+      let cardIndex = newDeck.length - 1;
+
+      // Boss Logic: The Silencer
+      if (activeBoss === BossType.SILENCER) {
+          cardIndex = -1;
+          for (let i = newDeck.length - 1; i >= 0; i--) {
+              const card = newDeck[i];
+              const isUnit = card.type.startsWith('SPAWN') && card.type !== CardType.SPAWN_REVIVE;
+              if (isUnit) {
+                  cardIndex = i;
+                  break;
+              }
+          }
+      }
+
+      if (cardIndex >= 0) {
+          const card = newDeck.splice(cardIndex, 1)[0];
+          setDeck(newDeck);
+          if (card) {
+            setHand((prev) => [...prev, card]);
+            soundManager.playSfx('draw');
+          }
       }
     }
-  }, [deck, hand]);
+  }, [deck, hand, activeBoss]);
 
   const checkLossCondition = (currentBoard: Cell[][], currentDeck: Card[], currentHand: Card[]) => {
     let whitePieces = 0;
