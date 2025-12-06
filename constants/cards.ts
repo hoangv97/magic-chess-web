@@ -92,6 +92,7 @@ export const getStarterDecks = (lang: Language) => {
 };
 
 export const getCardIcon = (type: string) => {
+  if (type.includes('REVIVE')) return '🐦‍🔥';
   if (type.includes('SPAWN')) return '⚔️';
   if (type.includes('IMMORTAL')) return '🛡️';
   if (type.includes('SWITCH')) return '🔄';
@@ -101,7 +102,7 @@ export const getCardIcon = (type: string) => {
   if (type.includes('MIMIC')) return '🎭';
   if (type.includes('BACK')) return '↩️';
   if (type.includes('TRAP')) return '☠️';
-  if (type.includes('ASCEND')) return '⏳';
+  if (type.includes('ASCEND')) return '👑';
   return '✨';
 };
 
