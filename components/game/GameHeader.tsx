@@ -41,7 +41,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
         
         {['PLAYING', 'SHOP', 'REWARD', 'MAP', 'REST_SITE', 'EVENT_RESULT', 'DECK_SELECTION'].includes(phase) ? (
-          <div className="flex gap-4 items-center">
+          <div className="max-sm:gap-3 flex gap-4 items-center">
             {/* Relics Bar */}
             {relics.length > 0 && (
                 <div className="flex items-center gap-2 bg-slate-700/50 px-2 py-1 rounded-lg border border-slate-600">
@@ -68,7 +68,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 </div>
                 
                 {isCampaign && (
-                  <Button className="bg-slate-700 hover:bg-slate-600 text-xs px-3" onClick={onOpenMap}>
+                  <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={onOpenMap}>
                      🗺️
                   </Button>
                 )}
