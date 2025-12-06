@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { GameSettings, BossType, MapNodeType } from '../types';
+import { GameSettings, BossType, MapNodeType, SavedGameState } from '../types';
 import { useGameLogic } from '../hooks/useGameLogic';
 import { GameScreen } from './screens/GameScreen';
 import { DeckSelection } from './screens/DeckSelection';
@@ -17,10 +18,11 @@ import { useCampaignLogic } from '../hooks/useCampaignLogic';
 interface CampaignGameProps {
   settings: GameSettings;
   onExit: () => void;
+  initialSaveData?: SavedGameState | null;
 }
 
-export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) => {
-  const campaign = useCampaignLogic({ settings });
+export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit, initialSaveData }) => {
+  const campaign = useCampaignLogic({ settings, initialSaveData });
   
   const { gameState, actions } = useGameLogic({
     settings,
@@ -35,7 +37,10 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
   const handleMapNodeSelect = (node: any) => {
       soundManager.playSfx('click');
       campaign.setCurrentMapNodeId(node.id);
-      campaign.setCampaignLevel(node.level);
+      // Auto-save logic handles ensuring we save relevant state when map updates, 
+      // but strictly we save when phase changes or significant events. 
+      // Saving just on selection isn't strictly necessary if we save on enter battle.
+      // But let's assume we proceed immediately.
 
       if (node.type === MapNodeType.SHOP) {
           campaign.initShop();
@@ -193,7 +198,6 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, onExit }) 
           onResign={onExit}
           onSellRelic={(r) => {
               campaign.sellRelic(r);
-              // Update local state if needed via actions if we had relic state in useGameLogic, but we use campaign.relics
           }}
         />
       )}

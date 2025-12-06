@@ -1,6 +1,8 @@
 
-import { BossType } from './map';
+import { BossType, MapNode } from './map';
 import { BoardThemeId } from './board';
+import { Card } from './card';
+import { Relic } from './relic';
 
 export type Language = 'en' | 'vi';
 export type PieceSetId = 'STANDARD' | 'SIMPLE';
@@ -15,6 +17,16 @@ export interface GameSettings {
   soundEnabled: boolean;
   soundVolume: number; // 0.0 to 1.0
   customBossType: BossType;
+}
+
+export interface SavedGameState {
+  campaignLevel: number;
+  masterDeck: Card[];
+  relics: Relic[];
+  gold: number;
+  mapNodes: MapNode[];
+  currentMapNodeId: string | null;
+  completedMapNodeIds: string[];
 }
 
 export type GamePhase = 

@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, PieceType, CardType } from '../types';
+import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, PieceType, CardType, SavedGameState } from '../types';
 import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { soundManager } from '../utils/soundManager';
+import { saveToStorage, clearFromStorage, STORAGE_KEYS } from '../utils/storage';
 
 export const getCardTypeFromPiece = (piece: Piece): CardType | null => {
     switch (piece.type) {
@@ -33,9 +35,10 @@ export const getCardTypeFromPiece = (piece: Piece): CardType | null => {
 
 interface UseCampaignLogicProps {
     settings: GameSettings;
+    initialSaveData?: SavedGameState | null;
 }
 
-export const useCampaignLogic = ({ settings }: UseCampaignLogicProps) => {
+export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogicProps) => {
   const [phase, setPhase] = useState<GamePhase>('DECK_SELECTION');
   const [campaignLevel, setCampaignLevel] = useState(1);
   const [masterDeck, setMasterDeck] = useState<Card[]>([]);
@@ -69,10 +72,45 @@ export const useCampaignLogic = ({ settings }: UseCampaignLogicProps) => {
 
   const deckTemplate = getDeckTemplate(settings.language);
 
-  // Initialize Map
+  // Initialize from save or generate new
   useEffect(() => {
-    setMapNodes(generateCampaignMap());
-  }, []);
+    if (initialSaveData) {
+        setCampaignLevel(initialSaveData.campaignLevel);
+        setMasterDeck(initialSaveData.masterDeck);
+        setRelics(initialSaveData.relics);
+        setGold(initialSaveData.gold);
+        setMapNodes(initialSaveData.mapNodes);
+        setCurrentMapNodeId(initialSaveData.currentMapNodeId);
+        setCompletedMapNodeIds(initialSaveData.completedMapNodeIds);
+        setPhase('MAP');
+    } else {
+        setMapNodes(generateCampaignMap());
+    }
+  }, [initialSaveData]);
+
+  // Save Progress Logic
+  const saveProgress = useCallback(() => {
+      // Don't save if we haven't even selected a deck yet
+      if (phase === 'DECK_SELECTION' && masterDeck.length === 0) return;
+
+      const saveData: SavedGameState = {
+          campaignLevel,
+          masterDeck,
+          relics,
+          gold,
+          mapNodes,
+          currentMapNodeId,
+          completedMapNodeIds
+      };
+      saveToStorage(STORAGE_KEYS.CAMPAIGN, saveData);
+  }, [campaignLevel, masterDeck, relics, gold, mapNodes, currentMapNodeId, completedMapNodeIds, phase]);
+
+  // Auto-save when critical state changes (Map, Shop, Rest)
+  useEffect(() => {
+      if (phase === 'MAP' || phase === 'SHOP' || phase === 'REST_SITE') {
+          saveProgress();
+      }
+  }, [phase, saveProgress, gold, masterDeck, relics, completedMapNodeIds]);
 
   const handleWin = () => {
     if (currentMapNodeId) {
@@ -80,6 +118,7 @@ export const useCampaignLogic = ({ settings }: UseCampaignLogicProps) => {
     }
     
     if (campaignLevel >= 50) { 
+        clearFromStorage(STORAGE_KEYS.CAMPAIGN);
         setPhase('GAME_OVER_WIN');
         return;
     }
@@ -93,11 +132,11 @@ export const useCampaignLogic = ({ settings }: UseCampaignLogicProps) => {
   };
 
   const handleLoss = () => {
+    clearFromStorage(STORAGE_KEYS.CAMPAIGN);
     setPhase('GAME_OVER_LOSS');
   };
 
   const handlePieceKilled = (piece: Piece) => {
-      // Check if current boss is Soul Eater
       const currentNode = mapNodes.find(n => n.id === currentMapNodeId);
       const isSoulEater = currentNode?.bossType === BossType.SOUL_EATER;
       
@@ -319,9 +358,11 @@ export const useCampaignLogic = ({ settings }: UseCampaignLogicProps) => {
     setGold(0);
     setCampaignLevel(1);
     setRelics([]);
+    setMasterDeck([]);
     setCurrentMapNodeId(null);
     setCompletedMapNodeIds([]);
     setMapNodes(generateCampaignMap());
+    clearFromStorage(STORAGE_KEYS.CAMPAIGN);
     setPhase('DECK_SELECTION');
   };
 
