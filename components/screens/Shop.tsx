@@ -94,6 +94,7 @@ export const Shop: React.FC<ShopProps> = ({
                         onClick={() => onBuyCard(card)}
                         showCost={true}
                         customCost={finalCost}
+                        pieceSet={settings.pieceSet}
                         />
                         {gold < finalCost && (
                         <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-red-500 font-bold rotate-12 border-2 border-red-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">

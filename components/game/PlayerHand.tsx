@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Side, GameSettings, BossType } from '../../types';
@@ -58,6 +57,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
                       onClick={() => onCardClick(card)}
                       disabled={turn !== Side.WHITE}
                       isHidden={activeBoss === BossType.ILLUSIONIST && isUnitCard(card.type)}
+                      pieceSet={settings.pieceSet}
                     />
                   </motion.div>
                 ))}

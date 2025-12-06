@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, BossType } from '../../types';
+import { Card, BossType, PieceSetId } from '../../types';
 import { Button } from '../ui/Button';
 import { CardComponent } from '../ui/CardComponent';
 
@@ -8,9 +8,10 @@ interface DeckModalProps {
   deck: Card[];
   onClose: () => void;
   activeBoss?: BossType;
+  pieceSet?: PieceSetId;
 }
 
-export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss }) => {
+export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss, pieceSet }) => {
   const isUnitCard = (type: string) => type.startsWith('SPAWN') && type !== 'SPAWN_REVIVE';
 
   return (
@@ -30,6 +31,7 @@ export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss 
                      onClick={() => {}} 
                      disabled={false} 
                      isHidden={activeBoss === BossType.ILLUSIONIST && isUnitCard(card.type)}
+                     pieceSet={pieceSet}
                    />
                 </div>
              ))}

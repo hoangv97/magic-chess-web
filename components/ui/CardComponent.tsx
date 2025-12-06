@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Card } from '../../types';
-import { getCardIcon, getCardTheme } from '../../constants';
+import { Card, PieceSetId, PieceType, Side, CardType } from '../../types';
+import { getCardIcon, getCardTheme, PIECE_VARIANT_STYLES } from '../../constants';
+import { getPieceIcon } from '../assets/PieceSets';
 
 interface CardComponentProps {
   card: Card;
@@ -11,7 +12,24 @@ interface CardComponentProps {
   showCost?: boolean;
   customCost?: number; // Optional prop to override displayed cost
   isHidden?: boolean; // New prop for Illusionist boss logic
+  pieceSet?: PieceSetId;
 }
+
+const getPieceInfoFromCard = (cardType: CardType): { type: PieceType, variant?: 'LAVA' | 'ABYSS' | 'FROZEN' } | null => {
+  const str = cardType.toString();
+  if (str === 'SPAWN_REVIVE') return null;
+  if (!str.startsWith('SPAWN_') && !str.startsWith('EFFECT_BORROW_')) return null;
+
+  if (cardType === CardType.SPAWN_DRAGON_LAVA) return { type: PieceType.DRAGON, variant: 'LAVA' };
+  if (cardType === CardType.SPAWN_DRAGON_ABYSS) return { type: PieceType.DRAGON, variant: 'ABYSS' };
+  if (cardType === CardType.SPAWN_DRAGON_FROZEN) return { type: PieceType.DRAGON, variant: 'FROZEN' };
+
+  const pieceStr = str.replace('SPAWN_', '').replace('EFFECT_BORROW_', '');
+  if (Object.values(PieceType).includes(pieceStr as PieceType)) {
+    return { type: pieceStr as PieceType };
+  }
+  return null;
+};
 
 export const CardComponent: React.FC<CardComponentProps> = ({ 
   card, 
@@ -20,7 +38,8 @@ export const CardComponent: React.FC<CardComponentProps> = ({
   disabled, 
   showCost = false, 
   customCost,
-  isHidden = false
+  isHidden = false,
+  pieceSet = 'STANDARD'
 }) => {
   const displayCost = customCost !== undefined ? customCost : card.cost;
   const isDiscounted = customCost !== undefined && customCost < card.cost;
@@ -43,7 +62,8 @@ export const CardComponent: React.FC<CardComponentProps> = ({
   
   const displayTitle = isHidden ? "???" : card.title;
   const displayDesc = isHidden ? "Identity hidden..." : card.description;
-  const displayIcon = isHidden ? "?" : getCardIcon(card.type);
+  
+  const pieceInfo = !isHidden ? getPieceInfoFromCard(card.type) : null;
 
   return (
     <div 
@@ -78,8 +98,16 @@ export const CardComponent: React.FC<CardComponentProps> = ({
          <div className={`absolute w-20 h-20 rounded-full blur-2xl ${theme.glow}`}></div>
          
          {/* Icon */}
-         <div className="text-3xl z-10 drop-shadow-2xl transform transition-transform duration-300 group-hover:scale-110">
-            {displayIcon}
+         <div className="text-3xl z-10 drop-shadow-2xl transform transition-transform duration-300 group-hover:scale-110 flex items-center justify-center">
+            {isHidden ? "?" : (
+                pieceInfo ? (
+                    <div className={`w-14 h-14 ${pieceInfo.variant ? PIECE_VARIANT_STYLES[pieceInfo.variant] : ''}`} style={{ filter: pieceInfo.variant ? undefined : 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}>
+                        {getPieceIcon(pieceSet, Side.WHITE, pieceInfo.type)}
+                    </div>
+                ) : (
+                    getCardIcon(card.type)
+                )
+            )}
          </div>
       </div>
 

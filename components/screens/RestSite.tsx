@@ -83,7 +83,13 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
                     {/* Giving */}
                     <div className="flex flex-col items-center">
                         <p className="text-red-400 font-bold mb-4 uppercase tracking-widest">Giving</p>
-                        <CardComponent card={cardToTrade} selected={false} onClick={() => {}} disabled={true} />
+                        <CardComponent 
+                            card={cardToTrade} 
+                            selected={false} 
+                            onClick={() => {}} 
+                            disabled={true} 
+                            pieceSet={settings.pieceSet}
+                        />
                     </div>
 
                     <div className="text-4xl text-slate-500">
@@ -101,6 +107,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
                                         selected={selectedRewardId === card.id} 
                                         onClick={() => setSelectedRewardId(card.id)} 
                                         disabled={false} 
+                                        pieceSet={settings.pieceSet}
                                     />
                                     {selectedRewardId === card.id && (
                                         <div className="absolute -bottom-8 left-0 right-0 text-center text-green-400 font-bold text-sm animate-bounce">
@@ -149,6 +156,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
                      selected={false} 
                      onClick={() => mode === 'TRADE' ? handleTradeSelect(card) : onRemove(card)} 
                      disabled={false} 
+                     pieceSet={settings.pieceSet}
                    />
                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg pointer-events-none">
                       <span className={`font-bold uppercase border-2 px-2 py-1 rounded ${mode === 'TRADE' ? 'text-yellow-400 border-yellow-400' : 'text-red-500 border-red-500'}`}>

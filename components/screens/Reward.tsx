@@ -25,6 +25,7 @@ export const Reward: React.FC<RewardProps> = ({ rewardCards, onSelectReward, set
                  selected={false} 
                  disabled={false} 
                  onClick={() => onSelectReward(card)} 
+                 pieceSet={settings.pieceSet}
                />
              </div>
            ))}

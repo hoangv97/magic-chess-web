@@ -83,6 +83,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             deck={gameState.deck} 
             onClose={() => actions.setShowDeckModal(false)} 
             activeBoss={gameState.activeBoss}
+            pieceSet={settings.pieceSet}
           />
       )}
 

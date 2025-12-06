@@ -79,7 +79,13 @@ export const EventResult: React.FC<EventResultProps> = ({
               
               {rewardType === 'CARD' && rewardCard && (
                   <div className="scale-125">
-                      <CardComponent card={rewardCard} selected={false} onClick={() => {}} disabled={false} />
+                      <CardComponent 
+                        card={rewardCard} 
+                        selected={false} 
+                        onClick={() => {}} 
+                        disabled={false} 
+                        pieceSet={settings.pieceSet}
+                      />
                   </div>
               )}
               
@@ -131,6 +137,7 @@ export const EventResult: React.FC<EventResultProps> = ({
                                             selected={selectedChoice?.id === card.id} 
                                             onClick={() => {}} 
                                             disabled={false} 
+                                            pieceSet={settings.pieceSet}
                                           />
                                           {selectedChoice?.id === card.id && (
                                               <div className="absolute -bottom-8 left-0 right-0 text-green-400 font-bold text-sm animate-bounce">

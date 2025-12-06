@@ -91,6 +91,7 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
                       disabled={false} 
                       onClick={() => {}} 
                       showCost={true}
+                      pieceSet={settings.pieceSet}
                     />
                   </div>
                 );
