@@ -66,7 +66,7 @@ export const MapModal: React.FC<MapModalProps> = ({
 
         <div 
            ref={scrollContainerRef}
-           className="relative w-full h-[60vh] max-h-[500px] overflow-x-auto overflow-y-hidden bg-[#2a2420] border-y-4 border-[#3e342b] shadow-2xl hide-scrollbar"
+           className="relative w-full h-[60vh] max-h-[500px] overflow-x-auto overflow-y-hidden shadow-2xl hide-scrollbar"
         >
            <div 
              className="relative h-full"
