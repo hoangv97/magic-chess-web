@@ -64,6 +64,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         enemyValidMoves={gameState.enemyValidMoves}
         checkState={gameState.checkState}
         activeBoss={gameState.activeBoss}
+        turnCount={gameState.turnCount}
       />
 
       <PlayerHand 

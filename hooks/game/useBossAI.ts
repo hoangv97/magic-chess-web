@@ -1,3 +1,4 @@
+
 import { Cell, TileEffect, BossType, Side, PieceType, Position } from '../../types';
 import { v4 as uuidv4 } from 'uuid';
 import { soundManager } from '../../utils/soundManager';
@@ -32,7 +33,10 @@ export const applyBossAbilities = (
 
     const newTiles: Position[] = [];
 
-    if (activeBoss === BossType.CHAOS_LORD && turnCount % 5 === 0) {
+    // Periodic bosses trigger on Turn 2, 12, 22... (Every 5 rounds starting from first enemy turn)
+    const isPeriodicTurn = turnCount % 10 === 2;
+
+    if (activeBoss === BossType.CHAOS_LORD && isPeriodicTurn) {
       if (emptyTiles.length > 0) {
         const spot = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
         const chaosPool = [PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT, PieceType.PAWN];
@@ -43,7 +47,7 @@ export const applyBossAbilities = (
       }
     }
 
-    if (activeBoss === BossType.MIND_CONTROLLER && turnCount % 5 === 0) {
+    if (activeBoss === BossType.MIND_CONTROLLER && isPeriodicTurn) {
       const playerPieces: Position[] = [];
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
@@ -58,7 +62,7 @@ export const applyBossAbilities = (
       }
     }
 
-    if (activeBoss === BossType.UNDEAD_LORD && turnCount % 5 === 0) {
+    if (activeBoss === BossType.UNDEAD_LORD && isPeriodicTurn) {
       for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
           const p = boardState[r][c].piece;
@@ -80,7 +84,7 @@ export const applyBossAbilities = (
     }
 
     if (activeBoss === BossType.STONE_GOLEM) {
-      if (turnCount % 5 === 0) {
+      if (isPeriodicTurn) {
         const wallCount = Math.floor(Math.random() * 3) + 2;
         for (let i = 0; i < wallCount; i++) {
           if (emptyTiles.length === 0) break;

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings, BossType } from '../../types';
 import { BOARD_THEMES } from '../../constants';
@@ -18,10 +19,11 @@ interface GameBoardProps {
   enemyValidMoves: Position[];
   checkState?: { white: boolean, black: boolean };
   activeBoss?: BossType;
+  turnCount: number;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({ 
-  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves, checkState, activeBoss
+  board, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, onSquareClick, onSquareDoubleClick, selectedCardId, cardTargetMode, settings, selectedEnemyPos, enemyValidMoves, checkState, activeBoss, turnCount
 }) => {
   const theme = BOARD_THEMES[settings.theme];
 
@@ -42,6 +44,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     if (board.length === 9) return .9;
     return 1;
   }
+
+  // Bosses with every-5-turns effect
+  const periodicBosses = [BossType.STONE_GOLEM, BossType.UNDEAD_LORD, BossType.CHAOS_LORD, BossType.MIND_CONTROLLER];
 
   return (
     <div className={`flex-grow flex items-center justify-center p-4 overflow-auto ${theme.bg}`}>
@@ -82,6 +87,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
              ));
              
              const isBossPiece = activeBoss && activeBoss !== BossType.NONE && isKing && cell.piece?.side === Side.BLACK;
+             
+             // Calculate Countdown for Periodic Bosses
+             // Triggers on Enemy Turn 2, 12, 22... (Every 5 full rounds starting from first enemy turn)
+             let bossCountdown: number | null = null;
+             if (!!isBossPiece && activeBoss && periodicBosses.includes(activeBoss)) {
+                 const diff = (turnCount - 2) % 10;
+                 const normalizedDiff = diff < 0 ? diff + 10 : diff;
+                 // If diff is 0, it's the active turn (2, 12, 22). 
+                 const turnsUntil = normalizedDiff === 0 ? 0 : 10 - normalizedDiff;
+                 bossCountdown = Math.ceil(turnsUntil / 2);
+             }
 
              return (
                <BoardSquare 
@@ -99,6 +115,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                  isEnemyValid={isEnemyValid}
                  isUnderCheck={isUnderCheck}
                  isBossPiece={!!isBossPiece}
+                 bossCountdown={bossCountdown}
                  theme={theme}
                  settings={settings}
                  onSquareClick={onSquareClick}

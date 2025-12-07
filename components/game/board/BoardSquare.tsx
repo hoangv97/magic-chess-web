@@ -6,6 +6,8 @@ import { getTileEffectInfo, PIECE_VARIANT_STYLES } from '../../../constants';
 import { getPieceIcon } from '../../assets/PieceSets';
 import { TRANSLATIONS } from '../../../utils/locales';
 
+const MotionDiv = motion.div as any;
+
 interface BoardSquareProps {
   cell: Cell;
   r: number;
@@ -20,6 +22,7 @@ interface BoardSquareProps {
   isEnemyValid: boolean;
   isUnderCheck: boolean;
   isBossPiece: boolean;
+  bossCountdown?: number | null;
   theme: any;
   settings: any;
   onSquareClick: (r: number, c: number) => void;
@@ -29,7 +32,7 @@ interface BoardSquareProps {
 
 export const BoardSquare: React.FC<BoardSquareProps> = ({
   cell, r, c, size, isSelected, isEnemySelected, isCardTarget, isLastFrom, isLastTo,
-  isValid, isEnemyValid, isUnderCheck, isBossPiece, theme, settings,
+  isValid, isEnemyValid, isUnderCheck, isBossPiece, bossCountdown, theme, settings,
   onSquareClick, onSquareDoubleClick, getTileEffectStyle
 }) => {
   const t = TRANSLATIONS[settings.language];
@@ -65,7 +68,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
     >
       <AnimatePresence>
          {cell.tileEffect !== TileEffect.NONE && (
-           <motion.div
+           <MotionDiv
              initial={{ opacity: 0, scale: 0.8 }}
              animate={{ opacity: 1, scale: 1 }}
              exit={{ opacity: 0, scale: 0.5 }}
@@ -74,7 +77,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
            >
               {cell.tileEffect === TileEffect.WALL && <span className="absolute inset-0 flex items-center justify-center text-2xl">🧱</span>}
               {cell.tileEffect === TileEffect.FROZEN && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-50">❄️</span>}
-           </motion.div>
+           </MotionDiv>
          )}
       </AnimatePresence>
 
@@ -93,6 +96,13 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
          </div>
       )}
 
+      {/* Boss Countdown Badge */}
+      {bossCountdown !== undefined && bossCountdown !== null && (
+          <div className={`absolute -top-3 -right-2 z-50 flex items-center justify-center bg-red-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full border border-white shadow-lg ${bossCountdown === 1 ? 'animate-bounce' : ''}`}>
+              <span className="mr-0.5">⏳</span>{bossCountdown}
+          </div>
+      )}
+
       {hasTooltip && (
         <div className={`absolute ${tooltipPositionClass} left-1/2 -translate-x-1/2 bg-black/90 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-[100] hidden group-hover:block pointer-events-none shadow-lg border border-slate-700`}>
            {cell.piece ? (
@@ -109,6 +119,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                
                {cell.piece.tempMoveOverride && <span className="text-purple-300">{t.tooltips.movesLike.replace('{0}', t.pieces[cell.piece.tempMoveOverride])}</span>}
                {isBossPiece && <span className="text-red-500 font-bold uppercase">{t.tooltips.bossAbility}</span>}
+               {bossCountdown !== undefined && bossCountdown !== null && <span className="text-red-300 italic">Ability in {bossCountdown} turns</span>}
                {cell.tileEffect !== TileEffect.NONE && <span className="text-[9px] text-slate-400">{t.tooltips.on} {tileInfo.name}</span>}
              </div>
            ) : (
@@ -120,7 +131,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
 
       <AnimatePresence mode="popLayout">
         {cell.piece && (
-          <motion.div
+          <MotionDiv
             layoutId={cell.piece.id}
             key={cell.piece.id}
             initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
@@ -143,7 +154,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
               ${(cell.piece.frozenTurns || 0) > 0 ? 'brightness-50 grayscale opacity-80' : ''}
             `}
           >
-            <motion.div
+            <MotionDiv
               key={cell.piece.type}
               initial={{ scale: 0.5, rotateY: 180, filter: "brightness(2)" }}
               animate={{ scale: 1, rotateY: 0, filter: "brightness(1)" }}
@@ -174,11 +185,11 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                      ❄️
                    </div>
                )}
-            </motion.div>
+            </MotionDiv>
 
             <AnimatePresence>
               {(cell.piece.frozenTurns || 0) > 0 && (
-                 <motion.div 
+                 <MotionDiv 
                    initial={{ scale: 0, opacity: 0 }} 
                    animate={{ scale: 1, opacity: 1, rotate: [0, 10, -10, 0] }}
                    exit={{ scale: 0, opacity: 0 }}
@@ -186,10 +197,10 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    transition={{ duration: 0.3 }}
                  >
                    ❄️
-                 </motion.div>
+                 </MotionDiv>
               )}
               {(cell.piece.immortalTurns || 0) > 0 && (
-                 <motion.div 
+                 <MotionDiv 
                    initial={{ scale: 0, opacity: 0 }} 
                    animate={{ scale: 1, opacity: 1 }}
                    exit={{ scale: 0, opacity: 0 }}
@@ -197,52 +208,52 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    transition={{ duration: 0.3 }}
                  >
                    🛡️
-                 </motion.div>
+                 </MotionDiv>
               )}
               {cell.piece.trapped && (
-                 <motion.div 
+                 <MotionDiv 
                    initial={{ scale: 0 }} 
                    animate={{ scale: 1 }}
                    className="absolute -bottom-1 -left-1 text-sm drop-shadow-md bg-black rounded-full w-5 h-5 flex items-center justify-center border border-red-500 z-40"
                  >
                    ☠️
-                 </motion.div>
+                 </MotionDiv>
               )}
               {cell.piece.mimic && (
-                 <motion.div 
+                 <MotionDiv 
                    initial={{ scale: 0 }} 
                    animate={{ scale: 1 }}
                    className="absolute -top-2 right-1/2 translate-x-1/2 text-sm drop-shadow-md bg-purple-800 rounded-full w-5 h-5 flex items-center justify-center border border-purple-400 z-40"
                  >
                    🎭
-                 </motion.div>
+                 </MotionDiv>
               )}
               {(cell.piece.ascendedTurns || 0) > 0 && (
-                 <motion.div 
+                 <MotionDiv 
                    initial={{ scale: 0 }} 
                    animate={{ scale: 1 }}
                    className="absolute top-1/2 -right-3 -translate-y-1/2 text-[10px] font-bold bg-cyan-800 text-white rounded px-1 border border-cyan-400 z-40"
                  >
                    ⏳{cell.piece.ascendedTurns}
-                 </motion.div>
+                 </MotionDiv>
               )}
               {cell.piece.tempMoveOverride && (
-                 <motion.div 
+                 <MotionDiv 
                    initial={{ scale: 0 }} 
                    animate={{ scale: 1 }}
                    exit={{ scale: 0 }}
                    className="absolute -bottom-1 -right-1 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center border border-white shadow-sm"
                  >
                    ✨
-                 </motion.div>
+                 </MotionDiv>
               )}
             </AnimatePresence>
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
       
       {isValid && (
-         <motion.div 
+         <MotionDiv 
            initial={{ scale: 0.8, opacity: 0 }}
            animate={{ scale: 1, opacity: 1 }}
            className="absolute w-2 h-2 bg-green-500/50 rounded-full pointer-events-none"

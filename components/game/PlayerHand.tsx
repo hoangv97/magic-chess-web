@@ -6,6 +6,8 @@ import { MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { CardComponent } from '../ui/CardComponent';
 import { TRANSLATIONS } from '../../utils/locales';
 
+const MotionDiv = motion.div as any;
+
 interface PlayerHandProps {
   hand: Card[];
   deckCount: number;
@@ -37,7 +39,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
               )}
               <AnimatePresence mode='popLayout'>
                 {hand.map((card, index) => (
-                  <motion.div
+                  <MotionDiv
                     key={card.id}
                     layout
                     initial={{ opacity: 0, x: 200, y: 50, scale: 0.2, rotate: 15 }}
@@ -59,7 +61,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
                       isHidden={activeBoss === BossType.ILLUSIONIST && isUnitCard(card.type)}
                       pieceSet={settings.pieceSet}
                     />
-                  </motion.div>
+                  </MotionDiv>
                 ))}
               </AnimatePresence>
           </div>

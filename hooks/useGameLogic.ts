@@ -392,12 +392,13 @@ export const useGameLogic = ({
 
   const endPlayerTurn = (currentBoard: Cell[][], currentEnPassantTarget: Position | null) => {
     setTurn(Side.BLACK);
-    setTurnCount((c) => c + 1);
-    setTimeout(() => executeEnemyTurn(currentBoard, currentEnPassantTarget), 800);
+    const nextTurn = turnCount + 1;
+    setTurnCount(nextTurn);
+    setTimeout(() => executeEnemyTurn(currentBoard, currentEnPassantTarget, nextTurn), 800);
   };
 
-  const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null) => {
-    const { board: boardAfterBoss, newTiles } = applyBossAbilities([...currentBoard], activeBoss, bossTiles, turnCount);
+  const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null, currentTurn: number) => {
+    const { board: boardAfterBoss, newTiles } = applyBossAbilities([...currentBoard], activeBoss, bossTiles, currentTurn);
     setBossTiles(newTiles);
     const boardCopy = boardAfterBoss.map((row) => row.map((cell) => ({ ...cell, piece: cell.piece ? { ...cell.piece } : null })));
 

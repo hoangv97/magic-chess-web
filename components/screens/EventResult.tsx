@@ -8,6 +8,8 @@ import { getRelicInfo } from '../../constants';
 import { TRANSLATIONS } from '../../utils/locales';
 import { soundManager } from '../../utils/soundManager';
 
+const MotionDiv = motion.div as any;
+
 interface EventResultProps {
   title: string;
   description: string;
@@ -21,7 +23,7 @@ interface EventResultProps {
 }
 
 const CardBack = ({ onClick }: { onClick: () => void }) => (
-    <motion.div 
+    <MotionDiv 
         onClick={onClick}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -30,7 +32,7 @@ const CardBack = ({ onClick }: { onClick: () => void }) => (
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(0,0,0,0.2)_10px,rgba(0,0,0,0.2)_20px)] opacity-50"></div>
         <div className="text-4xl text-slate-500 font-black group-hover:text-yellow-500 transition-colors z-10">?</div>
         <div className="absolute inset-0 border-4 border-slate-700 rounded-lg opacity-50"></div>
-    </motion.div>
+    </MotionDiv>
 );
 
 export const EventResult: React.FC<EventResultProps> = ({ 
@@ -61,7 +63,7 @@ export const EventResult: React.FC<EventResultProps> = ({
 
   return (
     <div className="absolute inset-0 z-50 bg-slate-900 flex items-center justify-center overflow-hidden">
-        <motion.div 
+        <MotionDiv 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="max-w-2xl w-full bg-slate-800 p-8 rounded-xl border-2 border-purple-500/50 shadow-2xl text-center max-h-screen overflow-y-auto"
@@ -104,7 +106,7 @@ export const EventResult: React.FC<EventResultProps> = ({
                   <div className="flex gap-4 items-center justify-center">
                       <AnimatePresence mode='wait'>
                           {!revealed ? (
-                              <motion.div 
+                              <MotionDiv 
                                 key="backs"
                                 initial={{ opacity: 0 }} 
                                 animate={{ opacity: 1 }} 
@@ -113,17 +115,17 @@ export const EventResult: React.FC<EventResultProps> = ({
                                 className="flex gap-4"
                               >
                                   {choiceCards.map((card, idx) => (
-                                      <motion.div 
+                                      <MotionDiv 
                                         key={`back-${idx}`}
                                         animate={{ y: [0, -10, 0] }}
                                         transition={{ repeat: Infinity, duration: 2, delay: idx * 0.2 }}
                                       >
                                         <CardBack onClick={() => handleMysteryClick(card)} />
-                                      </motion.div>
+                                      </MotionDiv>
                                   ))}
-                              </motion.div>
+                              </MotionDiv>
                           ) : (
-                              <motion.div 
+                              <MotionDiv 
                                 key="fronts"
                                 initial={{ opacity: 0, rotateY: -90 }} 
                                 animate={{ opacity: 1, rotateY: 0 }}
@@ -146,7 +148,7 @@ export const EventResult: React.FC<EventResultProps> = ({
                                           )}
                                       </div>
                                   ))}
-                              </motion.div>
+                              </MotionDiv>
                           )}
                       </AnimatePresence>
                   </div>
@@ -164,7 +166,7 @@ export const EventResult: React.FC<EventResultProps> = ({
            >
                {rewardType === 'PICK_CARD' ? (selectedChoice ? 'Confirm Selection' : 'Choose a Card') : t.close}
            </Button>
-        </motion.div>
+        </MotionDiv>
     </div>
   );
 };

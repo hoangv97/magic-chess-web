@@ -4,6 +4,8 @@ import { GamePhase, GameSettings } from '../../types';
 import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
 
+const MotionDiv = motion.div as any;
+
 interface GameOverProps {
   phase: GamePhase;
   isCampaign: boolean;
@@ -18,13 +20,13 @@ export const GameOver: React.FC<GameOverProps> = ({ phase, isCampaign, onMainMen
   const isWin = phase === 'GAME_OVER_WIN';
   
   return (
-     <motion.div 
+     <MotionDiv 
        initial={{ opacity: 0 }}
        animate={{ opacity: 1 }}
        // Changed bg-black/50 to bg-black/30 for transparency so user can see board
        className="absolute inset-0 z-50 bg-black/30 flex items-center justify-center pointer-events-auto"
      >
-       <motion.div 
+       <MotionDiv 
          initial={{ scale: 0.8, y: 50, opacity: 0 }}
          animate={{ scale: 1, y: 0, opacity: 1 }}
          transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.2 }}
@@ -46,7 +48,7 @@ export const GameOver: React.FC<GameOverProps> = ({ phase, isCampaign, onMainMen
               </Button>
            )}
          </div>
-       </motion.div>
-     </motion.div>
+       </MotionDiv>
+     </MotionDiv>
   );
 };
