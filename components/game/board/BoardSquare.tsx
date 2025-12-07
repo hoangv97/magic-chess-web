@@ -1,4 +1,6 @@
 
+
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cell, Side, Position, PieceType, TileEffect, BossType } from '../../../types';
@@ -28,12 +30,13 @@ interface BoardSquareProps {
   onSquareClick: (r: number, c: number) => void;
   onSquareDoubleClick: (r: number, c: number) => void;
   getTileEffectStyle: (effect: TileEffect) => string;
+  activeBoss?: BossType; // Passed from parent if available
 }
 
 export const BoardSquare: React.FC<BoardSquareProps> = ({
   cell, r, c, size, isSelected, isEnemySelected, isCardTarget, isLastFrom, isLastTo,
   isValid, isEnemyValid, isUnderCheck, isBossPiece, bossCountdown, theme, settings,
-  onSquareClick, onSquareDoubleClick, getTileEffectStyle
+  onSquareClick, onSquareDoubleClick, getTileEffectStyle, activeBoss
 }) => {
   const t = TRANSLATIONS[settings.language];
   const isDark = (r + c) % 2 === 1;
@@ -48,6 +51,16 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
   const tooltipPositionClass = r < 2 ? 'top-full mt-1' : 'bottom-full mb-1';
 
   const variantStyle = cell.piece?.variant ? PIECE_VARIANT_STYLES[cell.piece.variant] : '';
+
+  // Logic for The Faceless boss disguise
+  // If boss is The Faceless, and piece is Black, and not King -> Display as Pawn
+  let displayType = cell.piece?.type;
+  let displayTooltipName = cell.piece ? t.pieces[cell.piece.type] : '';
+  
+  if (activeBoss === BossType.THE_FACELESS && cell.piece?.side === Side.BLACK && cell.piece.type !== PieceType.KING) {
+      displayType = PieceType.PAWN;
+      displayTooltipName = t.pieces[PieceType.PAWN] + " (?)";
+  }
 
   return (
     <div 
@@ -108,7 +121,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
            {cell.piece ? (
              <div className="flex flex-col items-center gap-1">
                <span className="font-bold text-yellow-400">
-                   {cell.piece.side === Side.WHITE ? '' : ''} {t.pieces[cell.piece.type]}
+                   {cell.piece.side === Side.WHITE ? '' : ''} {displayTooltipName}
                </span>
                {(cell.piece.variant) && <span className="text-orange-300 font-bold">Element: {cell.piece.variant}</span>}
                {(cell.piece.frozenTurns || 0) > 0 && <span className="text-blue-300">{t.tooltips.frozen.replace('{0}', String(cell.piece.frozenTurns))}</span>}
@@ -130,7 +143,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
       )}
 
       <AnimatePresence mode="popLayout">
-        {cell.piece && (
+        {cell.piece && displayType && (
           <MotionDiv
             layoutId={cell.piece.id}
             key={cell.piece.id}
@@ -155,14 +168,14 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
             `}
           >
             <MotionDiv
-              key={cell.piece.type}
+              key={displayType}
               initial={{ scale: 0.5, rotateY: 180, filter: "brightness(2)" }}
               animate={{ scale: 1, rotateY: 0, filter: "brightness(1)" }}
               transition={{ duration: 0.5, type: "spring" }}
               className="w-full h-full relative"
               style={{ filter: variantStyle }}
             >
-               {getPieceIcon(settings.pieceSet, cell.piece.side, cell.piece.type)}
+               {getPieceIcon(settings.pieceSet, cell.piece.side, displayType)}
                {isBossPiece && (
                    <div className="absolute -top-3 -right-3 text-2xl drop-shadow-md z-30">
                        👿

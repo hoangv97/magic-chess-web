@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -593,6 +595,12 @@ export const useGameLogic = ({
     }
     if (clickedPiece?.side === Side.BLACK) {
       setSelectedPiecePos(null); setValidMoves([]);
+      if (
+        activeBoss === BossType.THE_FACELESS &&
+        clickedPiece.type !== PieceType.KING
+      ) {
+        return;
+      }
       if (selectedEnemyPos?.row === r && selectedEnemyPos?.col === c) { setSelectedEnemyPos(null); setEnemyValidMoves([]); }
       else {
         setSelectedEnemyPos({ row: r, col: c });
@@ -608,7 +616,14 @@ export const useGameLogic = ({
     const piece = cell.piece;
     const effect = cell.tileEffect;
     if (piece) {
-      let content = `Type: ${t.pieces[piece.type]}`;
+      let typeDisplay = t.pieces[piece.type];
+      
+      // Boss Disguise Check
+      if (activeBoss === BossType.THE_FACELESS && piece.side === Side.BLACK && piece.type !== PieceType.KING) {
+          typeDisplay = t.pieces[PieceType.PAWN] + " (?)";
+      }
+
+      let content = `Type: ${typeDisplay}`;
       if (piece.variant) content += `\nElement: ${piece.variant}`;
       if ((piece.frozenTurns || 0) > 0) content += `\nFrozen: ${piece.frozenTurns} turns`;
       if ((piece.immortalTurns || 0) > 0) content += `\nImmortal: ${piece.immortalTurns} turns`;
@@ -619,7 +634,7 @@ export const useGameLogic = ({
         const bossData = t.bosses[activeBoss];
         content += `\n\n[BOSS DETECTED]\nName: ${bossData.name}\n${bossData.desc}\nAbility: ${bossData.ability}`;
       }
-      setInfoModalContent({ title: t.pieces[piece.type], content });
+      setInfoModalContent({ title: typeDisplay, content });
     } else if (effect !== TileEffect.NONE) {
       setInfoModalContent({ title: t.tiles[effect].name, content: t.tiles[effect].desc });
     }

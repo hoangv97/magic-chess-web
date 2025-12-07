@@ -1,4 +1,6 @@
 
+
+
 import React from 'react';
 import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings, BossType } from '../../types';
 import { BOARD_THEMES } from '../../constants';
@@ -121,6 +123,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                  onSquareClick={onSquareClick}
                  onSquareDoubleClick={onSquareDoubleClick}
                  getTileEffectStyle={getTileEffectStyle}
+                 activeBoss={activeBoss}
                />
              );
            })

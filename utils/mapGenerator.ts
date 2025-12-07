@@ -1,4 +1,6 @@
 
+
+
 import { v4 as uuidv4 } from 'uuid';
 import { MapNode, BossType, MapNodeType } from '../types';
 import { getWeightedRandomItem } from './random';
@@ -27,7 +29,8 @@ export const generateCampaignMap = (): MapNode[] => {
       BossType.HYDRA,
       BossType.MIND_CONTROLLER,
       BossType.SILENCER,
-      BossType.ILLUSIONIST
+      BossType.ILLUSIONIST,
+      BossType.THE_FACELESS
   ];
 
   for (let level = 1; level <= TOTAL_LEVELS; level++) {

@@ -1,6 +1,8 @@
 
 
 
+
+
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../constants';
 
@@ -260,6 +262,11 @@ export const TRANSLATIONS = {
         name: "The Illusionist", 
         desc: "He shrouds the battlefield in mystery.",
         ability: "PASSIVE: Unit cards in your hand and deck are unidentified until played." 
+      },
+      [BossType.THE_FACELESS]: {
+        name: "The Faceless",
+        desc: "A shapeshifter who commands a masked army.",
+        ability: "PASSIVE: All enemy units (except the King) appear as Pawns."
       }
     },
     deckSelection: {
@@ -562,6 +569,11 @@ export const TRANSLATIONS = {
         name: "Ảo Thuật Gia", 
         desc: "Kẻ che giấu chiến trường.",
         ability: "BỊ ĐỘNG: Thẻ quân trong tay và bộ bài bị ẩn danh tính." 
+      },
+      [BossType.THE_FACELESS]: {
+        name: "Kẻ Vô Diện",
+        desc: "Một kẻ biến hình chỉ huy đội quân mặt nạ.",
+        ability: "BỊ ĐỘNG: Tất cả quân địch (trừ Vua) trông giống như Tốt."
       }
     },
     deckSelection: {
