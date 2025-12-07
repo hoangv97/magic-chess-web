@@ -99,7 +99,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
                     {/* Receiving */}
                     <div className="flex flex-col items-center">
                         <p className="text-green-400 font-bold mb-4 uppercase tracking-widest">Choose 1 to Receive</p>
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap justify-center gap-4">
                             {tradeCards.map(card => (
                                 <div key={card.id} className="relative">
                                     <CardComponent 
