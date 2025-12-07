@@ -15,6 +15,7 @@ import { soundManager } from '../utils/soundManager';
 import { RelicDetailModal } from './modals/RelicDetailModal';
 import { useCampaignLogic } from '../hooks/useCampaignLogic';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { DeckModal } from './modals/DeckModal';
 
 interface CampaignGameProps {
   settings: GameSettings;
@@ -85,6 +86,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
         onOpenMap={() => campaign.setShowMapModal(true)}
         settings={settings}
         onOpenSettings={() => setShowSettings(true)}
+        onOpenDeck={() => campaign.setShowDeckModal(true)}
     />
   );
 
@@ -217,6 +219,14 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
             onClose={() => campaign.setSelectedRelic(null)}
             onSell={campaign.sellRelic}
             settings={settings}
+          />
+      )}
+
+      {campaign.showDeckModal && (
+          <DeckModal 
+            deck={campaign.masterDeck} 
+            onClose={() => campaign.setShowDeckModal(false)} 
+            pieceSet={settings.pieceSet}
           />
       )}
 

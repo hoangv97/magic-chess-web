@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, PieceType, CardType, SavedGameState } from '../types';
-import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
+import { getDeckTemplate, getStarterDecks, getRelicInfo, RELIC_INFO, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { soundManager } from '../utils/soundManager';
 import { saveToStorage, clearFromStorage, STORAGE_KEYS } from '../utils/storage';
@@ -70,6 +70,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
   const [currentMapNodeId, setCurrentMapNodeId] = useState<string | null>(null);
   const [completedMapNodeIds, setCompletedMapNodeIds] = useState<string[]>([]);
   const [showMapModal, setShowMapModal] = useState(false);
+  const [showDeckModal, setShowDeckModal] = useState(false);
 
   const deckTemplate = getDeckTemplate(settings.language);
 
@@ -370,6 +371,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
       currentMapNodeId, setCurrentMapNodeId,
       completedMapNodeIds, setCompletedMapNodeIds,
       showMapModal, setShowMapModal,
+      showDeckModal, setShowDeckModal,
       handleWin, handleLoss, handlePieceKilled,
       selectStarterDeck, initShop, resolveUnknownNode,
       handleEventClaim, selectReward, buyCard, buyRelic, sellRelic,

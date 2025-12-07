@@ -26,11 +26,12 @@ interface GameScreenProps {
   onResign: () => void;
   onSellRelic: (relic: Relic) => void;
   onOpenSettings: () => void;
+  onOpenDeck?: () => void;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
   settings, gameState, actions, isCampaign, campaignLevel, relics, gold,
-  mapNodes, currentMapNodeId, completedMapNodeIds, showMapModal, onOpenMap, onCloseMap, onResign, onSellRelic, onOpenSettings
+  mapNodes, currentMapNodeId, completedMapNodeIds, showMapModal, onOpenMap, onCloseMap, onResign, onSellRelic, onOpenSettings, onOpenDeck
 }) => {
   return (
     <div className="flex flex-col w-full h-full">
@@ -47,6 +48,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onOpenMap={onOpenMap}
         settings={settings}
         onOpenSettings={onOpenSettings}
+        onOpenDeck={onOpenDeck}
       />
 
       <GameBoard 

@@ -20,10 +20,11 @@ interface GameHeaderProps {
   onOpenMap: () => void;
   settings: GameSettings;
   onOpenSettings?: () => void;
+  onOpenDeck?: () => void;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({ 
-  phase, isCampaign, campaignLevel, relics, gold, turnCount, cardsPlayed, onResign, onRelicClick, onOpenMap, settings, onOpenSettings
+  phase, isCampaign, campaignLevel, relics, gold, turnCount, cardsPlayed, onResign, onRelicClick, onOpenMap, settings, onOpenSettings, onOpenDeck
 }) => {
   const t = TRANSLATIONS[settings.language].header;
   const title = TRANSLATIONS[settings.language].mainMenu.title;
@@ -75,6 +76,13 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 
               </>
             )}
+
+            {isCampaign && !['PLAYING', 'DECK_SELECTION'].includes(phase) && onOpenDeck && (
+               <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={onOpenDeck}>
+                  🎴
+               </Button>
+            )}
+
             <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={() => setShowOptions(true)}>⚙️</Button>
           </div>
         ) : null}
