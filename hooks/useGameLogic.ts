@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -12,12 +10,14 @@ import { getBestEnemyMove } from '../utils/aiLogic';
 import {
   PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN,
   RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT,
-  AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION,
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
 import { soundManager } from '../utils/soundManager';
 import { initializeGameBoard } from './game/useGameInit';
 import { applyBossAbilities } from './game/useBossAI';
+import { calculateCheckState as calcCheck, checkLossCondition as checkLoss, checkWinCondition as checkWin } from '../utils/game/checkLogic';
+import { spawnRelicPiece as spawnRelic } from '../utils/game/spawnLogic';
+import { getBoardAfterInstantCard, getBoardAfterTargetCard } from '../utils/game/cardLogic';
 
 interface UseGameLogicProps {
   settings: GameSettings;
@@ -89,33 +89,7 @@ export const useGameLogic = ({
   };
 
   const calculateCheckState = (boardState: Cell[][]) => {
-    const isSideInCheck = (side: Side): boolean => {
-      let kingPos: Position | null = null;
-      const size = boardState.length;
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          const p = boardState[r][c].piece;
-          if (p && p.type === PieceType.KING && p.side === side) {
-            kingPos = { row: r, col: c };
-            break;
-          }
-        }
-        if (kingPos) break;
-      }
-      if (!kingPos) return false;
-      const enemySide = side === Side.WHITE ? Side.BLACK : Side.WHITE;
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          const p = boardState[r][c].piece;
-          if (p && p.side === enemySide) {
-            const moves = getValidMoves(boardState, p, { row: r, col: c }, null, null);
-            if (moves.some((m) => m.row === kingPos!.row && m.col === kingPos!.col)) return true;
-          }
-        }
-      }
-      return false;
-    };
-    setCheckState({ white: isSideInCheck(Side.WHITE), black: isSideInCheck(Side.BLACK) });
+    setCheckState(calcCheck(boardState));
   };
 
   const drawCard = useCallback(() => {
@@ -146,55 +120,6 @@ export const useGameLogic = ({
       }
     }
   }, [deck, hand, activeBoss]);
-
-  const checkLossCondition = (currentBoard: Cell[][], currentDeck: Card[], currentHand: Card[]) => {
-    let whitePieces = 0;
-    let whiteKing = false;
-    currentBoard.forEach((row) => row.forEach((cell) => {
-        if (cell.piece?.side === Side.WHITE) {
-          if (cell.piece.type === PieceType.KING) whiteKing = true;
-          else whitePieces++;
-        }
-    }));
-    if (!whiteKing) return true;
-    if (currentDeck.length === 0 && currentHand.length === 0 && whitePieces === 0) return true;
-    return false;
-  };
-
-  const checkWinCondition = (currentBoard: Cell[][]) => {
-    let blackPieces = 0;
-    let blackKing = false;
-    currentBoard.forEach((row) => row.forEach((cell) => {
-        if (cell.piece?.side === Side.BLACK) {
-          if (cell.piece.type === PieceType.KING) blackKing = true;
-          else blackPieces++;
-        }
-    }));
-    if (!blackKing) return true;
-    if (blackPieces === 0) return true;
-    return false;
-  };
-
-  const spawnRelicPiece = (boardState: Cell[][], side: Side, type: PieceType) => {
-    const size = boardState.length;
-    const baseRows = side === Side.WHITE ? [size - 1, size - 2] : [0, 1];
-    const validSpots: Position[] = [];
-    baseRows.forEach((r) => {
-      for (let c = 0; c < size; c++) {
-        const cell = boardState[r][c];
-        if (!cell.piece && cell.tileEffect !== TileEffect.WALL && cell.tileEffect !== TileEffect.HOLE) {
-          validSpots.push({ row: r, col: c });
-        }
-      }
-    });
-    if (validSpots.length > 0) {
-      const spot = validSpots[Math.floor(Math.random() * validSpots.length)];
-      boardState[spot.row][spot.col].piece = {
-        id: uuidv4(), type: type, side: side, hasMoved: false, frozenTurns: 0, immortalTurns: 0,
-      };
-      soundManager.playSfx('spawn');
-    }
-  };
 
   const executeMove = (from: Position, to: Position) => {
     const newBoard = board.map((row) => row.map((cell) => ({ ...cell, piece: cell.piece ? { ...cell.piece } : null })));
@@ -327,7 +252,7 @@ export const useGameLogic = ({
     if (enemyKilled) {
       soundManager.playSfx('capture');
       const necromancy = relics.find((r) => r.type === RelicType.NECROMANCY);
-      if (necromancy) spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
+      if (necromancy) spawnRelic(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
       if (activeBoss === BossType.HYDRA) {
         const emptySpots: Position[] = [];
         for (let r = 0; r < Math.floor(newBoard.length / 2); r++) {
@@ -349,7 +274,7 @@ export const useGameLogic = ({
 
     if (selfKilled) {
       const lastWill = relics.find((r) => r.type === RelicType.LAST_WILL);
-      if (lastWill) spawnRelicPiece(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
+      if (lastWill) spawnRelic(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
     }
 
     newBoard.forEach((row) => row.forEach((cell) => {
@@ -377,13 +302,13 @@ export const useGameLogic = ({
     setEnemyValidMoves([]);
     setEnPassantTarget(nextEnPassantTarget);
 
-    if (checkWinCondition(newBoard)) {
+    if (checkWin(newBoard)) {
       soundManager.playSfx('win');
       setIsGameEnded(true);
       setTimeout(onWin, WAIT_END_GAME_TIMEOUT);
       return;
     }
-    if (checkLossCondition(newBoard, deck, hand)) {
+    if (checkLoss(newBoard, deck, hand)) {
       soundManager.playSfx('loss');
       setIsGameEnded(true);
       setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
@@ -530,7 +455,7 @@ export const useGameLogic = ({
         soundManager.playSfx('capture');
         // Relic: Last Will
         const lastWill = relics.find((r) => r.type === RelicType.LAST_WILL);
-        if (lastWill) spawnRelicPiece(boardCopy, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
+        if (lastWill) spawnRelic(boardCopy, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
         
         if (onPieceKilled) onPieceKilled(killedPiece);
         
@@ -561,14 +486,14 @@ export const useGameLogic = ({
 
     setEnPassantTarget(nextEnPassantTarget);
     
-    if (checkLossCondition(boardCopy, deck, hand)) {
+    if (checkLoss(boardCopy, deck, hand)) {
       setTimeout(() => {
         soundManager.playSfx('loss');
         setIsGameEnded(true);
         setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
       }, 0);
     }
-    if (checkWinCondition(boardCopy)) {
+    if (checkWin(boardCopy)) {
       setTimeout(() => {
         soundManager.playSfx('win');
         setIsGameEnded(true);
@@ -658,170 +583,39 @@ export const useGameLogic = ({
   };
 
   const playInstantCard = (card: Card) => {
-    const newBoard = board.map((row) => [...row]);
-    let played = false;
-    if (card.type === CardType.EFFECT_FREEZE) {
-      const enemies: Position[] = [];
-      newBoard.forEach((row, r) => row.forEach((cell, c) => { if (cell.piece?.side === Side.BLACK) enemies.push({ row: r, col: c }); }));
-      if (enemies.length > 0) {
-        const target = enemies[Math.floor(Math.random() * enemies.length)];
-        if (newBoard[target.row][target.col].piece) {
-          newBoard[target.row][target.col].piece!.frozenTurns = 1;
-          played = true;
-          soundManager.playSfx('frozen');
-        }
-      }
-    } else if (card.type === CardType.EFFECT_LIMIT) {
-      setIsEnemyMoveLimited(true); played = true; soundManager.playSfx('frozen');
-    } else if (card.type === CardType.EFFECT_TRAP) {
-      const friends: Position[] = [];
-      newBoard.forEach((row, r) => row.forEach((cell, c) => { if (cell.piece?.side === Side.WHITE && !cell.piece.trapped) friends.push({ row: r, col: c }); }));
-      if (friends.length > 0) {
-        const target = friends[Math.floor(Math.random() * friends.length)];
-        newBoard[target.row][target.col].piece!.trapped = true;
-        played = true;
-        soundManager.playSfx('spawn');
-      } else alert('No friendly pieces available.');
-    } else if (card.type === CardType.SPAWN_REVIVE) {
-      if (deadPieces.length === 0) { alert('No dead pieces to revive!'); return; }
-      const size = newBoard.length;
-      const validSpots: Position[] = [];
-      [size - 1, size - 2].forEach((r) => {
-        for (let c = 0; c < size; c++) {
-          const cell = newBoard[r][c];
-          if (!cell.piece && cell.tileEffect !== TileEffect.WALL && cell.tileEffect !== TileEffect.HOLE) validSpots.push({ row: r, col: c });
-        }
-      });
-      if (validSpots.length > 0) {
-        const pieceType = deadPieces[Math.floor(Math.random() * deadPieces.length)];
-        const index = deadPieces.indexOf(pieceType);
-        const newDeadPieces = [...deadPieces];
-        if (index > -1) newDeadPieces.splice(index, 1);
-        setDeadPieces(newDeadPieces);
-        const spot = validSpots[Math.floor(Math.random() * validSpots.length)];
-        newBoard[spot.row][spot.col].piece = { id: uuidv4(), type: pieceType, side: Side.WHITE, hasMoved: false, frozenTurns: 0, immortalTurns: 0 };
-        played = true;
-        soundManager.playSfx('spawn');
-      } else alert('No space in base rows.');
+    const result = getBoardAfterInstantCard(board, card, deadPieces, setDeadPieces, setIsEnemyMoveLimited);
+    
+    if (result.error) {
+        alert(result.error);
+        return;
     }
-    if (played) { setBoard(newBoard); consumeCard(card.id); }
+
+    if (result.played) {
+        setBoard(result.newBoard);
+        if (result.sound) soundManager.playSfx(result.sound);
+        consumeCard(card.id);
+    }
   };
 
   const handleCardTargeting = (r: number, c: number, piece: Piece | null) => {
     if (!cardTargetMode || !selectedCardId) return;
-    const newBoard = board.map((row) => row.map((cell) => ({ ...cell })));
-    const { type, step } = cardTargetMode;
-    const size = board.length;
+    const result = getBoardAfterTargetCard(board, cardTargetMode.type, cardTargetMode.step, { row: r, col: c }, cardTargetMode.sourcePos, piece);
 
-    if (type.includes('SPAWN')) {
-      if (r >= size - 2 && !piece) {
-        if (newBoard[r][c].tileEffect === TileEffect.WALL || newBoard[r][c].tileEffect === TileEffect.HOLE) { alert('Cannot spawn on an obstacle.'); return; }
-        let spawnType = PieceType.PAWN;
-        let variant: 'LAVA' | 'ABYSS' | 'FROZEN' | undefined = undefined;
-        if (type.includes('DRAGON')) {
-          spawnType = PieceType.DRAGON;
-          if (type.includes('LAVA')) variant = 'LAVA';
-          if (type.includes('ABYSS')) variant = 'ABYSS';
-          if (type.includes('FROZEN')) variant = 'FROZEN';
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+
+    if (result.success) {
+        setBoard(result.newBoard);
+        if (result.sound) soundManager.playSfx(result.sound);
+        if (result.lastPlayerSpawnedType) setLastPlayerSpawnedType(result.lastPlayerSpawnedType);
+        
+        if (result.nextStep) {
+            setCardTargetMode({ ...cardTargetMode, step: result.nextStep, sourcePos: result.sourcePos });
         } else {
-            const map: Record<string, PieceType> = {
-                'SPAWN_QUEEN': PieceType.QUEEN, 'SPAWN_ROOK': PieceType.ROOK, 'SPAWN_BISHOP': PieceType.BISHOP, 'SPAWN_KNIGHT': PieceType.KNIGHT, 'SPAWN_PAWN': PieceType.PAWN,
-                'SPAWN_FOOL': PieceType.FOOL, 'SPAWN_SHIP': PieceType.SHIP, 'SPAWN_ELEPHANT': PieceType.ELEPHANT, 'SPAWN_CHANCELLOR': PieceType.CHANCELLOR,
-                'SPAWN_ARCHBISHOP': PieceType.ARCHBISHOP, 'SPAWN_MANN': PieceType.MANN, 'SPAWN_AMAZON': PieceType.AMAZON, 'SPAWN_CENTAUR': PieceType.CENTAUR,
-                'SPAWN_ZEBRA': PieceType.ZEBRA, 'SPAWN_CHAMPION': PieceType.CHAMPION
-            };
-            if (map[type]) spawnType = map[type];
+            consumeCard(selectedCardId);
         }
-        newBoard[r][c].piece = { id: uuidv4(), type: spawnType, side: Side.WHITE, hasMoved: false, frozenTurns: 0, immortalTurns: 0, variant };
-        if (newBoard[r][c].tileEffect === TileEffect.FROZEN) newBoard[r][c].piece!.frozenTurns = 2;
-        if (newBoard[r][c].tileEffect === TileEffect.LAVA && spawnType !== PieceType.DRAGON) newBoard[r][c].piece = null;
-        setLastPlayerSpawnedType(spawnType);
-        setBoard(newBoard);
-        soundManager.playSfx('spawn');
-        consumeCard(selectedCardId);
-      } else alert('Can only spawn on empty squares in your base rows.');
-      return;
-    }
-
-    if (type === CardType.EFFECT_BACK_BASE) {
-      if (step === 'SELECT_SQUARE' && piece?.side === Side.WHITE && piece.type !== PieceType.KING) {
-        let targetPos: Position | null = null;
-        const baseRows = [size - 1, size - 2];
-        const center = Math.floor(size / 2);
-        const cols = Array.from({ length: size }, (_, i) => i).sort((a, b) => Math.abs(a - center) - Math.abs(b - center));
-        for (let row of baseRows) {
-          for (let col of cols) {
-            if (!newBoard[row][col].piece && newBoard[row][col].tileEffect !== TileEffect.WALL && newBoard[row][col].tileEffect !== TileEffect.HOLE) {
-              targetPos = { row, col };
-              break;
-            }
-          }
-          if (targetPos) break;
-        }
-        if (targetPos) {
-          newBoard[targetPos.row][targetPos.col].piece = { ...piece, hasMoved: false };
-          newBoard[r][c].piece = null;
-          setBoard(newBoard);
-          soundManager.playSfx('spawn');
-          consumeCard(selectedCardId);
-        } else alert('No valid empty space in base rows!');
-      }
-      return;
-    }
-
-    if (type.includes('BORROW') && piece?.side === Side.WHITE) {
-      const borrowType = type.replace('EFFECT_BORROW_', '') as PieceType;
-      newBoard[r][c].piece = { ...piece, tempMoveOverride: borrowType };
-      setBoard(newBoard); soundManager.playSfx('spawn'); consumeCard(selectedCardId); return;
-    }
-
-    if (type === CardType.EFFECT_IMMORTAL && step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
-        newBoard[r][c].piece = { ...piece, immortalTurns: 2 };
-        setBoard(newBoard); soundManager.playSfx('spawn'); consumeCard(selectedCardId); return;
-    }
-    if (type === CardType.EFFECT_IMMORTAL_LONG && step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
-        newBoard[r][c].piece = { ...piece, immortalTurns: IMMORTAL_LONG_DURATION };
-        setBoard(newBoard); soundManager.playSfx('spawn'); consumeCard(selectedCardId); return;
-    }
-    if (type === CardType.EFFECT_MIMIC && step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
-        newBoard[r][c].piece = { ...piece, mimic: true };
-        setBoard(newBoard); soundManager.playSfx('spawn'); consumeCard(selectedCardId); return;
-    }
-    if (type === CardType.EFFECT_ASCEND) {
-      if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE && piece.type === PieceType.PAWN) {
-        const promotions = [PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT];
-        const promo = promotions[Math.floor(Math.random() * promotions.length)];
-        newBoard[r][c].piece = { ...piece, type: promo, ascendedTurns: ASCEND_DURATION };
-        setBoard(newBoard); soundManager.playSfx('spawn'); consumeCard(selectedCardId);
-      } else if (piece?.type !== PieceType.PAWN) alert('Ascend can only be used on a Pawn.');
-      return;
-    }
-    if (type === CardType.EFFECT_AREA_FREEZE && step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue;
-          const tr = r + dr; const tc = c + dc;
-          if (isValidPos({ row: tr, col: tc }, size)) {
-            const targetPiece = newBoard[tr][tc].piece;
-            if (targetPiece && targetPiece.side === Side.BLACK) targetPiece.frozenTurns = AREA_FREEZE_DURATION;
-          }
-        }
-      }
-      setBoard(newBoard); soundManager.playSfx('frozen'); consumeCard(selectedCardId); return;
-    }
-    if (type === CardType.EFFECT_SWITCH) {
-      if (step === 'SELECT_PIECE_1' && piece?.side === Side.WHITE) {
-        setCardTargetMode({ ...cardTargetMode, step: 'SELECT_PIECE_2', sourcePos: { row: r, col: c } });
-      } else if (step === 'SELECT_PIECE_2' && piece?.side === Side.WHITE && cardTargetMode.sourcePos) {
-        const p1 = newBoard[cardTargetMode.sourcePos.row][cardTargetMode.sourcePos.col].piece;
-        const p2 = piece;
-        if (p1 && p2) {
-          newBoard[cardTargetMode.sourcePos.row][cardTargetMode.sourcePos.col].piece = p2;
-          newBoard[r][c].piece = p1;
-          setBoard(newBoard); soundManager.playSfx('move'); consumeCard(selectedCardId);
-        }
-      }
-      return;
     }
   };
 
@@ -831,7 +625,7 @@ export const useGameLogic = ({
     setSelectedCardId(null);
     setCardTargetMode(null);
     setCardsPlayed((prev) => prev + 1);
-    if (checkLossCondition(board, deck, nextHand)) {
+    if (checkLoss(board, deck, nextHand)) {
       soundManager.playSfx('loss');
       setIsGameEnded(true);
       setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);

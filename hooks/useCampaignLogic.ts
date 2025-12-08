@@ -1,38 +1,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, PieceType, CardType, SavedGameState } from '../types';
-import { getDeckTemplate, getStarterDecks, getRelicInfo, RELIC_INFO, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
+import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, CardType, SavedGameState } from '../types';
+import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { soundManager } from '../utils/soundManager';
 import { saveToStorage, clearFromStorage, STORAGE_KEYS } from '../utils/storage';
-import { getRandomCards, getRandomRelic, getRandomRelics } from '../utils/random';
-
-export const getCardTypeFromPiece = (piece: Piece): CardType | null => {
-    switch (piece.type) {
-        case PieceType.PAWN: return CardType.SPAWN_PAWN;
-        case PieceType.KNIGHT: return CardType.SPAWN_KNIGHT;
-        case PieceType.BISHOP: return CardType.SPAWN_BISHOP;
-        case PieceType.ROOK: return CardType.SPAWN_ROOK;
-        case PieceType.QUEEN: return CardType.SPAWN_QUEEN;
-        case PieceType.FOOL: return CardType.SPAWN_FOOL;
-        case PieceType.SHIP: return CardType.SPAWN_SHIP;
-        case PieceType.ELEPHANT: return CardType.SPAWN_ELEPHANT;
-        case PieceType.CHANCELLOR: return CardType.SPAWN_CHANCELLOR;
-        case PieceType.ARCHBISHOP: return CardType.SPAWN_ARCHBISHOP;
-        case PieceType.MANN: return CardType.SPAWN_MANN;
-        case PieceType.AMAZON: return CardType.SPAWN_AMAZON;
-        case PieceType.CENTAUR: return CardType.SPAWN_CENTAUR;
-        case PieceType.ZEBRA: return CardType.SPAWN_ZEBRA;
-        case PieceType.CHAMPION: return CardType.SPAWN_CHAMPION;
-        case PieceType.DRAGON:
-            if (piece.variant === 'LAVA') return CardType.SPAWN_DRAGON_LAVA;
-            if (piece.variant === 'ABYSS') return CardType.SPAWN_DRAGON_ABYSS;
-            if (piece.variant === 'FROZEN') return CardType.SPAWN_DRAGON_FROZEN;
-            return CardType.SPAWN_DRAGON;
-        default: return null;
-    }
-};
+import { getRandomCards } from '../utils/random';
+import { generateShopContent, getCardTypeFromPiece, resolveUnknownNodeResult } from '../utils/campaignLogic';
 
 interface UseCampaignLogicProps {
     settings: GameSettings;
@@ -168,70 +143,29 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
   };
 
   const initShop = () => {
-      // Weighted Shop Cards
-      const shop = getRandomCards(CARDS_IN_SHOP, deckTemplate, masterDeck);
-      setShopCards(shop);
-
-      // Weighted Shop Relics
-      const relicTypes = Object.values(RelicType);
-      const shopR = getRandomRelics(RELICS_IN_SHOP, relicTypes, relics);
-      setShopRelics(shopR);
+      const content = generateShopContent(settings.language, masterDeck, relics);
+      setShopCards(content.shopCards);
+      setShopRelics(content.shopRelics);
   };
 
   const resolveUnknownNode = (node: MapNode) => {
-      const rand = Math.random();
+      const result = resolveUnknownNodeResult(settings.language, masterDeck, relics);
       
-      if (rand < 0.35) {
-          return { type: 'BATTLE', elite: Math.random() > 0.8 };
-      } else if (rand < 0.45) {
+      if (result.type === 'BATTLE') {
+          return { type: 'BATTLE', elite: result.elite };
+      } else if (result.type === 'SHOP') {
           initShop();
           setPhase('SHOP');
           return { type: 'SHOP' };
-      } else if (rand < 0.55) {
+      } else if (result.type === 'REST') {
           setPhase('REST_SITE');
           return { type: 'REST' };
-      } else if (rand < 0.70) {
-          const amount = 50 + Math.floor(Math.random() * 100);
-          setEventData({
-              title: "Hidden Treasure",
-              desc: "You stumble upon an abandoned chest containing gold.",
-              type: 'GOLD',
-              gold: amount
-          });
-          setPhase('EVENT_RESULT');
-          return { type: 'EVENT' };
-      } else if (rand < 0.85) {
-          const choices = getRandomCards(3, deckTemplate, masterDeck);
-          setEventData({
-              title: "Fortune Teller",
-              desc: "A mysterious figure lays out three face-down cards. 'Choose your destiny,' they whisper.",
-              type: 'PICK_CARD',
-              choiceCards: choices
-          });
-          setPhase('EVENT_RESULT');
-          return { type: 'EVENT' };
-      } else if (rand < 0.95) {
-          const card = getRandomCards(1, deckTemplate, masterDeck)[0];
-          setEventData({
-              title: "Lost Scroll",
-              desc: "You find an ancient scroll containing a spell.",
-              type: 'CARD',
-              card: card
-          });
-          setPhase('EVENT_RESULT');
-          return { type: 'EVENT' };
-      } else {
-          const relicTypes = Object.values(RelicType);
-          const relic = getRandomRelic(relicTypes, relics);
-          setEventData({
-              title: "Ancient Artifact",
-              desc: "Buried in the dirt, you find a strange object.",
-              type: 'RELIC',
-              relic: relic
-          });
+      } else if (result.type === 'EVENT' && result.eventData) {
+          setEventData(result.eventData);
           setPhase('EVENT_RESULT');
           return { type: 'EVENT' };
       }
+      return { type: 'UNKNOWN' };
   };
 
   const handleEventClaim = (pickedCard?: Card) => {
