@@ -222,6 +222,17 @@ export const useGameLogic = ({
       enemyKilled = true;
     }
 
+    // --- CURSE LOGIC (MOVE TAX / LAZY) ---
+    // Curse of Burden (Move Tax)
+    if (hand.some(c => c.type === CardType.CURSE_MOVE_TAX)) {
+       setGold(g => Math.max(0, g - 10));
+    }
+    // Curse of Sloth (Lazy Tax)
+    if (hand.some(c => c.type === CardType.CURSE_LAZY) && !enemyKilled) {
+       setGold(g => Math.max(0, g - 10));
+    }
+    // -------------------------------------
+
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined };
     newBoard[from.row][from.col].piece = null;
 
@@ -567,8 +578,21 @@ export const useGameLogic = ({
 
   const handleCardClick = (card: Card) => {
     if (turn !== Side.WHITE || isGameEnded) return;
+    
+    // Prevent clicking unplayable curse cards
+    if (card.type.startsWith('CURSE_')) {
+        alert("This is a Curse card. It cannot be played, but affects you while in hand.");
+        return;
+    }
+
     if (selectedCardId === card.id) { setSelectedCardId(null); setCardTargetMode(null); return; }
     if (cardsPlayed >= MAX_CARDS_PLAYED_PER_TURN) { alert(`You have reached the maximum of ${MAX_CARDS_PLAYED_PER_TURN} cards played this turn.`); return; }
+    
+    // Curse of Silence (Spell Tax)
+    if (hand.some(c => c.type === CardType.CURSE_SPELL_TAX)) {
+       setGold(g => Math.max(0, g - 10));
+    }
+
     soundManager.playSfx('click');
     setSelectedCardId(card.id);
     setSelectedPiecePos(null); setValidMoves([]); setSelectedEnemyPos(null); setEnemyValidMoves([]);

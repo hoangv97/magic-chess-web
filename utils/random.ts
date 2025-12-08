@@ -1,7 +1,8 @@
 
 import { v4 as uuidv4 } from 'uuid';
-import { Card, Relic, RelicType } from '../types';
+import { Card, CardType, Relic, RelicType, Language } from '../types';
 import { RELIC_INFO } from '../constants/relics';
+import { TRANSLATIONS } from './locales';
 
 // Weights config
 const DUPLICATE_CARD_PENALTY = 0.5; // Multiplier per copy in deck
@@ -43,6 +44,7 @@ export const getRandomCards = (
         // Assuming costs range from ~15 to ~160
         // Formula: Weight starts high for low cost, drops for high cost.
         // Cost 20 -> Weight ~180. Cost 160 -> Weight ~40.
+        // Curses have cost 0, so they would be very common if included here, but usually passed cardTemplates excludes them.
         let weight = Math.max(20, 200 - template.cost);
         
         // Adjust based on current deck (diminishing returns for duplicates)
@@ -111,4 +113,16 @@ export const getRandomRelics = (
     }
     
     return result;
+};
+
+export const getRandomCurse = (lang: Language): Card => {
+    const curses = [CardType.CURSE_LAZY, CardType.CURSE_MOVE_TAX, CardType.CURSE_SPELL_TAX, CardType.CURSE_DECAY];
+    const type = curses[Math.floor(Math.random() * curses.length)];
+    return {
+        id: uuidv4(),
+        type,
+        title: TRANSLATIONS[lang].cards[type].title,
+        description: TRANSLATIONS[lang].cards[type].desc,
+        cost: 0
+    };
 };

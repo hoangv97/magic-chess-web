@@ -37,6 +37,12 @@ export enum CardType {
   EFFECT_MIMIC = 'EFFECT_MIMIC', // Transform on kill
   EFFECT_ASCEND = 'EFFECT_ASCEND', // Pawn -> Major piece (3 turns life)
   EFFECT_IMMORTAL_LONG = 'EFFECT_IMMORTAL_LONG', // Immortal 3 turns
+
+  // Curses
+  CURSE_LAZY = 'CURSE_LAZY', // -10g if move without kill
+  CURSE_MOVE_TAX = 'CURSE_MOVE_TAX', // -10g on move
+  CURSE_SPELL_TAX = 'CURSE_SPELL_TAX', // -10g on playing card
+  CURSE_DECAY = 'CURSE_DECAY', // Dead weight
 }
 
 export interface Card {

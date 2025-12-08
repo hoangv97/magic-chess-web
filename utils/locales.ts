@@ -1,8 +1,4 @@
 
-
-
-
-
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
 import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../constants';
 
@@ -171,6 +167,12 @@ export const TRANSLATIONS = {
       [CardType.EFFECT_MIMIC]: { title: "Doppelganger", desc: "When this unit kills an enemy, it permanently becomes that enemy type." },
       [CardType.EFFECT_ASCEND]: { title: "Heroic Ascension", desc: `Promote a Pawn to a random major piece. It dies in ${ASCEND_DURATION} turns.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Aegis of Ages", desc: `Make a piece immortal for ${IMMORTAL_LONG_DURATION} turns.` },
+
+      // Curse Cards
+      [CardType.CURSE_LAZY]: { title: "Sloth", desc: "UNPLAYABLE. While in hand: Lose 10 gold if you move a piece without killing an enemy." },
+      [CardType.CURSE_MOVE_TAX]: { title: "Burden", desc: "UNPLAYABLE. While in hand: Moving a piece costs 10 gold." },
+      [CardType.CURSE_SPELL_TAX]: { title: "Silence", desc: "UNPLAYABLE. While in hand: Playing a card costs 10 gold." },
+      [CardType.CURSE_DECAY]: { title: "Decay", desc: "UNPLAYABLE." },
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Martyr's Sigil", desc: "Spawn a {0} on base row when your piece dies." },
@@ -478,6 +480,12 @@ export const TRANSLATIONS = {
       [CardType.EFFECT_MIMIC]: { title: "Kẻ Mạo Danh", desc: "Khi quân này giết địch, nó sẽ biến thành loại quân đó." },
       [CardType.EFFECT_ASCEND]: { title: "Thăng Hoa", desc: `Biến Tốt thành quân cấp cao. Chết sau ${ASCEND_DURATION} lượt.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Bảo Hộ Vĩnh Cửu", desc: `Bất tử trong ${IMMORTAL_LONG_DURATION} lượt.` },
+
+      // Curse Cards
+      [CardType.CURSE_LAZY]: { title: "Lười Biếng", desc: "KHÔNG THỂ DÙNG. Khi cầm: Mất 10 vàng nếu di chuyển mà không giết địch." },
+      [CardType.CURSE_MOVE_TAX]: { title: "Gánh Nặng", desc: "KHÔNG THỂ DÙNG. Khi cầm: Di chuyển tốn 10 vàng." },
+      [CardType.CURSE_SPELL_TAX]: { title: "Câm Lặng", desc: "KHÔNG THỂ DÙNG. Khi cầm: Dùng bài tốn 10 vàng." },
+      [CardType.CURSE_DECAY]: { title: "Mục Rữa", desc: "KHÔNG THỂ DÙNG." },
     },
     relics: {
       [RelicType.LAST_WILL]: { name: "Dấu Ấn Tử Sĩ", desc: "Tạo {0} khi quân bạn chết." },

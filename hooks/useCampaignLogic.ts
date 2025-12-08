@@ -35,7 +35,8 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
       gold?: number, 
       card?: Card, 
       relic?: Relic,
-      choiceCards?: Card[]
+      choiceCards?: Card[],
+      addedCurse?: Card // Check if curse was added
   }>({
       title: '', desc: '', type: 'NOTHING'
   });
@@ -100,8 +101,8 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
         return;
     }
 
-    // Weighted rewards based on deck state
-    const rewards = getRandomCards(REWARD_CARDS, deckTemplate, masterDeck);
+    // Weighted rewards based on deck state. Exclude curses from rewards.
+    const rewards = getRandomCards(REWARD_CARDS, deckTemplate.filter(c => !c.type.startsWith('CURSE_')), masterDeck);
     setRewardCards(rewards);
     setPhase('REWARD');
   };
@@ -190,6 +191,13 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
           }
           soundManager.playSfx('buy');
       }
+
+      // Add Curse if present in event data
+      if (eventData.addedCurse) {
+          setMasterDeck(prev => [...prev, eventData.addedCurse!]);
+          // Optional: Add a sound for curse
+      }
+
       setPhase('MAP');
   };
 

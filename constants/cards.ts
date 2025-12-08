@@ -42,6 +42,12 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.EFFECT_MIMIC, cost: 75 },
   { type: CardType.EFFECT_ASCEND, cost: 35 },
   { type: CardType.EFFECT_IMMORTAL_LONG, cost: 120 },
+
+  // Curses (Cost 0 usually means cannot buy/play normally, but we define a value for sorting)
+  { type: CardType.CURSE_LAZY, cost: 0 },
+  { type: CardType.CURSE_MOVE_TAX, cost: 0 },
+  { type: CardType.CURSE_SPELL_TAX, cost: 0 },
+  { type: CardType.CURSE_DECAY, cost: 0 },
 ];
 
 export const getDeckTemplate = (lang: Language) => {
@@ -103,12 +109,27 @@ export const getCardIcon = (type: string) => {
   if (type.includes('BACK')) return '↩️';
   if (type.includes('TRAP')) return '☠️';
   if (type.includes('ASCEND')) return '👑';
+  if (type.includes('CURSE')) return '🤮';
   return '✨';
 };
 
 const CLASSIC_SPAWNS = ['SPAWN_PAWN', 'SPAWN_KNIGHT', 'SPAWN_BISHOP', 'SPAWN_ROOK', 'SPAWN_QUEEN'];
 
 export const getCardTheme = (type: string) => {
+  if (type.startsWith('CURSE_')) {
+    return {
+      border: 'border-green-600',
+      headerBg: 'bg-green-900',
+      bodyBg: 'bg-gradient-to-b from-green-950 to-black',
+      ribbonBg: 'bg-green-800',
+      descBg: 'bg-green-100',
+      descText: 'text-green-950',
+      jewel: 'bg-green-500',
+      glow: 'bg-green-500/20',
+      typeLabel: 'CURSE'
+    };
+  }
+
   const isUnit = type.startsWith('SPAWN') && type !== 'SPAWN_REVIVE';
   const isClassicUnit = isUnit && CLASSIC_SPAWNS.includes(type);
   const isLegendUnit = isUnit && !isClassicUnit;

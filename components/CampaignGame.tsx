@@ -170,6 +170,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
                   rewardCard={campaign.eventData.card}
                   rewardRelic={campaign.eventData.relic}
                   choiceCards={campaign.eventData.choiceCards}
+                  addedCurse={campaign.eventData.addedCurse}
                   onContinue={campaign.handleEventClaim}
                   settings={settings}
               />

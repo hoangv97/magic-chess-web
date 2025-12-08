@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Card, Relic, RelicType, Piece, PieceType, CardType } from '../types';
 import { getDeckTemplate, CARDS_IN_SHOP, RELICS_IN_SHOP } from '../constants';
-import { getRandomCards, getRandomRelic, getRandomRelics, getWeightedRandomItem } from './random';
+import { getRandomCards, getRandomRelic, getRandomRelics, getWeightedRandomItem, getRandomCurse } from './random';
 
 export const getCardTypeFromPiece = (piece: Piece): CardType | null => {
     switch (piece.type) {
@@ -57,6 +57,7 @@ export interface UnknownNodeResult {
         card?: Card;
         relic?: Relic;
         choiceCards?: Card[];
+        addedCurse?: Card; // New field for curse added alongside reward
     };
 }
 
@@ -66,7 +67,11 @@ export const resolveUnknownNodeResult = (
     relics: Relic[]
 ): UnknownNodeResult => {
     const rand = Math.random();
-    const deckTemplate = getDeckTemplate(language);
+    const deckTemplate = getDeckTemplate(language).filter(c => !c.type.startsWith('CURSE_'));
+
+    // Check for 50% curse chance on non-Pick Card events
+    const shouldAddCurse = Math.random() < 0.5;
+    const curse = shouldAddCurse ? getRandomCurse(language) : undefined;
 
     if (rand < 0.35) {
         return { type: 'BATTLE', elite: Math.random() > 0.8 };
@@ -75,23 +80,28 @@ export const resolveUnknownNodeResult = (
     } else if (rand < 0.55) {
         return { type: 'REST' };
     } else if (rand < 0.70) {
-        const amount = 50 + Math.floor(Math.random() * 100);
+        const amount = 100 + Math.floor(Math.random() * 100);
         return {
             type: 'EVENT',
             eventData: {
                 title: "Hidden Treasure",
-                desc: "You stumble upon an abandoned chest containing gold.",
+                desc: "You stumble upon an abandoned chest containing gold." + (curse ? "\n\nHowever, a curse lingers on the gold..." : ""),
                 type: 'GOLD',
-                gold: amount
+                gold: amount,
+                addedCurse: curse
             }
         };
     } else if (rand < 0.85) {
-        const choices = getRandomCards(3, deckTemplate, masterDeck);
+        // PICK_CARD: 2 random cards + 1 curse
+        const normalChoices = getRandomCards(2, deckTemplate, masterDeck);
+        const curseChoice = getRandomCurse(language);
+        const choices = [...normalChoices, curseChoice].sort(() => Math.random() - 0.5);
+        
         return {
             type: 'EVENT',
             eventData: {
                 title: "Fortune Teller",
-                desc: "A mysterious figure lays out three face-down cards. 'Choose your destiny,' they whisper.",
+                desc: "A mysterious figure lays out three face-down cards. 'Choose your destiny,' they whisper. Be warned, one is cursed.",
                 type: 'PICK_CARD',
                 choiceCards: choices
             }
@@ -102,9 +112,10 @@ export const resolveUnknownNodeResult = (
             type: 'EVENT',
             eventData: {
                 title: "Lost Scroll",
-                desc: "You find an ancient scroll containing a spell.",
+                desc: "You find an ancient scroll containing a spell." + (curse ? "\n\nBut the knowledge comes with a dark price..." : ""),
                 type: 'CARD',
-                card: card
+                card: card,
+                addedCurse: curse
             }
         };
     } else {
@@ -114,9 +125,10 @@ export const resolveUnknownNodeResult = (
             type: 'EVENT',
             eventData: {
                 title: "Ancient Artifact",
-                desc: "Buried in the dirt, you find a strange object.",
+                desc: "Buried in the dirt, you find a strange object." + (curse ? "\n\nTouching it sends a shiver down your spine..." : ""),
                 type: 'RELIC',
-                relic: relic
+                relic: relic,
+                addedCurse: curse
             }
         };
     }

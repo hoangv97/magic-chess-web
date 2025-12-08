@@ -18,6 +18,7 @@ interface EventResultProps {
   rewardCard?: Card;
   rewardRelic?: Relic;
   choiceCards?: Card[];
+  addedCurse?: Card;
   onContinue: (selectedCard?: Card) => void;
   settings: GameSettings;
 }
@@ -36,7 +37,7 @@ const CardBack = ({ onClick }: { onClick: () => void }) => (
 );
 
 export const EventResult: React.FC<EventResultProps> = ({ 
-  title, description, rewardType, rewardGold, rewardCard, rewardRelic, choiceCards, onContinue, settings 
+  title, description, rewardType, rewardGold, rewardCard, rewardRelic, choiceCards, onContinue, settings, addedCurse
 }) => {
   const t = TRANSLATIONS[settings.language].game;
   
@@ -151,6 +152,19 @@ export const EventResult: React.FC<EventResultProps> = ({
                               </MotionDiv>
                           )}
                       </AnimatePresence>
+                  </div>
+              )}
+
+              {addedCurse && (
+                  <div className="mt-8 pt-4 border-t border-slate-700 w-full flex flex-col items-center animate-in fade-in zoom-in duration-500 delay-300">
+                      <p className="text-red-400 font-bold uppercase tracking-widest mb-4 animate-pulse">Curse Added!</p>
+                      <CardComponent 
+                        card={addedCurse} 
+                        selected={false} 
+                        onClick={() => {}} 
+                        disabled={false} 
+                        pieceSet={settings.pieceSet}
+                      />
                   </div>
               )}
            </div>
