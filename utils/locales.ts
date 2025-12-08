@@ -269,6 +269,21 @@ export const TRANSLATIONS = {
         name: "The Faceless",
         desc: "A shapeshifter who commands a masked army.",
         ability: "PASSIVE: All enemy units (except the King) appear as Pawns."
+      },
+      [BossType.CURSE_WEAVER]: {
+        name: "The Hex Master",
+        desc: "A warlock who weaves misfortune into reality.",
+        ability: "ACTIVE: Adds a random Curse card to your deck every 5 turns."
+      },
+      [BossType.DOOM_BRINGER]: {
+        name: "Vengeful Spirit",
+        desc: "A ghost that haunts those who slay its kin.",
+        ability: "REACTIVE: 50% chance to add a Curse card to your deck when you kill an enemy."
+      },
+      [BossType.SOUL_CORRUPTOR]: {
+        name: "Soul Corruptor",
+        desc: "He corrupts the falling souls of your warriors.",
+        ability: "REACTIVE: 50% chance to add a Curse card to your deck when your unit dies."
       }
     },
     deckSelection: {
@@ -582,6 +597,21 @@ export const TRANSLATIONS = {
         name: "Kẻ Vô Diện",
         desc: "Một kẻ biến hình chỉ huy đội quân mặt nạ.",
         ability: "BỊ ĐỘNG: Tất cả quân địch (trừ Vua) trông giống như Tốt."
+      },
+      [BossType.CURSE_WEAVER]: {
+        name: "Thầy Nguyền Rủa",
+        desc: "Một thầy phù thủy dệt nên những bất hạnh.",
+        ability: "CHỦ ĐỘNG: Thêm một thẻ Lời Nguyền vào bộ bài của bạn mỗi 5 lượt."
+      },
+      [BossType.DOOM_BRINGER]: {
+        name: "Linh Hồn Báo Thù",
+        desc: "Một bóng ma ám ảnh những kẻ giết hại đồng loại của nó.",
+        ability: "PHẢN ĐÒN: 50% cơ hội thêm thẻ Lời Nguyền vào bộ bài khi bạn giết kẻ thù."
+      },
+      [BossType.SOUL_CORRUPTOR]: {
+        name: "Kẻ Tha Hóa Linh Hồn",
+        desc: "Hắn làm ô uế linh hồn những chiến binh ngã xuống.",
+        ability: "PHẢN ĐÒN: 50% cơ hội thêm thẻ Lời Nguyền vào bộ bài khi quân bạn chết."
       }
     },
     deckSelection: {

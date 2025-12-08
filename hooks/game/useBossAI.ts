@@ -9,7 +9,7 @@ export const applyBossAbilities = (
     bossTiles: Position[], 
     turnCount: number
 ) => {
-    if (activeBoss === BossType.NONE) return { board: boardState, newTiles: [] as Position[] };
+    if (activeBoss === BossType.NONE) return { board: boardState, newTiles: [] as Position[], triggerCurse: false };
 
     const size = boardState.length;
     const emptyTiles: Position[] = [];
@@ -32,6 +32,7 @@ export const applyBossAbilities = (
     }
 
     const newTiles: Position[] = [];
+    let triggerCurse = false;
 
     // Periodic bosses trigger on Turn 2, 12, 22... (Every 5 rounds starting from first enemy turn)
     const isPeriodicTurn = turnCount % 10 === 2;
@@ -94,7 +95,12 @@ export const applyBossAbilities = (
         }
         soundManager.playSfx('spawn');
       }
-      return { board: boardState, newTiles: [] };
+      return { board: boardState, newTiles: [], triggerCurse: false };
+    }
+
+    // New Boss: Curse Weaver (Periodic Curse)
+    if (activeBoss === BossType.CURSE_WEAVER && isPeriodicTurn) {
+        triggerCurse = true;
     }
 
     let effectToApply = TileEffect.NONE;
@@ -113,5 +119,5 @@ export const applyBossAbilities = (
       }
     }
 
-    return { board: boardState, newTiles };
+    return { board: boardState, newTiles, triggerCurse };
 };

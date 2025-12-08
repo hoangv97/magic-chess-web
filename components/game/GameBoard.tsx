@@ -1,6 +1,8 @@
 
 
 
+
+
 import React from 'react';
 import { Cell, Side, Position, PieceType, CardType, TileEffect, GameSettings, BossType } from '../../types';
 import { BOARD_THEMES } from '../../constants';
@@ -48,7 +50,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   }
 
   // Bosses with every-5-turns effect
-  const periodicBosses = [BossType.STONE_GOLEM, BossType.UNDEAD_LORD, BossType.CHAOS_LORD, BossType.MIND_CONTROLLER];
+  const periodicBosses = [BossType.STONE_GOLEM, BossType.UNDEAD_LORD, BossType.CHAOS_LORD, BossType.MIND_CONTROLLER, BossType.CURSE_WEAVER];
 
   return (
     <div className={`flex-grow flex items-center justify-center p-4 overflow-auto ${theme.bg}`}>

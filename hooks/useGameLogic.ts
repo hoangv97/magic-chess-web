@@ -18,6 +18,7 @@ import { applyBossAbilities } from './game/useBossAI';
 import { calculateCheckState as calcCheck, checkLossCondition as checkLoss, checkWinCondition as checkWin } from '../utils/game/checkLogic';
 import { spawnRelicPiece as spawnRelic } from '../utils/game/spawnLogic';
 import { getBoardAfterInstantCard, getBoardAfterTargetCard } from '../utils/game/cardLogic';
+import { getRandomCurse } from '../utils/random';
 
 interface UseGameLogicProps {
   settings: GameSettings;
@@ -59,6 +60,9 @@ export const useGameLogic = ({
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [selectedRelic, setSelectedRelic] = useState<Relic | null>(null);
   const [infoModalContent, setInfoModalContent] = useState<{ title: string; content: React.ReactNode; } | null>(null);
+  
+  // Animation State
+  const [animatingCards, setAnimatingCards] = useState<Card[]>([]);
 
   const t = TRANSLATIONS[settings.language];
 
@@ -85,11 +89,28 @@ export const useGameLogic = ({
       setLastEnemyMoveType(null);
       setDeadPieces([]);
       setLastPlayerSpawnedType(null);
+      setAnimatingCards([]);
       tempTileEffects.current = [];
   };
 
   const calculateCheckState = (boardState: Cell[][]) => {
     setCheckState(calcCheck(boardState));
+  };
+
+  const handleAnimationComplete = (cardId: string) => {
+      setAnimatingCards(prev => prev.filter(c => c.id !== cardId));
+  };
+
+  // Reusable logic to add card with animation
+  const addCardToDeck = (card: Card) => {
+      setDeck(prev => [...prev, card]);
+      setAnimatingCards(prev => [...prev, card]);
+  };
+
+  const addRandomCurse = () => {
+      const curse = getRandomCurse(settings.language);
+      addCardToDeck(curse);
+      soundManager.playSfx('loss'); 
   };
 
   const drawCard = useCallback(() => {
@@ -264,6 +285,8 @@ export const useGameLogic = ({
       soundManager.playSfx('capture');
       const necromancy = relics.find((r) => r.type === RelicType.NECROMANCY);
       if (necromancy) spawnRelic(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(necromancy.level, 5)]);
+      
+      // Boss: Hydra
       if (activeBoss === BossType.HYDRA) {
         const emptySpots: Position[] = [];
         for (let r = 0; r < Math.floor(newBoard.length / 2); r++) {
@@ -279,6 +302,12 @@ export const useGameLogic = ({
           };
         }
       }
+
+      // Boss: Doom Bringer (Curse on enemy kill)
+      if (activeBoss === BossType.DOOM_BRINGER && Math.random() < 0.5) {
+          addRandomCurse();
+      }
+
     } else {
       soundManager.playSfx('move');
     }
@@ -286,6 +315,11 @@ export const useGameLogic = ({
     if (selfKilled) {
       const lastWill = relics.find((r) => r.type === RelicType.LAST_WILL);
       if (lastWill) spawnRelic(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
+      
+      // Boss: Soul Corruptor (Curse on player death)
+      if (activeBoss === BossType.SOUL_CORRUPTOR && Math.random() < 0.5) {
+          addRandomCurse();
+      }
     }
 
     newBoard.forEach((row) => row.forEach((cell) => {
@@ -336,8 +370,14 @@ export const useGameLogic = ({
   };
 
   const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null, currentTurn: number) => {
-    const { board: boardAfterBoss, newTiles } = applyBossAbilities([...currentBoard], activeBoss, bossTiles, currentTurn);
+    const { board: boardAfterBoss, newTiles, triggerCurse } = applyBossAbilities([...currentBoard], activeBoss, bossTiles, currentTurn);
     setBossTiles(newTiles);
+    
+    // Boss: Curse Weaver (Periodic Curse)
+    if (triggerCurse) {
+        addRandomCurse();
+    }
+
     const boardCopy = boardAfterBoss.map((row) => row.map((cell) => ({ ...cell, piece: cell.piece ? { ...cell.piece } : null })));
 
     if (activeBoss === BossType.MIRROR_MAGE && lastPlayerSpawnedType) {
@@ -486,6 +526,12 @@ export const useGameLogic = ({
             };
           }
         }
+
+        // Boss: Soul Corruptor (Curse on player death)
+        if (activeBoss === BossType.SOUL_CORRUPTOR && Math.random() < 0.5) {
+            addRandomCurse();
+        }
+
       } else {
         soundManager.playSfx('move');
       }
@@ -658,10 +704,10 @@ export const useGameLogic = ({
 
   return {
     gameState: {
-      board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent, selectedEnemyPos, enemyValidMoves, checkState, activeBoss, lastEnemyMoveType,
+      board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent, selectedEnemyPos, enemyValidMoves, checkState, activeBoss, lastEnemyMoveType, animatingCards
     },
     actions: {
-      initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, setShowDeckModal, setSelectedRelic, setInfoModalContent,
+      initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, setShowDeckModal, setSelectedRelic, setInfoModalContent, handleAnimationComplete
     },
   };
 };

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameHeader } from '../game/GameHeader';
 import { GameBoard } from '../game/GameBoard';
 import { PlayerHand } from '../game/PlayerHand';
@@ -7,7 +7,9 @@ import { DeckModal } from '../modals/DeckModal';
 import { RelicDetailModal } from '../modals/RelicDetailModal';
 import { InfoModal } from '../modals/InfoModal';
 import { MapModal } from '../modals/MapModal';
-import { GameSettings, Relic, MapNode } from '../../types';
+import { BossIntroModal } from '../modals/BossIntroModal';
+import { CardAnimationOverlay } from '../ui/CardAnimationOverlay';
+import { GameSettings, Relic, MapNode, BossType } from '../../types';
 
 interface GameScreenProps {
   settings: GameSettings;
@@ -33,6 +35,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   settings, gameState, actions, isCampaign, campaignLevel, relics, gold,
   mapNodes, currentMapNodeId, completedMapNodeIds, showMapModal, onOpenMap, onCloseMap, onResign, onSellRelic, onOpenSettings, onOpenDeck
 }) => {
+  const [showBossIntro, setShowBossIntro] = useState(false);
+
+  // Trigger boss intro when a game starts with a boss active
+  useEffect(() => {
+      if (gameState.activeBoss !== BossType.NONE && gameState.turnCount === 1) {
+          setShowBossIntro(true);
+      } else {
+          setShowBossIntro(false);
+      }
+  }, [gameState.activeBoss, gameState.turnCount]); // Reset happens when turnCount resets to 1 on init
+
   return (
     <div className="flex flex-col w-full h-full">
       <GameHeader 
@@ -48,7 +61,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onOpenMap={onOpenMap}
         settings={settings}
         onOpenSettings={onOpenSettings}
-        onOpenDeck={onOpenDeck}
+        onOpenDeck={() => actions.setShowDeckModal(true)}
       />
 
       <GameBoard 
@@ -80,6 +93,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         settings={settings}
         activeBoss={gameState.activeBoss}
       />
+
+      {/* Card Acquisition Animation */}
+      {gameState.animatingCards && gameState.animatingCards.length > 0 && (
+          <CardAnimationOverlay 
+              cards={gameState.animatingCards} 
+              onComplete={actions.handleAnimationComplete} 
+              settings={settings}
+          />
+      )}
 
       {gameState.showDeckModal && (
           <DeckModal 
@@ -117,6 +139,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           content={gameState.infoModalContent.content}
           onClose={() => actions.setInfoModalContent(null)}
         />
+      )}
+
+      {/* Boss Intro Modal */}
+      {showBossIntro && (
+          <BossIntroModal 
+              bossType={gameState.activeBoss} 
+              onClose={() => setShowBossIntro(false)}
+              settings={settings}
+          />
       )}
     </div>
   );

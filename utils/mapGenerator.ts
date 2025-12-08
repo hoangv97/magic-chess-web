@@ -1,6 +1,4 @@
 
-
-
 import { v4 as uuidv4 } from 'uuid';
 import { MapNode, BossType, MapNodeType } from '../types';
 import { getWeightedRandomItem } from './random';
@@ -11,26 +9,29 @@ export const generateCampaignMap = (): MapNode[] => {
   const TOTAL_ZONES = 5; 
   const TOTAL_LEVELS = TOTAL_ZONES * LEVELS_PER_ZONE;
   const STEP_X = 120; // Pixels between levels
-  const BOSS_FREQUENCY = 5;
+  const BOSS_FREQUENCY = 2;
 
   let prevNodes: MapNode[] = [];
 
   const bossTypes = [
-      BossType.FROST_GIANT, 
-      BossType.BLIZZARD_WITCH,
-      BossType.VOID_BRINGER, 
-      BossType.LAVA_TITAN, 
-      BossType.STONE_GOLEM,
-      BossType.UNDEAD_LORD,
-      BossType.CHAOS_LORD,
-      BossType.MIRROR_MAGE,
-      BossType.SOUL_EATER,
-      BossType.BLOOD_KING,
-      BossType.HYDRA,
-      BossType.MIND_CONTROLLER,
-      BossType.SILENCER,
-      BossType.ILLUSIONIST,
-      BossType.THE_FACELESS
+      // BossType.FROST_GIANT, 
+      // BossType.BLIZZARD_WITCH,
+      // BossType.VOID_BRINGER, 
+      // BossType.LAVA_TITAN, 
+      // BossType.STONE_GOLEM,
+      // BossType.UNDEAD_LORD,
+      // BossType.CHAOS_LORD,
+      // BossType.MIRROR_MAGE,
+      // BossType.SOUL_EATER,
+      // BossType.BLOOD_KING,
+      // BossType.HYDRA,
+      // BossType.MIND_CONTROLLER,
+      // BossType.SILENCER,
+      // BossType.ILLUSIONIST,
+      // BossType.THE_FACELESS,
+      BossType.CURSE_WEAVER,
+      BossType.DOOM_BRINGER,
+      BossType.SOUL_CORRUPTOR
   ];
 
   for (let level = 1; level <= TOTAL_LEVELS; level++) {

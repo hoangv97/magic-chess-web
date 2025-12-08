@@ -92,6 +92,14 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
 
   const showGameScreen = campaign.phase === 'PLAYING' || campaign.phase === 'GAME_OVER_WIN' || campaign.phase === 'GAME_OVER_LOSS';
 
+  const getDisplayDeck = () => {
+      // If we are in EVENT_RESULT and there is a pending curse to be added, show it in the deck list
+      if (campaign.phase === 'EVENT_RESULT' && campaign.eventData?.addedCurse) {
+          return [...campaign.masterDeck, campaign.eventData.addedCurse];
+      }
+      return campaign.masterDeck;
+  };
+
   return (
     <>
       {campaign.phase === 'DECK_SELECTION' && (
@@ -225,7 +233,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
 
       {campaign.showDeckModal && (
           <DeckModal 
-            deck={campaign.masterDeck} 
+            deck={getDisplayDeck()} 
             onClose={() => campaign.setShowDeckModal(false)} 
             pieceSet={settings.pieceSet}
           />

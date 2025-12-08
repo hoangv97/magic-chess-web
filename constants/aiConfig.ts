@@ -65,4 +65,7 @@ export const BOSS_PERSONALITIES: Record<BossType, { aggression: number; defense:
   [BossType.SILENCER]: { aggression: 1.1, defense: 1.0 },
   [BossType.ILLUSIONIST]: { aggression: 1.0, defense: 1.0 },
   [BossType.THE_FACELESS]: { aggression: 1.0, defense: 1.0 },
+  [BossType.CURSE_WEAVER]: { aggression: 1.0, defense: 1.2 },
+  [BossType.DOOM_BRINGER]: { aggression: 1.2, defense: 1.0 },
+  [BossType.SOUL_CORRUPTOR]: { aggression: 1.3, defense: 1.0 },
 };

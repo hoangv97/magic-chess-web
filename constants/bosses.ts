@@ -1,8 +1,4 @@
 
-
-
-
-
 import { BossType, Language } from '../types';
 import { TRANSLATIONS } from '../utils/locales';
 
@@ -28,6 +24,9 @@ export const getBossIcon = (type: BossType): string => {
     case BossType.SILENCER: return '🤐';
     case BossType.ILLUSIONIST: return '🎭';
     case BossType.THE_FACELESS: return '👺';
+    case BossType.CURSE_WEAVER: return '🕸️';
+    case BossType.DOOM_BRINGER: return '⚖️';
+    case BossType.SOUL_CORRUPTOR: return '🧟';
     default: return '☠️';
   }
 };
