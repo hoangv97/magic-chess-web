@@ -14,3 +14,10 @@ export const RELICS_IN_SHOP = 2;
 export const WAIT_END_GAME_TIMEOUT = 1000;
 
 export const RANDOM_ADD_CURSE_CARD_IN_BOSS = 0.5;
+
+export const CURSE_MOVE_TAX_GOLD_MINUS = 10;
+export const CURSE_LAZY_GOLD_MINUS = 10;
+export const CURSE_SPELL_TAX_GOLD_MINUS = 10;
+
+export const DISCOUNT_RELIC_VALUE = 0.5;
+export const DISCOUNT_CARD_VALUE = 0.5;

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { GameSettings, Card, Relic, MapNode, RelicType, GamePhase, BossType, MapNodeType, Piece, CardType, SavedGameState } from '../types';
-import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP } from '../constants';
+import { getDeckTemplate, getStarterDecks, getRelicInfo, RELICS_IN_SHOP, REWARD_CARDS, CARDS_IN_SHOP, DISCOUNT_CARD_VALUE, DISCOUNT_RELIC_VALUE } from '../constants';
 import { generateCampaignMap } from '../utils/mapGenerator';
 import { soundManager } from '../utils/soundManager';
 import { saveToStorage, clearFromStorage, STORAGE_KEYS } from '../utils/storage';
@@ -211,7 +211,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
       let cost = card.cost;
       const hasDiscount = relics.some(r => r.type === RelicType.DISCOUNT_CARD);
       if (hasDiscount) {
-          cost = Math.floor(cost * 0.5);
+          cost = Math.floor(cost * DISCOUNT_CARD_VALUE);
       }
 
       if (gold >= cost) {
@@ -232,7 +232,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
 
       const hasDiscount = relics.some(r => r.type === RelicType.DISCOUNT_RELIC);
       if (hasDiscount) {
-          cost = Math.floor(cost * 0.5);
+          cost = Math.floor(cost * DISCOUNT_RELIC_VALUE);
       }
 
       if (gold >= cost) {

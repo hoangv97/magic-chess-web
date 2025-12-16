@@ -9,7 +9,8 @@ import { getValidMoves, isValidPos } from '../utils/gameLogic';
 import { getBestEnemyMove } from '../utils/aiLogic';
 import {
   PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN,
-  RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, RANDOM_ADD_CURSE_CARD_IN_BOSS
+  RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, RANDOM_ADD_CURSE_CARD_IN_BOSS, 
+  CURSE_SPELL_TAX_GOLD_MINUS, CURSE_LAZY_GOLD_MINUS, CURSE_MOVE_TAX_GOLD_MINUS,
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
 import { soundManager } from '../utils/soundManager';
@@ -108,7 +109,6 @@ export const useGameLogic = ({
 
   // Reusable logic to add card with animation and shuffle
   const addCardToDeck = (card: Card) => {
-      console.log('addCardToDeck', card);
       setDeck(prev => {
           const newDeck = [...prev, card];
           return shuffleArray(newDeck);
@@ -131,7 +131,6 @@ export const useGameLogic = ({
     const currentDeck = deckOverride || deck;
 
     if (currentDeck.length > 0 && hand.length < MAX_CARDS_IN_HAND) {
-      console.log('drawCard', currentDeck);
       const newDeck = [...currentDeck];
       let cardIndex = newDeck.length - 1;
 
@@ -269,11 +268,11 @@ export const useGameLogic = ({
     // --- CURSE LOGIC (MOVE TAX / LAZY) ---
     // Curse of Burden (Move Tax)
     if (hand.some(c => c.type === CardType.CURSE_MOVE_TAX)) {
-       setGold(g => Math.max(0, g - 10));
+       setGold(g => Math.max(0, g - CURSE_MOVE_TAX_GOLD_MINUS));
     }
     // Curse of Sloth (Lazy Tax)
     if (hand.some(c => c.type === CardType.CURSE_LAZY) && !enemyKilled) {
-       setGold(g => Math.max(0, g - 10));
+       setGold(g => Math.max(0, g - CURSE_LAZY_GOLD_MINUS));
     }
     // -------------------------------------
 
@@ -682,7 +681,7 @@ export const useGameLogic = ({
     
     // Curse of Silence (Spell Tax)
     if (hand.some(c => c.type === CardType.CURSE_SPELL_TAX)) {
-       setGold(g => Math.max(0, g - 10));
+       setGold(g => Math.max(0, g - CURSE_SPELL_TAX_GOLD_MINUS));
     }
 
     soundManager.playSfx('click');
