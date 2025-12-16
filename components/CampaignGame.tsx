@@ -35,7 +35,8 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
     setGold: campaign.setGold,
     onWin: campaign.handleWin,
     onLoss: campaign.handleLoss,
-    onPieceKilled: campaign.handlePieceKilled
+    onPieceKilled: campaign.handlePieceKilled,
+    onAddCardToMasterDeck: campaign.addCardToMasterDeck
   });
 
   const handleMapNodeSelect = (node: any) => {

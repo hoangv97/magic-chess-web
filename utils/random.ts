@@ -27,6 +27,19 @@ export const getWeightedRandomItem = <T>(items: T[], getWeight: (item: T) => num
 };
 
 /**
+ * Shuffles an array using the Fisher-Yates algorithm.
+ * Returns a new array, does not mutate the original.
+ */
+export const shuffleArray = <T>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+/**
  * Returns a list of random cards based on rarity (cost) and current deck composition.
  * Higher Cost = Rarer (Lower Weight).
  * More copies in deck = Rarer (Lower Weight).

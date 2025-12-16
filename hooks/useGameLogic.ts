@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Cell, Piece, PieceType, Side, Position, TileEffect, Card, CardType,
@@ -9,7 +9,7 @@ import { getValidMoves, isValidPos } from '../utils/gameLogic';
 import { getBestEnemyMove } from '../utils/aiLogic';
 import {
   PIECE_GOLD_VALUES, MAX_CARDS_IN_HAND, MAX_CARDS_PLAYED_PER_TURN,
-  RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT,
+  RELIC_LEVEL_REWARDS, WAIT_END_GAME_TIMEOUT, RANDOM_ADD_CURSE_CARD_IN_BOSS
 } from '../constants';
 import { TRANSLATIONS } from '../utils/locales';
 import { soundManager } from '../utils/soundManager';
@@ -18,7 +18,7 @@ import { applyBossAbilities } from './game/useBossAI';
 import { calculateCheckState as calcCheck, checkLossCondition as checkLoss, checkWinCondition as checkWin } from '../utils/game/checkLogic';
 import { spawnRelicPiece as spawnRelic } from '../utils/game/spawnLogic';
 import { getBoardAfterInstantCard, getBoardAfterTargetCard } from '../utils/game/cardLogic';
-import { getRandomCurse } from '../utils/random';
+import { getRandomCurse, shuffleArray } from '../utils/random';
 
 interface UseGameLogicProps {
   settings: GameSettings;
@@ -28,10 +28,11 @@ interface UseGameLogicProps {
   onWin: () => void;
   onLoss: () => void;
   onPieceKilled?: (piece: Piece) => void;
+  onAddCardToMasterDeck?: (card: Card) => void;
 }
 
 export const useGameLogic = ({
-  settings, isCampaign, relics, setGold, onWin, onLoss, onPieceKilled,
+  settings, isCampaign, relics, setGold, onWin, onLoss, onPieceKilled, onAddCardToMasterDeck
 }: UseGameLogicProps) => {
   const [board, setBoard] = useState<Cell[][]>([]);
   const [turn, setTurn] = useState<Side>(Side.WHITE);
@@ -63,6 +64,10 @@ export const useGameLogic = ({
   
   // Animation State
   const [animatingCards, setAnimatingCards] = useState<Card[]>([]);
+
+  // Ref to track latest deck state for async operations
+  const deckRef = useRef(deck);
+  useEffect(() => { deckRef.current = deck; }, [deck]);
 
   const t = TRANSLATIONS[settings.language];
 
@@ -101,10 +106,18 @@ export const useGameLogic = ({
       setAnimatingCards(prev => prev.filter(c => c.id !== cardId));
   };
 
-  // Reusable logic to add card with animation
+  // Reusable logic to add card with animation and shuffle
   const addCardToDeck = (card: Card) => {
-      setDeck(prev => [...prev, card]);
+      console.log('addCardToDeck', card);
+      setDeck(prev => {
+          const newDeck = [...prev, card];
+          return shuffleArray(newDeck);
+      });
       setAnimatingCards(prev => [...prev, card]);
+      
+      if (isCampaign && onAddCardToMasterDeck) {
+          onAddCardToMasterDeck(card);
+      }
   };
 
   const addRandomCurse = () => {
@@ -113,9 +126,13 @@ export const useGameLogic = ({
       soundManager.playSfx('loss'); 
   };
 
-  const drawCard = useCallback(() => {
-    if (deck.length > 0 && hand.length < MAX_CARDS_IN_HAND) {
-      const newDeck = [...deck];
+  const drawCard = useCallback((deckOverride?: Card[]) => {
+    // Use override if provided (for atomic updates inside enemy turn), otherwise use state
+    const currentDeck = deckOverride || deck;
+
+    if (currentDeck.length > 0 && hand.length < MAX_CARDS_IN_HAND) {
+      console.log('drawCard', currentDeck);
+      const newDeck = [...currentDeck];
       let cardIndex = newDeck.length - 1;
 
       // Boss Logic: The Silencer
@@ -138,7 +155,13 @@ export const useGameLogic = ({
             setHand((prev) => [...prev, card]);
             soundManager.playSfx('draw');
           }
+      } else if (deckOverride) {
+          // If override was provided but we couldn't draw (e.g. Silencer block), we still need to commit the override
+          setDeck(newDeck);
       }
+    } else if (deckOverride) {
+        // Hand full or empty deck, but override exists -> commit it
+        setDeck(currentDeck);
     }
   }, [deck, hand, activeBoss]);
 
@@ -304,7 +327,7 @@ export const useGameLogic = ({
       }
 
       // Boss: Doom Bringer (Curse on enemy kill)
-      if (activeBoss === BossType.DOOM_BRINGER && Math.random() < 0.5) {
+      if (activeBoss === BossType.DOOM_BRINGER && Math.random() < RANDOM_ADD_CURSE_CARD_IN_BOSS) {
           addRandomCurse();
       }
 
@@ -317,7 +340,7 @@ export const useGameLogic = ({
       if (lastWill) spawnRelic(newBoard, Side.WHITE, RELIC_LEVEL_REWARDS[Math.min(lastWill.level, 5)]);
       
       // Boss: Soul Corruptor (Curse on player death)
-      if (activeBoss === BossType.SOUL_CORRUPTOR && Math.random() < 0.5) {
+      if (activeBoss === BossType.SOUL_CORRUPTOR && Math.random() < RANDOM_ADD_CURSE_CARD_IN_BOSS) {
           addRandomCurse();
       }
     }
@@ -370,12 +393,23 @@ export const useGameLogic = ({
   };
 
   const executeEnemyTurn = (currentBoard: Cell[][], playerEnPassantTarget: Position | null, currentTurn: number) => {
+    // START OF FIX: Use ref for base deck to avoid stale closure, and maintain local deck state for this turn
+    let currentTurnDeck = [...deckRef.current];
+
     const { board: boardAfterBoss, newTiles, triggerCurse } = applyBossAbilities([...currentBoard], activeBoss, bossTiles, currentTurn);
     setBossTiles(newTiles);
     
     // Boss: Curse Weaver (Periodic Curse)
     if (triggerCurse) {
-        addRandomCurse();
+        const curse = getRandomCurse(settings.language);
+        currentTurnDeck.push(curse);
+        // Shuffle local deck
+        currentTurnDeck = shuffleArray(currentTurnDeck);
+        setAnimatingCards(prev => [...prev, curse]);
+        soundManager.playSfx('loss');
+        if (isCampaign && onAddCardToMasterDeck) {
+            onAddCardToMasterDeck(curse);
+        }
     }
 
     const boardCopy = boardAfterBoss.map((row) => row.map((cell) => ({ ...cell, piece: cell.piece ? { ...cell.piece } : null })));
@@ -414,7 +448,10 @@ export const useGameLogic = ({
       setTurn(Side.WHITE);
       setTurnCount((c) => c + 1);
       setCardsPlayed(0);
-      drawCard();
+      
+      // FIX: Pass the modified local deck to drawCard
+      drawCard(currentTurnDeck);
+      
       setIsEnemyMoveLimited(false);
       setEnPassantTarget(null);
       setLastPlayerSpawnedType(null);
@@ -528,8 +565,17 @@ export const useGameLogic = ({
         }
 
         // Boss: Soul Corruptor (Curse on player death)
-        if (activeBoss === BossType.SOUL_CORRUPTOR && Math.random() < 0.5) {
-            addRandomCurse();
+        if (activeBoss === BossType.SOUL_CORRUPTOR && Math.random() < RANDOM_ADD_CURSE_CARD_IN_BOSS) {
+            // FIX: Add to local deck instead of calling addRandomCurse directly
+            const curse = getRandomCurse(settings.language);
+            currentTurnDeck.push(curse);
+            // Shuffle local deck
+            currentTurnDeck = shuffleArray(currentTurnDeck);
+            setAnimatingCards(prev => [...prev, curse]);
+            soundManager.playSfx('loss');
+            if (isCampaign && onAddCardToMasterDeck) {
+                onAddCardToMasterDeck(curse);
+            }
         }
 
       } else {
@@ -627,7 +673,7 @@ export const useGameLogic = ({
     
     // Prevent clicking unplayable curse cards
     if (card.type.startsWith('CURSE_')) {
-        alert("This is a Curse card. It cannot be played, but affects you while in hand.");
+        // alert("This is a Curse card. It cannot be played, but affects you while in hand.");
         return;
     }
 

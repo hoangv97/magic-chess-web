@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   language: 'en',
   theme: 'CLASSIC',
   pieceSet: 'STANDARD',
-  soundEnabled: true,
+  soundEnabled: false,
   soundVolume: 0.5,
   customBossType: BossType.NONE
 };

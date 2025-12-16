@@ -298,6 +298,10 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
     setPhase('DECK_SELECTION');
   };
 
+  const addCardToMasterDeck = (card: Card) => {
+      setMasterDeck(prev => [...prev, card]);
+  };
+
   return {
       phase, setPhase,
       campaignLevel, setCampaignLevel,
@@ -317,6 +321,7 @@ export const useCampaignLogic = ({ settings, initialSaveData }: UseCampaignLogic
       handleWin, handleLoss, handlePieceKilled,
       selectStarterDeck, initShop, resolveUnknownNode,
       handleEventClaim, selectReward, buyCard, buyRelic, sellRelic,
-      handleRestTrade, handleRestRemove, handleRestLeave, restartCampaign
+      handleRestTrade, handleRestRemove, handleRestLeave, restartCampaign,
+      addCardToMasterDeck
   };
 };

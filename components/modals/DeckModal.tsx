@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, BossType, PieceSetId } from '../../types';
 import { Button } from '../ui/Button';
 import { CardComponent } from '../ui/CardComponent';
+import { shuffleArray } from '../../utils/random';
 
 interface DeckModalProps {
   deck: Card[];
@@ -14,6 +15,9 @@ interface DeckModalProps {
 export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss, pieceSet }) => {
   const isUnitCard = (type: string) => type.startsWith('SPAWN') && type !== 'SPAWN_REVIVE';
 
+  // Shuffle deck for display so player doesn't know the exact order of drawing
+  const displayDeck = useMemo(() => shuffleArray(deck), [deck]);
+
   return (
      <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col p-8">
         <div className="flex justify-between items-center mb-8">
@@ -22,8 +26,8 @@ export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss,
         </div>
         <div className="flex-grow overflow-y-auto">
           <div className="flex flex-wrap gap-4 justify-center">
-             {deck.length === 0 && <p className="text-slate-500 italic">Deck is empty.</p>}
-             {deck.map((card, i) => (
+             {displayDeck.length === 0 && <p className="text-slate-500 italic">Deck is empty.</p>}
+             {displayDeck.map((card, i) => (
                 <div key={i} className="opacity-80 hover:opacity-100 transition-opacity">
                    <CardComponent 
                      card={card} 
