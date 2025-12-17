@@ -10,18 +10,21 @@ interface DeckModalProps {
   onClose: () => void;
   activeBoss?: BossType;
   pieceSet?: PieceSetId;
+  shouldShuffle?: boolean;
 }
 
-export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss, pieceSet }) => {
+export const DeckModal: React.FC<DeckModalProps> = ({ deck, onClose, activeBoss, pieceSet, shouldShuffle = false }) => {
   const isUnitCard = (type: string) => type.startsWith('SPAWN') && type !== 'SPAWN_REVIVE';
 
-  // Shuffle deck for display so player doesn't know the exact order of drawing
-  const displayDeck = useMemo(() => shuffleArray(deck), [deck]);
+  // Shuffle deck for display so player doesn't know the exact order of drawing if shouldShuffle is true
+  const displayDeck = useMemo(() => shouldShuffle ? shuffleArray(deck) : deck, [deck, shouldShuffle]);
 
   return (
      <div className="absolute inset-0 z-50 bg-slate-900/95 flex flex-col p-8">
         <div className="flex justify-between items-center mb-8">
-           <h2 className="text-2xl font-bold text-white">Your Remaining Deck ({deck.length})</h2>
+           <h2 className="text-2xl font-bold text-white">
+               {shouldShuffle ? `Remaining Deck (${deck.length})` : `Deck List (${deck.length})`}
+           </h2>
            <Button onClick={onClose} className="bg-slate-700 hover:bg-slate-600 text-white">Close</Button>
         </div>
         <div className="flex-grow overflow-y-auto">

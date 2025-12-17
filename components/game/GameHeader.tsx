@@ -77,7 +77,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
               </>
             )}
 
-            {isCampaign && !['PLAYING', 'DECK_SELECTION'].includes(phase) && onOpenDeck && (
+            {isCampaign && phase !== 'DECK_SELECTION' && onOpenDeck && (
                <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={onOpenDeck}>
                   🎴
                </Button>

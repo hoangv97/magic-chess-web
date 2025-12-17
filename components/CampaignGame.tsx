@@ -212,6 +212,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
               campaign.sellRelic(r);
           }}
           onOpenSettings={() => setShowSettings(true)}
+          onOpenDeck={() => campaign.setShowDeckModal(true)}
         />
       )}
 

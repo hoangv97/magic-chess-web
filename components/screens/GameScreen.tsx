@@ -61,7 +61,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         onOpenMap={onOpenMap}
         settings={settings}
         onOpenSettings={onOpenSettings}
-        onOpenDeck={() => actions.setShowDeckModal(true)}
+        onOpenDeck={onOpenDeck}
       />
 
       <GameBoard 
@@ -109,6 +109,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             onClose={() => actions.setShowDeckModal(false)} 
             activeBoss={gameState.activeBoss}
             pieceSet={settings.pieceSet}
+            shouldShuffle={true}
           />
       )}
 
