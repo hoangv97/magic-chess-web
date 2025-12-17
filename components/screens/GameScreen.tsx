@@ -110,6 +110,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             activeBoss={gameState.activeBoss}
             pieceSet={settings.pieceSet}
             shouldShuffle={true}
+            settings={settings}
           />
       )}
 

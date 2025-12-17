@@ -100,6 +100,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
             setShowOptions(false);
             onResign();
           }}
+          settings={settings}
         />
       )}
     </>

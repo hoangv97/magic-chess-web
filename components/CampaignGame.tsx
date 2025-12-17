@@ -238,6 +238,7 @@ export const CampaignGame: React.FC<CampaignGameProps> = ({ settings, setSetting
             deck={getDisplayDeck()} 
             onClose={() => campaign.setShowDeckModal(false)} 
             pieceSet={settings.pieceSet}
+            settings={settings}
           />
       )}
 

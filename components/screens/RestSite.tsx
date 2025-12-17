@@ -17,6 +17,7 @@ interface RestSiteProps {
 
 export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onLeave, settings }) => {
   const t = TRANSLATIONS[settings.language].restSite;
+  const commonT = TRANSLATIONS[settings.language].settings;
   const [mode, setMode] = useState<'MAIN' | 'TRADE' | 'REMOVE' | 'TRADE_CONFIRM'>('MAIN');
   const [tradeCards, setTradeCards] = useState<Card[]>([]);
   const [cardToTrade, setCardToTrade] = useState<Card | null>(null);
@@ -76,13 +77,13 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
       return (
         <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-slate-900 z-50">
             <div className="max-w-6xl w-full bg-slate-800/95 p-8 rounded-xl border-2 border-yellow-500/50 shadow-2xl flex flex-col items-center">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-2">Confirm Trade</h2>
-                <p className="text-slate-400 mb-8">Select 1 card to add to your deck</p>
+                <h2 className="text-3xl font-bold text-yellow-400 mb-2">{t.confirmTrade}</h2>
+                <p className="text-slate-400 mb-8">{t.selectToAdd}</p>
                 
                 <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
                     {/* Giving */}
                     <div className="flex flex-col items-center">
-                        <p className="text-red-400 font-bold mb-4 uppercase tracking-widest">Giving</p>
+                        <p className="text-red-400 font-bold mb-4 uppercase tracking-widest">{t.giving}</p>
                         <CardComponent 
                             card={cardToTrade} 
                             selected={false} 
@@ -98,7 +99,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
 
                     {/* Receiving */}
                     <div className="flex flex-col items-center">
-                        <p className="text-green-400 font-bold mb-4 uppercase tracking-widest">Choose 1 to Receive</p>
+                        <p className="text-green-400 font-bold mb-4 uppercase tracking-widest">{t.chooseReceive}</p>
                         <div className="flex flex-wrap justify-center gap-4">
                             {tradeCards.map(card => (
                                 <div key={card.id} className="relative">
@@ -111,7 +112,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
                                     />
                                     {selectedRewardId === card.id && (
                                         <div className="absolute -bottom-8 left-0 right-0 text-center text-green-400 font-bold text-sm animate-bounce">
-                                            SELECTED
+                                            {t.selected}
                                         </div>
                                     )}
                                 </div>
@@ -122,14 +123,14 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
 
                 <div className="flex gap-4">
                     <Button onClick={() => setMode('TRADE')} className="bg-slate-600 hover:bg-slate-500 text-white px-8 py-3">
-                        Cancel
+                        {t.cancel}
                     </Button>
                     <Button 
                         onClick={confirmTrade} 
                         disabled={!selectedRewardId}
                         className="bg-yellow-600 hover:bg-yellow-500 text-white px-8 py-3 text-lg font-bold shadow-lg shadow-yellow-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Confirm Trade
+                        {t.confirmTrade}
                     </Button>
                 </div>
             </div>
@@ -144,7 +145,7 @@ export const RestSite: React.FC<RestSiteProps> = ({ deck, onTrade, onRemove, onL
        <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-white">{selectionTitle}</h2>
           <Button onClick={() => setMode('MAIN')} className="bg-slate-700 hover:bg-slate-600 text-white">
-             {TRANSLATIONS[settings.language].settings.back}
+             {commonT.back}
           </Button>
        </div>
        <div className="flex-grow">

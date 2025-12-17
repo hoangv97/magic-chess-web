@@ -39,7 +39,8 @@ const CardBack = ({ onClick }: { onClick: () => void }) => (
 export const EventResult: React.FC<EventResultProps> = ({ 
   title, description, rewardType, rewardGold, rewardCard, rewardRelic, choiceCards, onContinue, settings, addedCurse
 }) => {
-  const t = TRANSLATIONS[settings.language].game;
+  const t = TRANSLATIONS[settings.language].eventResult;
+  const commonT = TRANSLATIONS[settings.language].game;
   
   // Mystery Pick State
   const [revealed, setRevealed] = useState(false);
@@ -76,7 +77,7 @@ export const EventResult: React.FC<EventResultProps> = ({
               {rewardType === 'GOLD' && (
                   <div className="text-center">
                       <div className="text-6xl mb-2">💰</div>
-                      <div className="text-2xl font-bold text-yellow-400">+{rewardGold} Gold</div>
+                      <div className="text-2xl font-bold text-yellow-400">+{t.gold.replace('{0}', String(rewardGold))}</div>
                   </div>
               )}
               
@@ -144,7 +145,7 @@ export const EventResult: React.FC<EventResultProps> = ({
                                           />
                                           {selectedChoice?.id === card.id && (
                                               <div className="absolute -bottom-8 left-0 right-0 text-green-400 font-bold text-sm animate-bounce">
-                                                  SELECTED
+                                                  {t.selected}
                                               </div>
                                           )}
                                       </div>
@@ -157,7 +158,7 @@ export const EventResult: React.FC<EventResultProps> = ({
 
               {addedCurse && (
                   <div className="mt-8 pt-4 border-t border-slate-700 w-full flex flex-col items-center animate-in fade-in zoom-in duration-500 delay-300">
-                      <p className="text-red-400 font-bold uppercase tracking-widest mb-4 animate-pulse">Curse Added!</p>
+                      <p className="text-red-400 font-bold uppercase tracking-widest mb-4 animate-pulse">{t.curseAdded}</p>
                       <CardComponent 
                         card={addedCurse} 
                         selected={false} 
@@ -178,7 +179,7 @@ export const EventResult: React.FC<EventResultProps> = ({
                  : 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-900/50'
              }`}
            >
-               {rewardType === 'PICK_CARD' ? (selectedChoice ? 'Confirm Selection' : 'Choose a Card') : t.close}
+               {rewardType === 'PICK_CARD' ? (selectedChoice ? t.confirmSelection : t.chooseCard) : commonT.close}
            </Button>
         </MotionDiv>
     </div>

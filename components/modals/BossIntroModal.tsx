@@ -17,6 +17,7 @@ interface BossIntroModalProps {
 export const BossIntroModal: React.FC<BossIntroModalProps> = ({ bossType, onClose, settings }) => {
   const [visible, setVisible] = useState(true);
   const info = TRANSLATIONS[settings.language].bosses[bossType];
+  const t = TRANSLATIONS[settings.language].modals.bossIntro;
 
   if (!visible || bossType === BossType.NONE) return null;
 
@@ -59,14 +60,14 @@ export const BossIntroModal: React.FC<BossIntroModalProps> = ({ bossType, onClos
              </p>
              
              <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-8 w-full">
-                 <h3 className="text-red-400 font-bold uppercase text-xs tracking-widest mb-1">Special Ability</h3>
+                 <h3 className="text-red-400 font-bold uppercase text-xs tracking-widest mb-1">{t.specialAbility}</h3>
                  <p className="text-white font-medium">
                      {('ability' in info) ? info.ability : ''}
                  </p>
              </div>
              
              <Button onClick={handleClose} className="w-full bg-red-600 hover:bg-red-500 text-white py-4 text-xl font-bold shadow-lg uppercase tracking-widest">
-                 Fight!
+                 {t.fight}
              </Button>
           </MotionDiv>
         </MotionDiv>

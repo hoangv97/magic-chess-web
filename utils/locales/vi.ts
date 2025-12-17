@@ -1,337 +1,8 @@
 
-import { CardType, PieceType, RelicType, TileEffect, BossType } from '../types';
-import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../constants';
+import { CardType, PieceType, RelicType, TileEffect, BossType } from '../../types';
+import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../../constants';
 
-export const TRANSLATIONS = {
-  en: {
-    mainMenu: {
-      title: "CHESS EVOLUTION",
-      newGame: "NEW GAME",
-      startCampaign: "👑 Start Campaign",
-      customGame: "⚔️ Custom Game",
-      settings: "Settings",
-      wiki: "Game Wiki",
-      credits: "Credits",
-      boardSize: "Board Size",
-      enemies: "Enemies",
-      playerCount: "Player pieces",
-      startCustom: "Start Custom Game",
-      selectBoss: "Select Boss"
-    },
-    customSetup: {
-      title: "CUSTOM GAME SETUP",
-      boardSize: "Board Size",
-      enemies: "Enemy Count",
-      playerCount: "Player Pieces",
-      selectBoss: "Select Boss",
-      start: "Start Battle",
-      back: "Back"
-    },
-    credits: {
-      title: "CREDITS",
-      dev: "Game Design & Development",
-      art: "Art & Assets",
-      music: "Sound & Music",
-      thanks: "Special Thanks",
-      back: "Back to Menu"
-    },
-    settings: {
-      title: "SETTINGS",
-      language: "Language",
-      theme: "Board Theme",
-      pieceSet: "Piece Set",
-      sound: "Sound & Music",
-      volume: "Volume",
-      enableSound: "Enable Audio",
-      back: "Back",
-      reset: "Reset All Settings",
-      themes: {
-        CLASSIC: "Classic (Brown)",
-        FOREST: "Forest (Green)",
-        OCEAN: "Ocean (Blue)",
-        DARK: "Dark Mode"
-      },
-      pieceSets: {
-        STANDARD: "Standard",
-        SIMPLE: "Simple"
-      }
-    },
-    wiki: {
-      title: "GAME WIKI",
-      tabs: {
-        rules: "Rules",
-        cards: "Cards",
-        bosses: "Bosses",
-        relics: "Relics",
-        terrain: "Terrain"
-      },
-      rules: {
-        objective: { title: "Objective", desc: "Defeat the enemy King (Black) or eliminate all enemy units to win. If your King (White) dies or you run out of resources (cards/units), you lose." },
-        gameplay: { title: "Gameplay", desc: "The game is turn-based. On your turn, you can move ONE piece AND play up to 3 cards. Cards cost Gold to play in campaign mode, or are free in custom mode depending on settings." },
-        economy: { title: "Economy", desc: "In Campaign Mode, you earn Gold by defeating enemy pieces. Gold is used in the Merchant's Camp between levels to buy new Cards and Relics." },
-        movement: { title: "Movement", desc: "Pieces move according to their type. Standard chess moves apply, with some custom fairy chess pieces like the Dragon, Elephant, or Chancellor." },
-        elements: { title: "Elements", desc: "Some units and tiles have elemental properties. Ice freezes units. Lava destroys non-flying units. Abyss blocks ground movement." }
-      }
-    },
-    header: {
-      treasury: "Treasury",
-      played: "Played",
-      turns: "Turns",
-      resign: "Resign",
-      campaignLevel: "CAMPAIGN LEVEL"
-    },
-    game: {
-      yourTurn: "Your Turn: Play cards or move a piece.",
-      enemyTurn: "Enemy Turn...",
-      selectTarget: "Select a target on the board to cast spell",
-      emptyHand: "Your hand is empty.",
-      deck: "Deck",
-      victory: "VICTORY",
-      defeat: "DEFEAT",
-      victoryDescCampaign: "The enemy army has been annihilated!",
-      victoryDescCustom: "You have won!",
-      defeatDescCampaign: "Your army is depleted.",
-      defeatDescCustom: "You have lost.",
-      mainMenu: "Main Menu",
-      restartCampaign: "Restart Campaign",
-      close: "Close"
-    },
-    shop: {
-      title: "Merchant's Camp",
-      desc: "Spend your gold to reinforce your army.",
-      relics: "Ancient Relics",
-      cards: "Battle Cards",
-      soldOut: "Sold Out",
-      next: "Travel to Map",
-      buy: "Buy",
-      upgrade: "Upgrade to Lvl",
-      newArtifact: "New Artifact",
-      tooExpensive: "TOO EXPENSIVE"
-    },
-    restSite: {
-        title: "Rest Site",
-        desc: "You find a safe campfire. Do you wish to trade with a traveler or lighten your load?",
-        tradeTitle: "Trade Offer",
-        tradeDesc: "Give 1 card, Choose 1 of 3 random cards.",
-        removeTitle: "Purge",
-        removeDesc: "Remove 1 card from your deck.",
-        leave: "Leave",
-        tradeSelect: "Select a card to trade away",
-        removeSelect: "Select a card to remove",
-        actionTrade: "Trade",
-        actionRemove: "Remove"
-    },
-    map: {
-      title: "CAMPAIGN MAP",
-      readOnly: "The path traveled...",
-      choose: "Choose your next move...",
-      close: "Close",
-      zones: ["The Outskirts", "Shadow Forest", "Forgotten Ruins", "Dragon's Peak", "The Void"]
-    },
-    cards: {
-      [CardType.SPAWN_QUEEN]: { title: "Queen", desc: "Spawn a Queen on your base rows." },
-      [CardType.SPAWN_ROOK]: { title: "Rook", desc: "Spawn a Rook on your base rows." },
-      [CardType.SPAWN_BISHOP]: { title: "Bishop", desc: "Spawn a Bishop on your base rows." },
-      [CardType.SPAWN_KNIGHT]: { title: "Knight", desc: "Spawn a Knight on your base rows." },
-      [CardType.SPAWN_PAWN]: { title: "Pawn", desc: "Spawn a Pawn on your base rows." },
-      
-      [CardType.SPAWN_FOOL]: { title: "Fool", desc: "Mimics the last move made by the enemy." },
-      [CardType.SPAWN_SHIP]: { title: "Ship", desc: "Moves like Rook. Cannot kill. Breaks walls." },
-      [CardType.SPAWN_ELEPHANT]: { title: "Elephant", desc: "Moves 1 fwd. Breaks walls. Swarms together." },
-      [CardType.SPAWN_DRAGON]: { title: "Dragon", desc: "Moves like Knight. Ignores terrain hazards." },
-      [CardType.SPAWN_DRAGON_LAVA]: { title: "Lava Dragon", desc: "Leaves temporary Lava trail." },
-      [CardType.SPAWN_DRAGON_ABYSS]: { title: "Abyss Dragon", desc: "Leaves temporary Abyss trail." },
-      [CardType.SPAWN_DRAGON_FROZEN]: { title: "Frozen Dragon", desc: "Leaves temporary Frozen trail." },
-
-      [CardType.SPAWN_CHANCELLOR]: { title: "Chancellor", desc: "Moves like Rook + Knight." },
-      [CardType.SPAWN_ARCHBISHOP]: { title: "Archbishop", desc: "Moves like Bishop + Knight." },
-      [CardType.SPAWN_MANN]: { title: "Mann", desc: "Moves like Rook + Bishop." },
-      [CardType.SPAWN_AMAZON]: { title: "Amazon", desc: "Moves like Queen + Knight." },
-      [CardType.SPAWN_CENTAUR]: { title: "Centaur", desc: "Moves like King + Knight." },
-      [CardType.SPAWN_ZEBRA]: { title: "Zebra", desc: "Moves like Pawn + Knight." },
-      [CardType.SPAWN_CHAMPION]: { title: "Champion", desc: "Moves like Pawn + Bishop." },
-
-      [CardType.EFFECT_SWITCH]: { title: "Swap Tactics", desc: "Switch positions of two of your pieces." },
-      [CardType.EFFECT_FREEZE]: { title: "Glacial Glare", desc: "Freeze a random enemy piece for one turn." },
-      [CardType.EFFECT_LIMIT]: { title: "Muddy Terrain", desc: "Limit enemy movement range to 1 tile next turn." },
-      [CardType.EFFECT_BORROW_ROOK]: { title: "Rook's Spirit", desc: "Target piece moves like a Rook this turn." },
-      [CardType.EFFECT_BORROW_KNIGHT]: { title: "Knight's Leap", desc: "Target piece moves like a Knight this turn." },
-      [CardType.EFFECT_BORROW_BISHOP]: { title: "Bishop's Sight", desc: "Target piece moves like a Bishop this turn." },
-      [CardType.EFFECT_BACK_BASE]: { title: "Recall", desc: "Return one of your pieces to the base row." },
-      [CardType.EFFECT_IMMORTAL]: { title: "Divine Shield", desc: "Make a piece immortal until your next turn." },
-
-      // New Cards
-      [CardType.EFFECT_TRAP]: { title: "Martyr's Curse", desc: "Turn a random piece into a suicide trap. If killed, the attacker dies too." },
-      [CardType.SPAWN_REVIVE]: { title: "Resurrection", desc: "Respawn a random dead piece at your base." },
-      [CardType.EFFECT_AREA_FREEZE]: { title: "Frost Nova", desc: `Freeze all enemies around a selected unit for ${AREA_FREEZE_DURATION} turns.` },
-      [CardType.EFFECT_MIMIC]: { title: "Doppelganger", desc: "When this unit kills an enemy, it permanently becomes that enemy type." },
-      [CardType.EFFECT_ASCEND]: { title: "Heroic Ascension", desc: `Promote a Pawn to a random major piece. It dies in ${ASCEND_DURATION} turns.` },
-      [CardType.EFFECT_IMMORTAL_LONG]: { title: "Aegis of Ages", desc: `Make a piece immortal for ${IMMORTAL_LONG_DURATION} turns.` },
-
-      // Curse Cards
-      [CardType.CURSE_LAZY]: { title: "Sloth", desc: "UNPLAYABLE. While in hand: Lose 10 gold if you move a piece without killing an enemy." },
-      [CardType.CURSE_MOVE_TAX]: { title: "Burden", desc: "UNPLAYABLE. While in hand: Moving a piece costs 10 gold." },
-      [CardType.CURSE_SPELL_TAX]: { title: "Silence", desc: "UNPLAYABLE. While in hand: Playing a card costs 10 gold." },
-      [CardType.CURSE_DECAY]: { title: "Decay", desc: "UNPLAYABLE." },
-    },
-    relics: {
-      [RelicType.LAST_WILL]: { name: "Martyr's Sigil", desc: "Spawn a {0} on base row when your piece dies." },
-      [RelicType.NECROMANCY]: { name: "Soul Harvester", desc: "Spawn a {0} on base row when an enemy dies." },
-      [RelicType.MIDAS_TOUCH]: { name: "Midas Touch", desc: "Earn 2x Gold from killing enemies." },
-      [RelicType.DISCOUNT_CARD]: { name: "Merchant's Guild", desc: "50% off all Cards in the shop." },
-      [RelicType.DISCOUNT_RELIC]: { name: "Archaeologist", desc: "50% off all Relics in the shop." },
-      [RelicType.START_PAWN]: { name: "Militia", desc: "Start every game with {0} extra Pawn(s)." },
-      [RelicType.START_ROOK]: { name: "Castle Guard", desc: "Start every game with {0} extra Rook(s)." },
-      [RelicType.START_KNIGHT]: { name: "Cavalry", desc: "Start every game with {0} extra Knight(s)." },
-      [RelicType.START_BISHOP]: { name: "Clergy", desc: "Start every game with {0} extra Bishop(s)." },
-      [RelicType.START_QUEEN]: { name: "Royal Escort", desc: "Start every game with {0} extra Queen(s)." },
-    },
-    tiles: {
-      [TileEffect.NONE]: { name: "Grass", desc: "Standard terrain. No special effects." },
-      [TileEffect.HOLE]: { name: "Abyss", desc: "A deep chasm. Pieces cannot stand here, but sliding pieces can pass over." },
-      [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
-      [TileEffect.FROZEN]: { name: "Frozen Ground", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
-      [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." }
-    },
-    bosses: {
-      [BossType.NONE]: { name: "None", desc: "No boss." },
-      [BossType.FROST_GIANT]: { 
-        name: "Frost Giant", 
-        desc: "A giant of ice and snow.",
-        ability: "PASSIVE: Your pieces freeze after moving." 
-      },
-      [BossType.BLIZZARD_WITCH]: { 
-        name: "Blizzard Witch", 
-        desc: "Sorceress of the northern winds.",
-        ability: "ACTIVE: Freezes random tiles each turn." 
-      },
-      [BossType.VOID_BRINGER]: { 
-        name: "Void Bringer", 
-        desc: "An entity from the abyss.",
-        ability: "ACTIVE: Summons abyssal holes on the board each turn." 
-      },
-      [BossType.LAVA_TITAN]: { 
-        name: "Lava Titan", 
-        desc: "Forged in the heart of a volcano.",
-        ability: "ACTIVE: Erupts magma pools on the board each turn." 
-      },
-      [BossType.STONE_GOLEM]: { 
-        name: "Stone Golem", 
-        desc: "An ancient guardian of stone.",
-        ability: "ACTIVE: Constructs stone walls every 5 turns to block your path." 
-      },
-      [BossType.UNDEAD_LORD]: { 
-        name: "Undead Lord", 
-        desc: "A master of death who shields his minions.",
-        ability: "ACTIVE: Grants immortality to a random minion. The chosen one changes every 5 turns." 
-      },
-      [BossType.CHAOS_LORD]: { 
-        name: "Chaos Lord", 
-        desc: "A being of pure unpredictability.",
-        ability: "ACTIVE: Summons a random piece to the battlefield every 5 turns." 
-      },
-      [BossType.MIRROR_MAGE]: { 
-        name: "Mirror Mage", 
-        desc: "A sorcerer who mocks your every move.",
-        ability: "REACTIVE: When you summon a piece, he summons a copy of it." 
-      },
-      [BossType.SOUL_EATER]: { 
-        name: "Soul Devourer", 
-        desc: "It hungers for the essence of your army.",
-        ability: "PASSIVE: When your piece dies, you lose a card from your deck." 
-      },
-      [BossType.BLOOD_KING]: { 
-        name: "Blood King", 
-        desc: "A tyrant who fuels his army with blood.",
-        ability: "REACTIVE: When he kills your piece, a new enemy is born." 
-      },
-      [BossType.HYDRA]: { 
-        name: "The Hydra", 
-        desc: "Cut off one head, two more shall take its place...",
-        ability: "REACTIVE: When an enemy piece dies, another spawns to replace it." 
-      },
-      [BossType.MIND_CONTROLLER]: { 
-        name: "Hypnotist", 
-        desc: "Master of the mind.",
-        ability: "ACTIVE: Takes control of one of your units every 5 turns." 
-      },
-      [BossType.SILENCER]: { 
-        name: "The Silencer", 
-        desc: "A mage hunter who suppresses magic.",
-        ability: "PASSIVE: You cannot draw Spell cards. Only Units can be summoned." 
-      },
-      [BossType.ILLUSIONIST]: { 
-        name: "The Illusionist", 
-        desc: "He shrouds the battlefield in mystery.",
-        ability: "PASSIVE: Unit cards in your hand and deck are unidentified until played." 
-      },
-      [BossType.THE_FACELESS]: {
-        name: "The Faceless",
-        desc: "A shapeshifter who commands a masked army.",
-        ability: "PASSIVE: All enemy units (except the King) appear as Pawns."
-      },
-      [BossType.CURSE_WEAVER]: {
-        name: "The Hex Master",
-        desc: "A warlock who weaves misfortune into reality.",
-        ability: "ACTIVE: Adds a random Curse card to your deck every 5 turns."
-      },
-      [BossType.DOOM_BRINGER]: {
-        name: "Vengeful Spirit",
-        desc: "A ghost that haunts those who slay its kin.",
-        ability: "REACTIVE: 50% chance to add a Curse card to your deck when you kill an enemy."
-      },
-      [BossType.SOUL_CORRUPTOR]: {
-        name: "Soul Corruptor",
-        desc: "He corrupts the falling souls of your warriors.",
-        ability: "REACTIVE: 50% chance to add a Curse card to your deck when your unit dies."
-      }
-    },
-    deckSelection: {
-      title: "Choose Your Army",
-      desc: "Select a starter deck to begin your campaign.",
-      decks: {
-        "Fortress": { name: "Fortress", desc: "Defensive power with a heavy Rook." },
-        "Divine": { name: "Divine", desc: "Diagonal control with a Bishop." },
-        "Skirmish": { name: "Skirmish", desc: "Agile movement with Knight and Bishop." },
-        "Experiment": { name: "Experiment", desc: "Experimental deck for strategic testing." },
-        "Elite": { name: "Elite", desc: "Experimental deck for elite testing." },
-        "Mystic": { name: "Mystic", desc: "Command magical creatures like Dragons and Fools." },
-        "Elemental": { name: "Elemental", desc: "Control the elements with special Dragons." }
-      }
-    },
-    pieces: {
-      [PieceType.KING]: "King",
-      [PieceType.QUEEN]: "Queen",
-      [PieceType.ROOK]: "Rook",
-      [PieceType.BISHOP]: "Bishop",
-      [PieceType.KNIGHT]: "Knight",
-      [PieceType.PAWN]: "Pawn",
-      [PieceType.FOOL]: "Fool",
-      [PieceType.SHIP]: "Ship",
-      [PieceType.ELEPHANT]: "Elephant",
-      [PieceType.DRAGON]: "Dragon",
-      [PieceType.CHANCELLOR]: "Chancellor",
-      [PieceType.ARCHBISHOP]: "Archbishop",
-      [PieceType.MANN]: "Mann",
-      [PieceType.AMAZON]: "Amazon",
-      [PieceType.CENTAUR]: "Centaur",
-      [PieceType.ZEBRA]: "Zebra",
-      [PieceType.CHAMPION]: "Champion",
-    },
-    tooltips: {
-      frozen: "❄️ Frozen ({0} turns left)",
-      active: "Active",
-      immortal: "🛡️ Immortal ({0} turns left)",
-      movesLike: "✨ Moves like {0} this turn.",
-      on: "On:",
-      rightClick: "Right-click for info",
-      status: "Status:",
-      effect: "Effect:",
-      currentTerrain: "Current Terrain",
-      bossAbility: "Boss Ability"
-    }
-  },
-  vi: {
+export const vi = {
     mainMenu: {
       title: "CỜ VUA TIẾN HÓA",
       newGame: "TRÒ CHƠI MỚI",
@@ -361,7 +32,11 @@ export const TRANSLATIONS = {
       art: "Hình Ảnh & Tài Nguyên",
       music: "Âm Thanh",
       thanks: "Lời Cảm Ơn",
-      back: "Quay Lại Menu"
+      back: "Quay Lại Menu",
+      thanksPlaying: "Cảm ơn bạn đã chơi!",
+      assets: "Standard & Fantasy SVG Sets",
+      assetsSub: "Tạo bởi Google Gemini",
+      musicSub: "Tổng hợp theo quy trình"
     },
     settings: {
       title: "CÀI ĐẶT",
@@ -447,7 +122,13 @@ export const TRANSLATIONS = {
         tradeSelect: "Chọn bài để đổi",
         removeSelect: "Chọn bài để xóa",
         actionTrade: "Đổi",
-        actionRemove: "Xóa"
+        actionRemove: "Xóa",
+        confirmTrade: "Xác Nhận Trao Đổi",
+        selectToAdd: "Chọn 1 thẻ để thêm vào bộ bài",
+        giving: "Cho Đi",
+        chooseReceive: "Chọn 1 Để Nhận",
+        cancel: "Hủy",
+        selected: "ĐÃ CHỌN"
     },
     map: {
       title: "BẢN ĐỒ CHIẾN DỊCH",
@@ -657,6 +338,54 @@ export const TRANSLATIONS = {
       effect: "Hiệu ứng:",
       currentTerrain: "Địa Hình",
       bossAbility: "Kỹ Năng Trùm"
+    },
+    modals: {
+      bossIntro: {
+        specialAbility: "Kỹ Năng Đặc Biệt",
+        fight: "Chiến Đấu!"
+      },
+      deck: {
+        remaining: "Bộ Bài Còn Lại",
+        list: "Danh Sách Bài",
+        empty: "Bộ bài trống.",
+        close: "Đóng"
+      },
+      options: {
+        title: "Tùy Chọn",
+        continue: "Tiếp Tục",
+        settings: "Cài Đặt",
+        mainMenu: "Màn Hình Chính"
+      },
+      relicDetail: {
+        level: "Cấp",
+        sell: "Bán",
+        close: "Đóng"
+      },
+      info: {
+        close: "Đóng"
+      }
+    },
+    loadGame: {
+      title: "Chế Độ Chiến Dịch",
+      foundSave: "Tìm Thấy Phần Lưu",
+      level: "Cấp Độ",
+      gold: "Vàng",
+      deckSize: "Số Bài",
+      saveNote: "Tiến trình được lưu tự động tại mỗi điểm trên bản đồ.",
+      noSave: "Không tìm thấy dữ liệu lưu.",
+      continue: "Tiếp Tục Chiến Dịch",
+      newCampaign: "Chiến Dịch Mới",
+      clearData: "Xóa Dữ Liệu",
+      back: "Quay Lại Menu"
+    },
+    eventResult: {
+      gold: "{0} Vàng",
+      confirmSelection: "Xác Nhận",
+      chooseCard: "Chọn Thẻ Bài",
+      curseAdded: "Đã Thêm Lời Nguyền!",
+      selected: "ĐÃ CHỌN"
+    },
+    reward: {
+        choose: "Chọn một thẻ để thêm vào bộ bài"
     }
-  }
 };
