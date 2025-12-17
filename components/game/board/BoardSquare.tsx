@@ -89,6 +89,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
            >
               {cell.tileEffect === TileEffect.WALL && <span className="absolute inset-0 flex items-center justify-center text-2xl">{GAME_ICONS.TILE_WALL}</span>}
               {cell.tileEffect === TileEffect.FROZEN && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-50">{GAME_ICONS.STATUS_FROZEN}</span>}
+              {cell.tileEffect === TileEffect.PROMOTION && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-70 animate-pulse">{GAME_ICONS.TILE_PROMOTION}</span>}
            </MotionDiv>
          )}
       </AnimatePresence>

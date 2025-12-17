@@ -54,6 +54,7 @@ export const GAME_ICONS = {
   CARD_BACK: '↩️',
   CARD_TRAP: '☠️',
   CARD_ASCEND: '👑',
+  CARD_PROMOTION: '⏫',
   CARD_CURSE: '🤮',
   CARD_DEFAULT: '✨',
   
@@ -95,5 +96,6 @@ export const GAME_ICONS = {
   TILE_WALL: "🧱",
   TILE_FROZEN: "❄️",
   TILE_LAVA: "🔥",
+  TILE_PROMOTION: "⏫",
   TILE_GRASS: "🌱"
 };

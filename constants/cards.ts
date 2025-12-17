@@ -43,6 +43,7 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.EFFECT_MIMIC, cost: 75 },
   { type: CardType.EFFECT_ASCEND, cost: 35 },
   { type: CardType.EFFECT_IMMORTAL_LONG, cost: 120 },
+  { type: CardType.EFFECT_PROMOTION_TILE, cost: 90 },
 
   // Curses (Cost 0 usually means cannot buy/play normally, but we define a value for sorting)
   { type: CardType.CURSE_LAZY, cost: 0 },
@@ -74,7 +75,7 @@ export const STARTER_DECKS_CONFIG = [
   },
   {
     id: "Experiment",
-    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN]
+    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_PROMOTION_TILE]
   },
   {
     id: "Elite",
@@ -111,6 +112,7 @@ export const getCardIcon = (type: string) => {
   if (type.includes('TRAP')) return GAME_ICONS.CARD_TRAP;
   if (type.includes('ASCEND')) return GAME_ICONS.CARD_ASCEND;
   if (type.includes('CURSE')) return GAME_ICONS.CARD_CURSE;
+  if (type.includes('PROMOTION')) return GAME_ICONS.CARD_PROMOTION;
   return GAME_ICONS.CARD_DEFAULT;
 };
 

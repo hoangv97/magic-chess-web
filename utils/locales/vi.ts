@@ -179,6 +179,7 @@ export const vi = {
       [CardType.EFFECT_MIMIC]: { title: "Kẻ Mạo Danh", desc: "Khi quân này giết địch, nó sẽ biến thành loại quân đó." },
       [CardType.EFFECT_ASCEND]: { title: "Thăng Hoa", desc: `Biến Tốt thành quân cấp cao. Chết sau ${ASCEND_DURATION} lượt.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Bảo Hộ Vĩnh Cửu", desc: `Bất tử trong ${IMMORTAL_LONG_DURATION} lượt.` },
+      [CardType.EFFECT_PROMOTION_TILE]: { title: "Cổ Ngữ Thăng Cấp", desc: "Biến một ô trống ngẫu nhiên bên địch thành Ô Thăng Cấp." },
 
       // Curse Cards
       [CardType.CURSE_LAZY]: { title: "Lười Biếng", desc: "KHÔNG THỂ DÙNG. Khi cầm: Mất 10 vàng nếu di chuyển mà không giết địch." },
@@ -203,7 +204,8 @@ export const vi = {
       [TileEffect.HOLE]: { name: "Vực Thẳm", desc: "Không thể đứng, quân bay có thể qua." },
       [TileEffect.WALL]: { name: "Tường Đá", desc: "Vật cản không thể đi qua." },
       [TileEffect.FROZEN]: { name: "Ô Băng", desc: "Trơn trượt. Đi vào sẽ bị đóng băng lượt sau." },
-      [TileEffect.LAVA]: { name: "Dung Nham", desc: "Đi vào sẽ bị tiêu diệt ngay lập tức." }
+      [TileEffect.LAVA]: { name: "Dung Nham", desc: "Đi vào sẽ bị tiêu diệt ngay lập tức." },
+      [TileEffect.PROMOTION]: { name: "Ô Thăng Cấp", desc: "Cổ ngữ thần bí. Thăng cấp Tốt/Xe/Tượng thành Hậu, Mã thành Amazon." }
     },
     bosses: {
       [BossType.NONE]: { name: "Không", desc: "Không có trùm." },

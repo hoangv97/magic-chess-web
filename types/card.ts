@@ -37,6 +37,7 @@ export enum CardType {
   EFFECT_MIMIC = 'EFFECT_MIMIC', // Transform on kill
   EFFECT_ASCEND = 'EFFECT_ASCEND', // Pawn -> Major piece (3 turns life)
   EFFECT_IMMORTAL_LONG = 'EFFECT_IMMORTAL_LONG', // Immortal 3 turns
+  EFFECT_PROMOTION_TILE = 'EFFECT_PROMOTION_TILE', // Create a promotion tile on enemy side
 
   // Curses
   CURSE_LAZY = 'CURSE_LAZY', // -10g if move without kill

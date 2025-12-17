@@ -296,6 +296,15 @@ export const useGameLogic = ({
     } else if (destEffect === TileEffect.FROZEN && newBoard[to.row][to.col].piece) {
         newBoard[to.row][to.col].piece!.frozenTurns = 2;
         soundManager.playSfx('frozen');
+    } else if (destEffect === TileEffect.PROMOTION && newBoard[to.row][to.col].piece) {
+        const p = newBoard[to.row][to.col].piece!;
+        if (p.type === PieceType.KNIGHT) {
+            p.type = PieceType.AMAZON;
+            soundManager.playSfx('spawn');
+        } else if ([PieceType.PAWN, PieceType.ROOK, PieceType.BISHOP].includes(p.type)) {
+            p.type = PieceType.QUEEN;
+            soundManager.playSfx('spawn');
+        }
     }
 
     if (newBoard[to.row][to.col].piece && piece.type === PieceType.PAWN && to.row === 0) {
@@ -530,6 +539,15 @@ export const useGameLogic = ({
       } else if (effect === TileEffect.FROZEN && boardCopy[bestMove.to.row][bestMove.to.col].piece) {
           boardCopy[bestMove.to.row][bestMove.to.col].piece!.frozenTurns = 2;
           soundManager.playSfx('frozen');
+      } else if (effect === TileEffect.PROMOTION && boardCopy[bestMove.to.row][bestMove.to.col].piece) {
+          const p = boardCopy[bestMove.to.row][bestMove.to.col].piece!;
+          if (p.type === PieceType.KNIGHT) {
+              p.type = PieceType.AMAZON;
+              soundManager.playSfx('spawn');
+          } else if ([PieceType.PAWN, PieceType.ROOK, PieceType.BISHOP].includes(p.type)) {
+              p.type = PieceType.QUEEN;
+              soundManager.playSfx('spawn');
+          }
       }
 
       // Promotion
@@ -692,6 +710,8 @@ export const useGameLogic = ({
       else setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
     } else if (['EFFECT_SWITCH', 'EFFECT_IMMORTAL', 'EFFECT_MIMIC', 'EFFECT_ASCEND', 'EFFECT_IMMORTAL_LONG', 'EFFECT_AREA_FREEZE'].includes(card.type) || card.type.includes('BORROW')) {
       setCardTargetMode({ type: card.type, step: 'SELECT_PIECE_1' });
+    } else if (card.type === CardType.EFFECT_PROMOTION_TILE) {
+      playInstantCard(card);
     } else {
       playInstantCard(card);
     }

@@ -50,6 +50,28 @@ export const getBoardAfterInstantCard = (
       } else {
           error = 'No friendly pieces available.';
       }
+    } else if (card.type === CardType.EFFECT_PROMOTION_TILE) {
+      const size = newBoard.length;
+      const enemySideRows = Math.floor(size / 2);
+      const candidates: Position[] = [];
+      
+      for (let r = 0; r < enemySideRows; r++) {
+          for (let c = 0; c < size; c++) {
+              if (!newBoard[r][c].piece && newBoard[r][c].tileEffect === TileEffect.NONE) {
+                  candidates.push({ row: r, col: c });
+              }
+          }
+      }
+
+      if (candidates.length > 0) {
+          const target = candidates[Math.floor(Math.random() * candidates.length)];
+          newBoard[target.row][target.col].tileEffect = TileEffect.PROMOTION;
+          played = true;
+          sound = 'spawn';
+      } else {
+          error = 'No empty tiles on enemy side.';
+      }
+
     } else if (card.type === CardType.SPAWN_REVIVE) {
       if (deadPieces.length === 0) { 
           error = 'No dead pieces to revive!';

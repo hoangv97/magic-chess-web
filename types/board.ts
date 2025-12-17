@@ -6,7 +6,8 @@ export enum TileEffect {
   HOLE = 'HOLE', // No piece can go in (but sliders can pass through)
   WALL = 'WALL', // No piece can go in or pass through
   FROZEN = 'FROZEN',   // Go in and cannot move in the next turn (Renamed from MUD)
-  LAVA = 'LAVA'  // Died if go in
+  LAVA = 'LAVA',  // Died if go in
+  PROMOTION = 'PROMOTION' // Promotes piece if they enter
 }
 
 export interface Cell {

@@ -179,6 +179,7 @@ export const en = {
       [CardType.EFFECT_MIMIC]: { title: "Doppelganger", desc: "When this unit kills an enemy, it permanently becomes that enemy type." },
       [CardType.EFFECT_ASCEND]: { title: "Heroic Ascension", desc: `Promote a Pawn to a random major piece. It dies in ${ASCEND_DURATION} turns.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Aegis of Ages", desc: `Make a piece immortal for ${IMMORTAL_LONG_DURATION} turns.` },
+      [CardType.EFFECT_PROMOTION_TILE]: { title: "Promotion Rune", desc: "Turn a random empty tile on the enemy side into a Promotion Tile." },
 
       // Curse Cards
       [CardType.CURSE_LAZY]: { title: "Sloth", desc: "UNPLAYABLE. While in hand: Lose 10 gold if you move a piece without killing an enemy." },
@@ -203,7 +204,8 @@ export const en = {
       [TileEffect.HOLE]: { name: "Abyss", desc: "A deep chasm. Pieces cannot stand here, but sliding pieces can pass over." },
       [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
       [TileEffect.FROZEN]: { name: "Frozen Ground", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
-      [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." }
+      [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." },
+      [TileEffect.PROMOTION]: { name: "Promotion Tile", desc: "Magic rune. Promotes Pawn/Rook/Bishop to Queen, Knight to Amazon." }
     },
     bosses: {
       [BossType.NONE]: { name: "None", desc: "No boss." },
