@@ -1,6 +1,7 @@
 
 import { MapNodeType, BossType, MapNode } from '../types';
 import { getBossIcon } from './bosses';
+import { GAME_ICONS } from '../components/assets/GameIcons';
 
 export const MAP_ZONES_CONFIG = {
     LEVELS_PER_ZONE: 10,
@@ -9,11 +10,11 @@ export const MAP_ZONES_CONFIG = {
 
 export const getNodeIcon = (node: MapNode) => {
     if (node.type === MapNodeType.BOSS) return getBossIcon(node.bossType || BossType.NONE);
-    if (node.type === MapNodeType.MINI_BOSS) return '👹';
-    if (node.type === MapNodeType.SHOP) return '💰';
-    if (node.type === MapNodeType.REST) return '🔥';
-    if (node.type === MapNodeType.UNKNOWN) return '❓';
-    return '⚔️';
+    if (node.type === MapNodeType.MINI_BOSS) return GAME_ICONS.MAP_MINI_BOSS;
+    if (node.type === MapNodeType.SHOP) return GAME_ICONS.MAP_SHOP;
+    if (node.type === MapNodeType.REST) return GAME_ICONS.MAP_REST;
+    if (node.type === MapNodeType.UNKNOWN) return GAME_ICONS.MAP_UNKNOWN;
+    return GAME_ICONS.MAP_BATTLE;
 };
 
 export const getNodeColorClass = (node: MapNode, isAvailable: boolean, isCompleted: boolean, isCurrent: boolean) => {

@@ -74,7 +74,9 @@ export const vi = {
         economy: { title: "Kinh Tế", desc: "Trong chế độ Chiến Dịch, bạn kiếm Vàng bằng cách tiêu diệt quân địch. Vàng được dùng trong Trại Thương Nhân để mua Thẻ và Cổ Vật mới." },
         movement: { title: "Di Chuyển", desc: "Các quân cờ di chuyển theo loại của chúng. Quy tắc cờ vua tiêu chuẩn được áp dụng, cùng với một số quân cờ biến thể như Rồng, Voi hoặc Tể Tướng." },
         elements: { title: "Nguyên Tố", desc: "Một số đơn vị và ô có tính chất nguyên tố. Băng đóng băng đơn vị. Dung nham tiêu diệt đơn vị không bay. Vực thẳm chặn di chuyển trên mặt đất." }
-      }
+      },
+      ability: "KỸ NĂNG",
+      baseCost: "Giá Gốc"
     },
     header: {
       treasury: "Kho Báu",

@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { TRANSLATIONS } from '../../utils/locales';
 import { OptionsModal } from '../modals/OptionsModal';
 import { soundManager } from '../../utils/soundManager';
+import { GAME_ICONS } from '../assets/GameIcons';
 
 interface GameHeaderProps {
   phase: GamePhase;
@@ -59,7 +60,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 
             <div className="text-center">
                <span className="block text-[10px] uppercase text-slate-500">{t.treasury}</span>
-               <span className="font-bold text-yellow-400">💰 {gold}</span>
+               <span className="font-bold text-yellow-400">{GAME_ICONS.TREASURY} {gold}</span>
             </div>
             {phase === 'PLAYING' && (
               <>
@@ -70,7 +71,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
                 
                 {isCampaign && (
                   <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={onOpenMap}>
-                     🗺️
+                     {GAME_ICONS.MAP}
                   </Button>
                 )}
                 
@@ -79,11 +80,11 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 
             {isCampaign && phase !== 'DECK_SELECTION' && onOpenDeck && (
                <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={onOpenDeck}>
-                  🎴
+                  {GAME_ICONS.DECK}
                </Button>
             )}
 
-            <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={() => setShowOptions(true)}>⚙️</Button>
+            <Button className="bg-slate-700 hover:bg-slate-600 text-lg px-3" onClick={() => setShowOptions(true)}>{GAME_ICONS.SETTINGS}</Button>
           </div>
         ) : null}
       </header>

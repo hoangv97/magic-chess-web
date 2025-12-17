@@ -5,6 +5,7 @@ import { TRANSLATIONS } from '../../utils/locales';
 import { getDeckTemplate, getRelicInfo, getTileEffectInfo, getBossIcon, getTileVisuals } from '../../constants';
 import { Button } from '../ui/Button';
 import { CardComponent } from '../ui/CardComponent';
+import { GAME_ICONS } from '../../components/assets/GameIcons';
 
 interface WikiScreenProps {
   settings: GameSettings;
@@ -13,6 +14,7 @@ interface WikiScreenProps {
 
 export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
   const t = TRANSLATIONS[settings.language].wiki;
+  const settingsT = TRANSLATIONS[settings.language].settings;
   const [activeTab, setActiveTab] = useState<'RULES' | 'CARDS' | 'BOSSES' | 'RELICS' | 'TERRAIN'>('RULES');
 
   const deckTemplate = getDeckTemplate(settings.language);
@@ -50,7 +52,7 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
             {t.title}
           </h2>
           <Button onClick={onBack} className="bg-slate-700 hover:bg-slate-600 text-slate-200 px-6">
-            {TRANSLATIONS[settings.language].settings.back}
+            {settingsT.back}
           </Button>
         </div>
 
@@ -114,7 +116,7 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
                     </div>
                     <p className="text-slate-400 italic mb-2">{info.desc}</p>
                     <div className="mt-auto pt-4 border-t border-slate-700">
-                      <span className="text-xs font-bold bg-red-900 text-red-100 px-2 py-1 rounded">ABILITY</span>
+                      <span className="text-xs font-bold bg-red-900 text-red-100 px-2 py-1 rounded">{t.ability || "ABILITY"}</span>
                       <p className="text-sm text-slate-300 mt-2">{'ability' in info ? info.ability : ''}</p>
                     </div>
                   </div>
@@ -132,7 +134,7 @@ export const WikiScreen: React.FC<WikiScreenProps> = ({ settings, onBack }) => {
                     <div className="text-5xl bg-slate-900 p-2 rounded-lg border border-slate-700">{info.icon}</div>
                     <div>
                       <h3 className="text-lg font-bold text-purple-300">{info.name}</h3>
-                      <p className="text-xs text-slate-500 mb-2 font-mono">Base Cost: {info.basePrice}g</p>
+                      <p className="text-xs text-slate-500 mb-2 font-mono">{t.baseCost || "Base Cost"}: {info.basePrice}g</p>
                       <p className="text-sm text-slate-300">{info.description(1)}</p>
                     </div>
                   </div>

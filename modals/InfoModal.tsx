@@ -8,12 +8,12 @@ interface InfoModalProps {
   title: string;
   content: React.ReactNode;
   onClose: () => void;
-  settings?: GameSettings;
+  settings?: GameSettings; // Pass settings for localization
 }
 
 export const InfoModal: React.FC<InfoModalProps> = ({ title, content, onClose, settings }) => {
   const language = settings ? settings.language : 'en';
-  const t = TRANSLATIONS[language]?.modals?.info || { close: 'Close' };
+  const closeLabel = TRANSLATIONS[language].modals.info.close;
 
   return (
     <div className="absolute inset-0 z-[100] bg-black/60 flex items-center justify-center backdrop-blur-sm" onClick={onClose}>
@@ -28,7 +28,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ title, content, onClose, s
           {content}
         </div>
         <Button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600">
-          {t.close}
+          {closeLabel}
         </Button>
       </div>
     </div>

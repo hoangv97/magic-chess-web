@@ -140,6 +140,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           title={gameState.infoModalContent.title}
           content={gameState.infoModalContent.content}
           onClose={() => actions.setInfoModalContent(null)}
+          settings={settings}
         />
       )}
 

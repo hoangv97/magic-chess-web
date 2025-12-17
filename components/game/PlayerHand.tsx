@@ -5,6 +5,7 @@ import { Card, Side, GameSettings, BossType } from '../../types';
 import { MAX_CARDS_PLAYED_PER_TURN } from '../../constants';
 import { CardComponent } from '../ui/CardComponent';
 import { TRANSLATIONS } from '../../utils/locales';
+import { GAME_ICONS } from '../assets/GameIcons';
 
 const MotionDiv = motion.div as any;
 
@@ -74,7 +75,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
              <div className="absolute top-1 left-1 right-1 bottom-1 border border-slate-700 rounded opacity-50"></div>
              <div className="absolute top-2 left-2 right-2 bottom-2 border border-slate-700 rounded opacity-30"></div>
              
-             <div className="text-3xl mb-1 group-hover:scale-110 transition-transform z-10">🎴</div>
+             <div className="text-3xl mb-1 group-hover:scale-110 transition-transform z-10">{GAME_ICONS.DECK}</div>
              <div className="font-bold text-lg text-white z-10">{deckCount}</div>
              <div className="mt-3 text-[10px] text-slate-400 uppercase tracking-wider z-10">{t.deck}</div>
           </div>

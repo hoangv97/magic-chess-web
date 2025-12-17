@@ -1,12 +1,11 @@
 
-
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cell, Side, Position, PieceType, TileEffect, BossType } from '../../../types';
 import { getTileEffectInfo, PIECE_VARIANT_STYLES } from '../../../constants';
 import { getPieceIcon } from '../../assets/PieceSets';
 import { TRANSLATIONS } from '../../../utils/locales';
+import { GAME_ICONS } from '../../assets/GameIcons';
 
 const MotionDiv = motion.div as any;
 
@@ -88,8 +87,8 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
              transition={{ duration: 0.3 }}
              className={`absolute inset-0 pointer-events-none ${getTileEffectStyle(cell.tileEffect)}`}
            >
-              {cell.tileEffect === TileEffect.WALL && <span className="absolute inset-0 flex items-center justify-center text-2xl">🧱</span>}
-              {cell.tileEffect === TileEffect.FROZEN && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-50">❄️</span>}
+              {cell.tileEffect === TileEffect.WALL && <span className="absolute inset-0 flex items-center justify-center text-2xl">{GAME_ICONS.TILE_WALL}</span>}
+              {cell.tileEffect === TileEffect.FROZEN && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-50">{GAME_ICONS.STATUS_FROZEN}</span>}
            </MotionDiv>
          )}
       </AnimatePresence>
@@ -105,14 +104,14 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
 
       {isUnderCheck && (
          <div className="absolute inset-0 bg-red-600/50 animate-pulse z-10 border-4 border-red-600">
-             <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black bg-red-600 text-white px-1 rounded">CHECK!</span>
+             <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black bg-red-600 text-white px-1 rounded">{GAME_ICONS.CHECK_BADGE}</span>
          </div>
       )}
 
       {/* Boss Countdown Badge */}
       {bossCountdown !== undefined && bossCountdown !== null && (
           <div className={`absolute -top-3 -right-2 z-50 flex items-center justify-center bg-red-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded-full border border-white shadow-lg ${bossCountdown === 1 ? 'animate-bounce' : ''}`}>
-              <span className="mr-0.5">⏳</span>{bossCountdown}
+              <span className="mr-0.5">{GAME_ICONS.STATUS_ASCENDED}</span>{bossCountdown}
           </div>
       )}
 
@@ -178,24 +177,24 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                {getPieceIcon(settings.pieceSet, cell.piece.side, displayType)}
                {isBossPiece && (
                    <div className="absolute -top-3 -right-3 text-2xl drop-shadow-md z-30">
-                       👿
+                       {GAME_ICONS.BOSS_BADGE}
                    </div>
                )}
                
                {/* Elemental Icons */}
                {cell.piece.variant === 'LAVA' && (
                    <div className="absolute -bottom-1 -right-1 text-xs bg-red-900 text-white rounded-full w-4 h-4 flex items-center justify-center border border-orange-500 shadow-md z-30" title="Lava Element">
-                     🔥
+                     {GAME_ICONS.ELEMENT_LAVA}
                    </div>
                )}
                {cell.piece.variant === 'ABYSS' && (
                    <div className="absolute -bottom-1 -right-1 text-xs bg-black text-white rounded-full w-4 h-4 flex items-center justify-center border border-purple-500 shadow-md z-30" title="Abyss Element">
-                     🌀
+                     {GAME_ICONS.ELEMENT_ABYSS}
                    </div>
                )}
                {cell.piece.variant === 'FROZEN' && (
                    <div className="absolute -bottom-1 -right-1 text-xs bg-cyan-700 text-white rounded-full w-4 h-4 flex items-center justify-center border border-cyan-300 shadow-md z-30" title="Frozen Element">
-                     ❄️
+                     {GAME_ICONS.ELEMENT_FROZEN}
                    </div>
                )}
             </MotionDiv>
@@ -209,7 +208,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    className="absolute -top-1 -right-1 text-base drop-shadow-md"
                    transition={{ duration: 0.3 }}
                  >
-                   ❄️
+                   {GAME_ICONS.STATUS_FROZEN}
                  </MotionDiv>
               )}
               {(cell.piece.immortalTurns || 0) > 0 && (
@@ -220,7 +219,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    className="absolute -top-2 -left-2 text-lg drop-shadow-md bg-white rounded-full w-6 h-6 flex items-center justify-center border border-yellow-500 z-40"
                    transition={{ duration: 0.3 }}
                  >
-                   🛡️
+                   {GAME_ICONS.STATUS_IMMORTAL}
                  </MotionDiv>
               )}
               {cell.piece.trapped && (
@@ -229,7 +228,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    animate={{ scale: 1 }}
                    className="absolute -bottom-1 -left-1 text-sm drop-shadow-md bg-black rounded-full w-5 h-5 flex items-center justify-center border border-red-500 z-40"
                  >
-                   ☠️
+                   {GAME_ICONS.STATUS_TRAP}
                  </MotionDiv>
               )}
               {cell.piece.mimic && (
@@ -238,7 +237,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    animate={{ scale: 1 }}
                    className="absolute -top-2 right-1/2 translate-x-1/2 text-sm drop-shadow-md bg-purple-800 rounded-full w-5 h-5 flex items-center justify-center border border-purple-400 z-40"
                  >
-                   🎭
+                   {GAME_ICONS.STATUS_MIMIC}
                  </MotionDiv>
               )}
               {(cell.piece.ascendedTurns || 0) > 0 && (
@@ -247,7 +246,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    animate={{ scale: 1 }}
                    className="absolute top-1/2 -right-3 -translate-y-1/2 text-[10px] font-bold bg-cyan-800 text-white rounded px-1 border border-cyan-400 z-40"
                  >
-                   ⏳{cell.piece.ascendedTurns}
+                   {GAME_ICONS.STATUS_ASCENDED}{cell.piece.ascendedTurns}
                  </MotionDiv>
               )}
               {cell.piece.tempMoveOverride && (
@@ -257,7 +256,7 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                    exit={{ scale: 0 }}
                    className="absolute -bottom-1 -right-1 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center border border-white shadow-sm"
                  >
-                   ✨
+                   {GAME_ICONS.STATUS_MOVES_LIKE}
                  </MotionDiv>
               )}
             </AnimatePresence>

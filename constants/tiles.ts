@@ -1,6 +1,7 @@
 
 import { TileEffect, Language } from '../types';
 import { TRANSLATIONS } from '../utils/locales';
+import { GAME_ICONS } from '../components/assets/GameIcons';
 
 export const getTileEffectInfo = (lang: Language, type: TileEffect) => {
   return TRANSLATIONS[lang].tiles[type];
@@ -16,13 +17,13 @@ export const TILE_EFFECT_INFO: Record<TileEffect, { name: string; desc: string }
 
 export const getTileVisuals = (type: TileEffect) => {
   switch(type) {
-    case TileEffect.HOLE: return { colorClass: "bg-black border-slate-700", icon: "🕳️" };
-    case TileEffect.WALL: return { colorClass: "bg-stone-600 border-stone-500", icon: "🧱" };
-    case TileEffect.FROZEN: return { colorClass: "bg-cyan-900 border-cyan-500", icon: "❄️" };
-    case TileEffect.LAVA: return { colorClass: "bg-red-900 border-red-500", icon: "🔥", animation: "absolute inset-0 bg-red-500/20 animate-pulse" };
+    case TileEffect.HOLE: return { colorClass: "bg-black border-slate-700", icon: GAME_ICONS.TILE_HOLE };
+    case TileEffect.WALL: return { colorClass: "bg-stone-600 border-stone-500", icon: GAME_ICONS.TILE_WALL };
+    case TileEffect.FROZEN: return { colorClass: "bg-cyan-900 border-cyan-500", icon: GAME_ICONS.TILE_FROZEN };
+    case TileEffect.LAVA: return { colorClass: "bg-red-900 border-red-500", icon: GAME_ICONS.TILE_LAVA, animation: "absolute inset-0 bg-red-500/20 animate-pulse" };
     case TileEffect.NONE: 
     default:
-        return { colorClass: "bg-green-900/30 border-green-800", icon: "🌱" };
+        return { colorClass: "bg-green-900/30 border-green-800", icon: GAME_ICONS.TILE_GRASS };
   }
 };
 

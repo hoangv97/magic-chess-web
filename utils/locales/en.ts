@@ -74,7 +74,9 @@ export const en = {
         economy: { title: "Economy", desc: "In Campaign Mode, you earn Gold by defeating enemy pieces. Gold is used in the Merchant's Camp between levels to buy new Cards and Relics." },
         movement: { title: "Movement", desc: "Pieces move according to their type. Standard chess moves apply, with some custom fairy chess pieces like the Dragon, Elephant, or Chancellor." },
         elements: { title: "Elements", desc: "Some units and tiles have elemental properties. Ice freezes units. Lava destroys non-flying units. Abyss blocks ground movement." }
-      }
+      },
+      ability: "ABILITY",
+      baseCost: "Base Cost"
     },
     header: {
       treasury: "Treasury",

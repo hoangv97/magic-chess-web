@@ -1,6 +1,7 @@
 
 import { CardType, Card, Language } from '../types';
 import { TRANSLATIONS } from '../utils/locales';
+import { GAME_ICONS } from '../components/assets/GameIcons';
 
 export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.SPAWN_QUEEN, cost: 120 },
@@ -98,19 +99,19 @@ export const getStarterDecks = (lang: Language) => {
 };
 
 export const getCardIcon = (type: string) => {
-  if (type.includes('REVIVE')) return '🐦‍🔥';
-  if (type.includes('SPAWN')) return '⚔️';
-  if (type.includes('IMMORTAL')) return '🛡️';
-  if (type.includes('SWITCH')) return '🔄';
-  if (type.includes('FREEZE')) return '❄️';
-  if (type.includes('LIMIT')) return '🐌';
-  if (type.includes('BORROW')) return '🎭';
-  if (type.includes('MIMIC')) return '🎭';
-  if (type.includes('BACK')) return '↩️';
-  if (type.includes('TRAP')) return '☠️';
-  if (type.includes('ASCEND')) return '👑';
-  if (type.includes('CURSE')) return '🤮';
-  return '✨';
+  if (type.includes('REVIVE')) return GAME_ICONS.CARD_REVIVE;
+  if (type.includes('SPAWN')) return GAME_ICONS.CARD_SPAWN;
+  if (type.includes('IMMORTAL')) return GAME_ICONS.CARD_IMMORTAL;
+  if (type.includes('SWITCH')) return GAME_ICONS.CARD_SWITCH;
+  if (type.includes('FREEZE')) return GAME_ICONS.CARD_FREEZE;
+  if (type.includes('LIMIT')) return GAME_ICONS.CARD_LIMIT;
+  if (type.includes('BORROW')) return GAME_ICONS.CARD_BORROW;
+  if (type.includes('MIMIC')) return GAME_ICONS.STATUS_MIMIC;
+  if (type.includes('BACK')) return GAME_ICONS.CARD_BACK;
+  if (type.includes('TRAP')) return GAME_ICONS.CARD_TRAP;
+  if (type.includes('ASCEND')) return GAME_ICONS.CARD_ASCEND;
+  if (type.includes('CURSE')) return GAME_ICONS.CARD_CURSE;
+  return GAME_ICONS.CARD_DEFAULT;
 };
 
 const CLASSIC_SPAWNS = ['SPAWN_PAWN', 'SPAWN_KNIGHT', 'SPAWN_BISHOP', 'SPAWN_ROOK', 'SPAWN_QUEEN'];
