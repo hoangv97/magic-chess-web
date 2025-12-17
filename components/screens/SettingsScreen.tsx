@@ -1,11 +1,11 @@
 
-
-import React from 'react';
+import React, { useState } from 'react';
 import { GameSettings, BoardThemeId, PieceSetId, Language } from '../../types';
 import { BOARD_THEMES } from '../../constants';
 import { TRANSLATIONS } from '../../utils/locales';
 import { Button } from '../ui/Button';
 import { soundManager } from '../../utils/soundManager';
+import { PiecePreviewModal } from '../modals/PiecePreviewModal';
 
 interface SettingsScreenProps {
   settings: GameSettings;
@@ -16,6 +16,7 @@ interface SettingsScreenProps {
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSettings, onBack, onReset }) => {
   const t = TRANSLATIONS[settings.language].settings;
+  const [showPreview, setShowPreview] = useState(false);
 
   const updateSetting = <K extends keyof GameSettings>(key: K, value: GameSettings[K]) => {
     const newSettings = { ...settings, [key]: value };
@@ -110,6 +111,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSet
         </div>
 
         <div className="flex flex-col gap-4">
+            <Button onClick={() => setShowPreview(true)} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 font-bold shadow-lg shadow-indigo-900/50">
+               {t.preview}
+            </Button>
+
             {onReset && (
                 <Button onClick={onReset} className="w-full bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800 py-2 text-sm">
                 {t.reset}
@@ -118,9 +123,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ settings, setSet
             <Button onClick={onBack} className="w-full bg-slate-600 hover:bg-slate-500 text-white py-3">
             {t.back}
             </Button>
-            
         </div>
       </div>
+
+      {showPreview && (
+        <PiecePreviewModal 
+            settings={settings} 
+            onClose={() => setShowPreview(false)} 
+        />
+      )}
     </div>
   );
 };

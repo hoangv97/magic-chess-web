@@ -48,6 +48,7 @@ export const vi = {
       enableSound: "Bật Âm Thanh",
       back: "Quay Lại",
       reset: "Đặt Lại Cài Đặt",
+      preview: "👁️ Xem Trước Bàn Cờ",
       themes: {
         CLASSIC: "Cổ Điển (Nâu)",
         FOREST: "Rừng Rậm (Xanh)",

@@ -48,6 +48,7 @@ export const en = {
       enableSound: "Enable Audio",
       back: "Back",
       reset: "Reset All Settings",
+      preview: "👁️ Preview Board & Pieces",
       themes: {
         CLASSIC: "Classic (Brown)",
         FOREST: "Forest (Green)",
