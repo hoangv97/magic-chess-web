@@ -1,4 +1,3 @@
-
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../../types';
 import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../../constants';
 
@@ -154,6 +153,9 @@ export const en = {
       [CardType.SPAWN_DRAGON_LAVA]: { title: "Lava Dragon", desc: "Leaves temporary Lava trail." },
       [CardType.SPAWN_DRAGON_ABYSS]: { title: "Abyss Dragon", desc: "Leaves temporary Abyss trail." },
       [CardType.SPAWN_DRAGON_FROZEN]: { title: "Frozen Dragon", desc: "Leaves temporary Frozen trail." },
+
+      [CardType.EFFECT_CONVERT_ENEMY]: { title: "Traitor's Call", desc: "Respawn a random dead enemy piece as your own on the enemy's side. Requires 1 enemy kill." },
+      [CardType.EFFECT_DUPLICATE]: { title: "Ethereal Echo", desc: "Duplicate a random card in your hand and push it into the deck." },
 
       [CardType.SPAWN_CHANCELLOR]: { title: "Chancellor", desc: "Moves like Rook + Knight." },
       [CardType.SPAWN_ARCHBISHOP]: { title: "Archbishop", desc: "Moves like Bishop + Knight." },

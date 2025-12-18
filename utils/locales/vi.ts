@@ -1,4 +1,3 @@
-
 import { CardType, PieceType, RelicType, TileEffect, BossType } from '../../types';
 import { AREA_FREEZE_DURATION, ASCEND_DURATION, IMMORTAL_LONG_DURATION } from '../../constants';
 
@@ -154,6 +153,9 @@ export const vi = {
       [CardType.SPAWN_DRAGON_LAVA]: { title: "Rồng Lửa", desc: "Để lại vệt dung nham tạm thời." },
       [CardType.SPAWN_DRAGON_ABYSS]: { title: "Rồng Hư Vô", desc: "Để lại vệt hư vô tạm thời." },
       [CardType.SPAWN_DRAGON_FROZEN]: { title: "Rồng Băng", desc: "Để lại vệt băng tạm thời." },
+
+      [CardType.EFFECT_CONVERT_ENEMY]: { title: "Lời Gọi Kẻ Phản Bội", desc: "Hồi sinh một quân địch đã chết thành quân mình ở phần sân địch. Yêu cầu đã diệt 1 quân địch." },
+      [CardType.EFFECT_DUPLICATE]: { title: "Tiếng Vang Hư Ảo", desc: "Nhân bản một thẻ ngẫu nhiên trên tay và đưa vào bộ bài." },
 
       [CardType.SPAWN_CHANCELLOR]: { title: "Tể Tướng", desc: "Di chuyển như Xe + Mã." },
       [CardType.SPAWN_ARCHBISHOP]: { title: "Giám Mục", desc: "Di chuyển như Tượng + Mã." },

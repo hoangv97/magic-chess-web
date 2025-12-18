@@ -1,4 +1,3 @@
-
 export enum CardType {
   SPAWN_QUEEN = 'SPAWN_QUEEN',
   SPAWN_ROOK = 'SPAWN_ROOK',
@@ -38,6 +37,9 @@ export enum CardType {
   EFFECT_ASCEND = 'EFFECT_ASCEND', // Pawn -> Major piece (3 turns life)
   EFFECT_IMMORTAL_LONG = 'EFFECT_IMMORTAL_LONG', // Immortal 3 turns
   EFFECT_PROMOTION_TILE = 'EFFECT_PROMOTION_TILE', // Create a promotion tile on enemy side
+  
+  EFFECT_CONVERT_ENEMY = 'EFFECT_CONVERT_ENEMY',
+  EFFECT_DUPLICATE = 'EFFECT_DUPLICATE',
 
   // Curses
   CURSE_LAZY = 'CURSE_LAZY', // -10g if move without kill

@@ -1,4 +1,3 @@
-
 import { Cell, Side, PieceType, Card, CardType, TileEffect, Position, Piece } from '../../types';
 import { isValidPos } from '../gameLogic';
 import { soundManager } from '../soundManager';
@@ -17,7 +16,10 @@ export const getBoardAfterInstantCard = (
     card: Card, 
     deadPieces: PieceType[],
     setDeadPieces: (p: PieceType[]) => void,
-    setIsEnemyMoveLimited: (v: boolean) => void
+    setIsEnemyMoveLimited: (v: boolean) => void,
+    killedEnemyPieces: PieceType[] = [],
+    hand: Card[] = [],
+    addCardToDeck: (c: Card) => void = () => {}
 ): InstantCardResult => {
     const newBoard = board.map((row) => row.map((cell) => ({...cell, piece: cell.piece ? {...cell.piece} : null})));
     let played = false;
@@ -97,6 +99,39 @@ export const getBoardAfterInstantCard = (
         } else {
             error = 'No space in base rows.';
         }
+      }
+    } else if (card.type === CardType.EFFECT_CONVERT_ENEMY) {
+      if (killedEnemyPieces.length === 0) {
+        error = "Requires at least 1 killed enemy piece.";
+      } else {
+        const size = newBoard.length;
+        const enemySideRows = Math.floor(size / 2);
+        const candidates: Position[] = [];
+        for (let r = 0; r < enemySideRows; r++) {
+          for (let c = 0; c < size; c++) {
+            if (!newBoard[r][c].piece && newBoard[r][c].tileEffect === TileEffect.NONE) candidates.push({ row: r, col: c });
+          }
+        }
+        if (candidates.length > 0) {
+          const type = killedEnemyPieces[Math.floor(Math.random() * killedEnemyPieces.length)];
+          const spot = candidates[Math.floor(Math.random() * candidates.length)];
+          newBoard[spot.row][spot.col].piece = { id: uuidv4(), type, side: Side.WHITE, hasMoved: true, frozenTurns: 0, immortalTurns: 0 };
+          played = true;
+          sound = 'spawn';
+        } else {
+          error = "No empty space on the enemy's side.";
+        }
+      }
+    } else if (card.type === CardType.EFFECT_DUPLICATE) {
+      const otherCards = hand.filter(c => c.id !== card.id);
+      if (otherCards.length > 0) {
+        const targetCard = otherCards[Math.floor(Math.random() * otherCards.length)];
+        const clonedCard = { ...targetCard, id: uuidv4() };
+        addCardToDeck(clonedCard);
+        played = true;
+        sound = 'spawn';
+      } else {
+        error = "No other cards in hand to duplicate.";
       }
     }
 

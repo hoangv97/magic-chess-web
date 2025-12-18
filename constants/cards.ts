@@ -1,4 +1,3 @@
-
 import { CardType, Card, Language } from '../types';
 import { TRANSLATIONS } from '../utils/locales';
 import { GAME_ICONS } from '../components/assets/GameIcons';
@@ -18,6 +17,9 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
   { type: CardType.SPAWN_DRAGON_LAVA, cost: 90 },
   { type: CardType.SPAWN_DRAGON_ABYSS, cost: 90 },
   { type: CardType.SPAWN_DRAGON_FROZEN, cost: 90 },
+
+  { type: CardType.EFFECT_CONVERT_ENEMY, cost: 80 },
+  { type: CardType.EFFECT_DUPLICATE, cost: 40 },
 
   { type: CardType.SPAWN_CHANCELLOR, cost: 85 },
   { type: CardType.SPAWN_ARCHBISHOP, cost: 85 },
@@ -75,7 +77,7 @@ export const STARTER_DECKS_CONFIG = [
   },
   {
     id: "Experiment",
-    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN, CardType.SPAWN_PAWN, CardType.EFFECT_PROMOTION_TILE]
+    cards: [CardType.SPAWN_ROOK, CardType.SPAWN_BISHOP, CardType.SPAWN_KNIGHT, CardType.SPAWN_QUEEN]
   },
   {
     id: "Elite",
@@ -101,6 +103,8 @@ export const getStarterDecks = (lang: Language) => {
 
 export const getCardIcon = (type: string) => {
   if (type.includes('REVIVE')) return GAME_ICONS.CARD_REVIVE;
+  if (type.includes('CONVERT_ENEMY')) return '🎭';
+  if (type.includes('DUPLICATE')) return '👯';
   if (type.includes('SPAWN')) return GAME_ICONS.CARD_SPAWN;
   if (type.includes('IMMORTAL')) return GAME_ICONS.CARD_IMMORTAL;
   if (type.includes('SWITCH')) return GAME_ICONS.CARD_SWITCH;

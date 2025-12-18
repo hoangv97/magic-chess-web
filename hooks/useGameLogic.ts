@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -52,6 +51,7 @@ export const useGameLogic = ({
   const [lastPlayerSpawnedType, setLastPlayerSpawnedType] = useState<PieceType | null>(null);
   const tempTileEffects = useRef<{ pos: Position; originalEffect: TileEffect; variant: TileEffect; turnsLeft: number; }[]>([]);
   const [deadPieces, setDeadPieces] = useState<PieceType[]>([]);
+  const [killedEnemyPieces, setKilledEnemyPieces] = useState<PieceType[]>([]);
   const [selectedEnemyPos, setSelectedEnemyPos] = useState<Position | null>(null);
   const [enemyValidMoves, setEnemyValidMoves] = useState<Position[]>([]);
   const [deck, setDeck] = useState<Card[]>([]);
@@ -94,6 +94,7 @@ export const useGameLogic = ({
       setBossTiles([]);
       setLastEnemyMoveType(null);
       setDeadPieces([]);
+      setKilledEnemyPieces([]);
       setLastPlayerSpawnedType(null);
       setAnimatingCards([]);
       tempTileEffects.current = [];
@@ -263,6 +264,7 @@ export const useGameLogic = ({
       const midas = relics.find((r) => r.type === RelicType.MIDAS_TOUCH);
       setGold((prev) => prev + goldReward * (midas ? 2 : 1));
       enemyKilled = true;
+      setKilledEnemyPieces(prev => [...prev, target!.type]);
     }
 
     // --- CURSE LOGIC (MOVE TAX / LAZY) ---
@@ -617,7 +619,7 @@ export const useGameLogic = ({
       setTimeout(() => {
         soundManager.playSfx('win');
         setIsGameEnded(true);
-        setTimeout(onWin, WAIT_END_GAME_TIMEOUT);
+        setTimeout(onLoss, WAIT_END_GAME_TIMEOUT);
       }, 0);
     }
     passTurn();
@@ -710,7 +712,7 @@ export const useGameLogic = ({
       else setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
     } else if (['EFFECT_SWITCH', 'EFFECT_IMMORTAL', 'EFFECT_MIMIC', 'EFFECT_ASCEND', 'EFFECT_IMMORTAL_LONG', 'EFFECT_AREA_FREEZE'].includes(card.type) || card.type.includes('BORROW')) {
       setCardTargetMode({ type: card.type, step: 'SELECT_PIECE_1' });
-    } else if (card.type === CardType.EFFECT_PROMOTION_TILE) {
+    } else if (card.type === CardType.EFFECT_PROMOTION_TILE || card.type === CardType.EFFECT_CONVERT_ENEMY || card.type === CardType.EFFECT_DUPLICATE) {
       playInstantCard(card);
     } else {
       playInstantCard(card);
@@ -718,7 +720,7 @@ export const useGameLogic = ({
   };
 
   const playInstantCard = (card: Card) => {
-    const result = getBoardAfterInstantCard(board, card, deadPieces, setDeadPieces, setIsEnemyMoveLimited);
+    const result = getBoardAfterInstantCard(board, card, deadPieces, setDeadPieces, setIsEnemyMoveLimited, killedEnemyPieces, hand, addCardToDeck);
     
     if (result.error) {
         alert(result.error);
