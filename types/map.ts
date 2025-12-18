@@ -1,4 +1,3 @@
-
 export enum BossType {
   NONE = 'NONE',
   FROST_GIANT = 'FROST_GIANT',
@@ -19,7 +18,11 @@ export enum BossType {
   // New Bosses
   CURSE_WEAVER = 'CURSE_WEAVER',
   DOOM_BRINGER = 'DOOM_BRINGER',
-  SOUL_CORRUPTOR = 'SOUL_CORRUPTOR'
+  SOUL_CORRUPTOR = 'SOUL_CORRUPTOR',
+  // Movement Restrictors
+  KNIGHT_SNARE = 'KNIGHT_SNARE',
+  ROOK_BREAKER = 'ROOK_BREAKER',
+  BISHOP_BANE = 'BISHOP_BANE'
 }
 
 export enum MapNodeType {

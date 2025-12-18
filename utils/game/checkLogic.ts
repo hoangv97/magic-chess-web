@@ -1,8 +1,7 @@
-
-import { Cell, Side, PieceType, Position, Card } from '../../types';
+import { Cell, Side, PieceType, Position, Card, BossType } from '../../types';
 import { getValidMoves } from '../gameLogic';
 
-export const calculateCheckState = (boardState: Cell[][]) => {
+export const calculateCheckState = (boardState: Cell[][], activeBoss: BossType = BossType.NONE) => {
     const isSideInCheck = (side: Side): boolean => {
       let kingPos: Position | null = null;
       const size = boardState.length;
@@ -22,7 +21,7 @@ export const calculateCheckState = (boardState: Cell[][]) => {
         for (let c = 0; c < size; c++) {
           const p = boardState[r][c].piece;
           if (p && p.side === enemySide) {
-            const moves = getValidMoves(boardState, p, { row: r, col: c }, null, null);
+            const moves = getValidMoves(boardState, p, { row: r, col: c }, null, null, activeBoss);
             if (moves.some((m) => m.row === kingPos!.row && m.col === kingPos!.col)) return true;
           }
         }

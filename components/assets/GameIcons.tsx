@@ -89,6 +89,9 @@ export const GAME_ICONS = {
   BOSS_CURSE_WEAVER: '🕸️',
   BOSS_DOOM_BRINGER: '⚖️',
   BOSS_SOUL_CORRUPTOR: '🧟',
+  BOSS_KNIGHT_SNARE: '⛓️',
+  BOSS_ROOK_BREAKER: '🛠️',
+  BOSS_BISHOP_BANE: '🕯️',
   BOSS_DEFAULT: '☠️',
   
   // Tiles

@@ -3,6 +3,30 @@ import { BossType, Language } from '../types';
 import { TRANSLATIONS } from '../utils/locales';
 import { GAME_ICONS } from '../components/assets/GameIcons';
 
+export const bossTypes = [
+    BossType.FROST_GIANT, 
+    BossType.BLIZZARD_WITCH,
+    BossType.VOID_BRINGER, 
+    BossType.LAVA_TITAN, 
+    BossType.STONE_GOLEM,
+    BossType.UNDEAD_LORD,
+    BossType.CHAOS_LORD,
+    BossType.MIRROR_MAGE,
+    BossType.SOUL_EATER,
+    BossType.BLOOD_KING,
+    BossType.HYDRA,
+    BossType.MIND_CONTROLLER,
+    BossType.SILENCER,
+    BossType.ILLUSIONIST,
+    BossType.THE_FACELESS,
+    BossType.CURSE_WEAVER,
+    BossType.DOOM_BRINGER,
+    BossType.SOUL_CORRUPTOR,
+    BossType.KNIGHT_SNARE,
+    BossType.ROOK_BREAKER,
+    BossType.BISHOP_BANE
+];
+
 export const getBossInfo = (lang: Language, type: BossType) => {
   if (type === BossType.NONE) return null;
   return TRANSLATIONS[lang].bosses[type];

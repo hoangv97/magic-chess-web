@@ -101,7 +101,7 @@ export const useGameLogic = ({
   };
 
   const calculateCheckState = (boardState: Cell[][]) => {
-    setCheckState(calcCheck(boardState));
+    setCheckState(calcCheck(boardState, activeBoss));
   };
 
   const handleAnimationComplete = (cardId: string) => {
@@ -662,7 +662,7 @@ export const useGameLogic = ({
       if (selectedPiecePos?.row === r && selectedPiecePos?.col === c) { setSelectedPiecePos(null); setValidMoves([]); }
       else {
         setSelectedPiecePos({ row: r, col: c });
-        setValidMoves(getValidMoves(board, clickedPiece!, { row: r, col: c }, enPassantTarget, lastEnemyMoveType));
+        setValidMoves(getValidMoves(board, clickedPiece!, { row: r, col: c }, enPassantTarget, lastEnemyMoveType, activeBoss));
       }
       return;
     }
@@ -677,7 +677,7 @@ export const useGameLogic = ({
       if (selectedEnemyPos?.row === r && selectedEnemyPos?.col === c) { setSelectedEnemyPos(null); setEnemyValidMoves([]); }
       else {
         setSelectedEnemyPos({ row: r, col: c });
-        setEnemyValidMoves(getValidMoves(board, clickedPiece!, { row: r, col: c }, null, null));
+        setEnemyValidMoves(getValidMoves(board, clickedPiece!, { row: r, col: c }, null, null, activeBoss));
       }
       return;
     }

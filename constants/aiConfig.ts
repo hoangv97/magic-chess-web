@@ -1,4 +1,3 @@
-
 import { PieceType, BossType } from '../types';
 
 /**
@@ -68,4 +67,7 @@ export const BOSS_PERSONALITIES: Record<BossType, { aggression: number; defense:
   [BossType.CURSE_WEAVER]: { aggression: 1.0, defense: 1.2 },
   [BossType.DOOM_BRINGER]: { aggression: 1.2, defense: 1.0 },
   [BossType.SOUL_CORRUPTOR]: { aggression: 1.3, defense: 1.0 },
+  [BossType.KNIGHT_SNARE]: { aggression: 1.0, defense: 1.0 },
+  [BossType.ROOK_BREAKER]: { aggression: 1.0, defense: 1.0 },
+  [BossType.BISHOP_BANE]: { aggression: 1.0, defense: 1.0 },
 };

@@ -1,4 +1,3 @@
-
 import { Cell, PieceType, Side, BossType, Position, TileEffect } from '../types';
 import { getValidMoves } from './gameLogic';
 import { AI_SEARCH_DEPTH, AI_PIECE_VALUES, AI_WEIGHTS, BOSS_PERSONALITIES } from '../constants/aiConfig';
@@ -20,7 +19,7 @@ export const getBestEnemyMove = (
   
   let bestScore = -Infinity;
   let bestMove: { from: Position; to: Position } | null = null;
-  let moves = getAllMoves(boardClone, Side.BLACK, lastPlayerMoveTo, lastMovedPieceType);
+  let moves = getAllMoves(boardClone, Side.BLACK, lastPlayerMoveTo, lastMovedPieceType, activeBoss);
 
   // Optimization: Shuffle moves to prevent deterministic loops in equal states
   moves = moves.sort(() => Math.random() - 0.5);
@@ -86,7 +85,7 @@ const minimax = (
   }
 
   const side = isMaximizing ? Side.BLACK : Side.WHITE;
-  const moves = getAllMoves(board, side, lastMoveTo, lastMovedPieceType);
+  const moves = getAllMoves(board, side, lastMoveTo, lastMovedPieceType, activeBoss);
 
   if (moves.length === 0) {
     // Stalemate or Checkmate logic could go here. For now, treat no moves as bad for current side.
@@ -191,7 +190,8 @@ const getAllMoves = (
     board: Cell[][], 
     side: Side, 
     lastEnPassantTarget: Position | null, // Simplified: treating moveTo as potential EP target
-    lastMovedPieceType: PieceType | null
+    lastMovedPieceType: PieceType | null,
+    activeBoss: BossType = BossType.NONE
 ): { from: Position; to: Position }[] => {
   const moves: { from: Position; to: Position }[] = [];
   const size = board.length;
@@ -200,7 +200,7 @@ const getAllMoves = (
     for (let c = 0; c < size; c++) {
       const piece = board[r][c].piece;
       if (piece && piece.side === side && (piece.frozenTurns || 0) <= 0) {
-        const validDestinations = getValidMoves(board, piece, { row: r, col: c }, lastEnPassantTarget, lastMovedPieceType);
+        const validDestinations = getValidMoves(board, piece, { row: r, col: c }, lastEnPassantTarget, lastMovedPieceType, activeBoss);
         
         for (const dest of validDestinations) {
             moves.push({ from: { row: r, col: c }, to: dest });

@@ -302,6 +302,21 @@ export const en = {
         name: "Soul Corruptor",
         desc: "He corrupts the falling souls of your warriors.",
         ability: "REACTIVE: 50% chance to add a Curse card to your deck when your unit dies."
+      },
+      [BossType.KNIGHT_SNARE]: {
+        name: "Master of Snaring",
+        desc: "A beast-tamer who hates agile units.",
+        ability: "PASSIVE: Your Knights (and units moving like Knights) cannot move."
+      },
+      [BossType.ROOK_BREAKER]: {
+        name: "Siege Breaker",
+        desc: "A giant who topples the tallest towers.",
+        ability: "PASSIVE: Your Rooks (and units moving like Rooks) cannot move."
+      },
+      [BossType.BISHOP_BANE]: {
+        name: "High Inquisitor",
+        desc: "A fanatic hunter of the clergy.",
+        ability: "PASSIVE: Your Bishops (and units moving like Bishops) cannot move."
       }
     },
     deckSelection: {

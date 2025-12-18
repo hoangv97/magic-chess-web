@@ -1,6 +1,6 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { MapNode, BossType, MapNodeType } from '../types';
+import { bossTypes } from '../constants';
 import { getWeightedRandomItem } from './random';
 
 export const generateCampaignMap = (): MapNode[] => {
@@ -12,27 +12,6 @@ export const generateCampaignMap = (): MapNode[] => {
   const BOSS_FREQUENCY = 5;
 
   let prevNodes: MapNode[] = [];
-
-  const bossTypes = [
-      BossType.FROST_GIANT, 
-      BossType.BLIZZARD_WITCH,
-      BossType.VOID_BRINGER, 
-      BossType.LAVA_TITAN, 
-      BossType.STONE_GOLEM,
-      BossType.UNDEAD_LORD,
-      BossType.CHAOS_LORD,
-      BossType.MIRROR_MAGE,
-      BossType.SOUL_EATER,
-      BossType.BLOOD_KING,
-      BossType.HYDRA,
-      BossType.MIND_CONTROLLER,
-      BossType.SILENCER,
-      BossType.ILLUSIONIST,
-      BossType.THE_FACELESS,
-      BossType.CURSE_WEAVER,
-      BossType.DOOM_BRINGER,
-      BossType.SOUL_CORRUPTOR
-  ];
 
   for (let level = 1; level <= TOTAL_LEVELS; level++) {
     // Boss appears every 5 levels

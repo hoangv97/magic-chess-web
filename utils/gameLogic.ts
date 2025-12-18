@@ -1,12 +1,4 @@
-
-
-
-
-
-
-
-
-import { Cell, Piece, PieceType, Side, Position, TileEffect } from '../types';
+import { Cell, Piece, PieceType, Side, Position, TileEffect, BossType } from '../types';
 import { TEST_GENERATE_SPECIAL_TILES } from '../constants';
 
 export const generateBoard = (size: number): Cell[][] => {
@@ -53,7 +45,8 @@ export const getValidMoves = (
   piece: Piece,
   currentPos: Position,
   enPassantTarget: Position | null = null,
-  lastMovedPieceType: PieceType | null = null // New parameter for Fool
+  lastMovedPieceType: PieceType | null = null,
+  activeBoss: BossType = BossType.NONE
 ): Position[] => {
   if ((piece.frozenTurns || 0) > 0) return [];
 
@@ -66,6 +59,13 @@ export const getValidMoves = (
 
   // Use override type if available (from Borrow card)
   let effectiveType = piece.tempMoveOverride || piece.type;
+
+  // Boss Restrictions
+  if (piece.side === Side.WHITE) {
+      if (activeBoss === BossType.KNIGHT_SNARE && effectiveType === PieceType.KNIGHT) return [];
+      if (activeBoss === BossType.ROOK_BREAKER && effectiveType === PieceType.ROOK) return [];
+      if (activeBoss === BossType.BISHOP_BANE && effectiveType === PieceType.BISHOP) return [];
+  }
 
   // Fool Logic: Mimic last moved piece type
   if (effectiveType === PieceType.FOOL) {

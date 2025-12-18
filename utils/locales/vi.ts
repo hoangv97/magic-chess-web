@@ -302,6 +302,21 @@ export const vi = {
         name: "Kẻ Tha Hóa Linh Hồn",
         desc: "Hắn làm ô uế linh hồn những chiến binh ngã xuống.",
         ability: "PHẢN ĐÒN: 50% cơ hội thêm thẻ Lời Nguyền vào bộ bài khi quân bạn chết."
+      },
+      [BossType.KNIGHT_SNARE]: {
+        name: "Kẻ Bẫy Thú",
+        desc: "Một thợ săn ghét những kẻ nhanh nhẹn.",
+        ability: "BỊ ĐỘNG: Các quân Mã (và quân di chuyển như Mã) của bạn không thể di chuyển."
+      },
+      [BossType.ROOK_BREAKER]: {
+        name: "Kẻ Phá Thành",
+        desc: "Một gã khổng lồ chuyên đánh sập các tòa tháp.",
+        ability: "BỊ ĐỘNG: Các quân Xe (và quân di chuyển như Xe) của bạn không thể di chuyển."
+      },
+      [BossType.BISHOP_BANE]: {
+        name: "Đại Phán Quan",
+        desc: "Một kẻ săn lùng các giáo sĩ cuồng tín.",
+        ability: "BỊ ĐỘNG: Các quân Tượng (và quân di chuyển như Tượng) của bạn không thể di chuyển."
       }
     },
     deckSelection: {
