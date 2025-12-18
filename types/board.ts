@@ -1,4 +1,3 @@
-
 import { Piece, Position } from './piece';
 
 export enum TileEffect {
@@ -7,7 +6,8 @@ export enum TileEffect {
   WALL = 'WALL', // No piece can go in or pass through
   FROZEN = 'FROZEN',   // Go in and cannot move in the next turn (Renamed from MUD)
   LAVA = 'LAVA',  // Died if go in
-  PROMOTION = 'PROMOTION' // Promotes piece if they enter
+  PROMOTION = 'PROMOTION', // Promotes piece if they enter
+  TELEPORT = 'TELEPORT' // Teleports piece to the paired tile
 }
 
 export interface Cell {
@@ -16,6 +16,7 @@ export interface Cell {
   highlight?: boolean; // For valid moves
   targetable?: boolean; // For card targeting
   tileEffect: TileEffect;
+  teleportId?: number; // Unique ID for pairs of teleport tiles
 }
 
 export type BoardThemeId = 'CLASSIC' | 'FOREST' | 'OCEAN' | 'DARK';

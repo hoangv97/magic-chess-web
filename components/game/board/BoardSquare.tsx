@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cell, Side, Position, PieceType, TileEffect, BossType } from '../../../types';
@@ -90,6 +89,12 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
               {cell.tileEffect === TileEffect.WALL && <span className="absolute inset-0 flex items-center justify-center text-2xl">{GAME_ICONS.TILE_WALL}</span>}
               {cell.tileEffect === TileEffect.FROZEN && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-50">{GAME_ICONS.STATUS_FROZEN}</span>}
               {cell.tileEffect === TileEffect.PROMOTION && <span className="absolute inset-0 flex items-center justify-center text-xl opacity-70 animate-pulse">{GAME_ICONS.TILE_PROMOTION}</span>}
+              {cell.tileEffect === TileEffect.TELEPORT && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl opacity-70">{GAME_ICONS.TILE_TELEPORT}</span>
+                    {cell.teleportId && <span className="absolute bottom-0.5 right-0.5 text-[10px] font-black bg-black/60 text-white rounded px-1">{cell.teleportId}</span>}
+                </div>
+              )}
            </MotionDiv>
          )}
       </AnimatePresence>
@@ -128,15 +133,16 @@ export const BoardSquare: React.FC<BoardSquareProps> = ({
                {(cell.piece.immortalTurns || 0) > 0 && <span className="text-yellow-300">{t.tooltips.immortal.replace('{0}', String(cell.piece.immortalTurns! > 100 ? '∞' : cell.piece.immortalTurns))}</span>}
                {cell.piece.trapped && <span className="text-red-400 font-bold">Suicide Mode (Trap)</span>}
                {cell.piece.mimic && <span className="text-purple-400 font-bold">Mimic</span>}
+               {cell.piece.mimic && <span className="text-purple-400 font-bold">Mimic</span>}
                {cell.piece.ascendedTurns && <span className="text-cyan-400 font-bold">Ascended ({cell.piece.ascendedTurns} left)</span>}
                
                {cell.piece.tempMoveOverride && <span className="text-purple-300">{t.tooltips.movesLike.replace('{0}', t.pieces[cell.piece.tempMoveOverride])}</span>}
                {isBossPiece && <span className="text-red-500 font-bold uppercase">{t.tooltips.bossAbility}</span>}
                {bossCountdown !== undefined && bossCountdown !== null && <span className="text-red-300 italic">Ability in {bossCountdown} turns</span>}
-               {cell.tileEffect !== TileEffect.NONE && <span className="text-[9px] text-slate-400">{t.tooltips.on} {tileInfo.name}</span>}
+               {cell.tileEffect !== TileEffect.NONE && <span className="text-[9px] text-slate-400">{t.tooltips.on} {tileInfo.name} {cell.teleportId ? `(${cell.teleportId})` : ''}</span>}
              </div>
            ) : (
-             <div className="font-bold text-orange-400">{tileInfo.name}</div>
+             <div className="font-bold text-orange-400">{tileInfo.name} {cell.teleportId ? `(${cell.teleportId})` : ''}</div>
            )}
            <div className="text-[8px] text-slate-500 mt-1">Double-click for info</div>
         </div>

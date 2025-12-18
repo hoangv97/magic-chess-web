@@ -37,6 +37,7 @@ export enum CardType {
   EFFECT_ASCEND = 'EFFECT_ASCEND', // Pawn -> Major piece (3 turns life)
   EFFECT_IMMORTAL_LONG = 'EFFECT_IMMORTAL_LONG', // Immortal 3 turns
   EFFECT_PROMOTION_TILE = 'EFFECT_PROMOTION_TILE', // Create a promotion tile on enemy side
+  EFFECT_TELEPORT = 'EFFECT_TELEPORT', // Generate a pair of teleport tiles
   
   EFFECT_CONVERT_ENEMY = 'EFFECT_CONVERT_ENEMY',
   EFFECT_DUPLICATE = 'EFFECT_DUPLICATE',

@@ -281,6 +281,19 @@ export const useGameLogic = ({
     newBoard[to.row][to.col].piece = { ...piece, hasMoved: true, tempMoveOverride: undefined };
     newBoard[from.row][from.col].piece = null;
 
+    // --- TELEPORT LOGIC ---
+    if (newBoard[to.row][to.col].tileEffect === TileEffect.TELEPORT && !enemyKilled) {
+        const teleId = newBoard[to.row][to.col].teleportId;
+        const otherTile = newBoard.flat().find(cell => cell.teleportId === teleId && (cell.position.row !== to.row || cell.position.col !== to.col));
+        if (otherTile && !otherTile.piece) {
+            newBoard[otherTile.position.row][otherTile.position.col].piece = newBoard[to.row][to.col].piece;
+            newBoard[to.row][to.col].piece = null;
+            to = otherTile.position; // Update 'to' for subsequent effects
+            soundManager.playSfx('spawn');
+        }
+    }
+    // ----------------------
+
     if (activeBoss === BossType.FROST_GIANT && piece.side === Side.WHITE && newBoard[to.row][to.col].piece) {
         newBoard[to.row][to.col].piece!.frozenTurns = 2;
     }
@@ -525,6 +538,19 @@ export const useGameLogic = ({
       boardCopy[bestMove.to.row][bestMove.to.col].piece = { ...movingPiece, hasMoved: true };
       boardCopy[bestMove.from.row][bestMove.from.col].piece = null;
 
+      // --- TELEPORT LOGIC ---
+      if (boardCopy[bestMove.to.row][bestMove.to.col].tileEffect === TileEffect.TELEPORT && !playerPieceKilled) {
+          const teleId = boardCopy[bestMove.to.row][bestMove.to.col].teleportId;
+          const otherTile = boardCopy.flat().find(cell => cell.teleportId === teleId && (cell.position.row !== bestMove!.to.row || cell.position.col !== bestMove!.to.col));
+          if (otherTile && !otherTile.piece) {
+              boardCopy[otherTile.position.row][otherTile.position.col].piece = boardCopy[bestMove.to.row][bestMove.to.col].piece;
+              boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
+              bestMove.to = otherTile.position; // Update 'to' for subsequent effects
+              soundManager.playSfx('spawn');
+          }
+      }
+      // ----------------------
+
       // Handle Traps
       if (targetPiece && targetPiece.side === Side.WHITE && targetPiece.trapped) {
         boardCopy[bestMove.to.row][bestMove.to.col].piece = null;
@@ -712,7 +738,7 @@ export const useGameLogic = ({
       else setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
     } else if (['EFFECT_SWITCH', 'EFFECT_IMMORTAL', 'EFFECT_MIMIC', 'EFFECT_ASCEND', 'EFFECT_IMMORTAL_LONG', 'EFFECT_AREA_FREEZE'].includes(card.type) || card.type.includes('BORROW')) {
       setCardTargetMode({ type: card.type, step: 'SELECT_PIECE_1' });
-    } else if (card.type === CardType.EFFECT_PROMOTION_TILE || card.type === CardType.EFFECT_CONVERT_ENEMY || card.type === CardType.EFFECT_DUPLICATE) {
+    } else if (card.type === CardType.EFFECT_PROMOTION_TILE || card.type === CardType.EFFECT_CONVERT_ENEMY || card.type === CardType.EFFECT_DUPLICATE || card.type === CardType.EFFECT_TELEPORT) {
       playInstantCard(card);
     } else {
       playInstantCard(card);

@@ -1,4 +1,3 @@
-
 import { TileEffect, Language } from '../types';
 import { TRANSLATIONS } from '../utils/locales';
 import { GAME_ICONS } from '../components/assets/GameIcons';
@@ -13,7 +12,8 @@ export const TILE_EFFECT_INFO: Record<TileEffect, { name: string; desc: string }
   [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
   [TileEffect.FROZEN]: { name: "Frozen Ground", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
   [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." },
-  [TileEffect.PROMOTION]: { name: "Promotion Tile", desc: "Magic rune. Promotes Pawn/Rook/Bishop to Queen, Knight to Amazon." }
+  [TileEffect.PROMOTION]: { name: "Promotion Tile", desc: "Magic rune. Promotes Pawn/Rook/Bishop to Queen, Knight to Amazon." },
+  [TileEffect.TELEPORT]: { name: "Teleport Tile", desc: "Go into a tile, immediately move to the other tile of the same pair if empty." }
 };
 
 export const getTileVisuals = (type: TileEffect) => {
@@ -23,6 +23,7 @@ export const getTileVisuals = (type: TileEffect) => {
     case TileEffect.FROZEN: return { colorClass: "bg-cyan-900 border-cyan-500", icon: GAME_ICONS.TILE_FROZEN };
     case TileEffect.LAVA: return { colorClass: "bg-red-900 border-red-500", icon: GAME_ICONS.TILE_LAVA, animation: "absolute inset-0 bg-red-500/20 animate-pulse" };
     case TileEffect.PROMOTION: return { colorClass: "bg-yellow-900 border-yellow-500", icon: GAME_ICONS.TILE_PROMOTION, animation: "absolute inset-0 bg-yellow-500/10 animate-pulse" };
+    case TileEffect.TELEPORT: return { colorClass: "bg-purple-900 border-purple-500", icon: GAME_ICONS.TILE_TELEPORT, animation: "absolute inset-0 bg-purple-500/20 animate-spin-slow" };
     case TileEffect.NONE: 
     default:
         return { colorClass: "bg-green-900/30 border-green-800", icon: GAME_ICONS.TILE_GRASS };
@@ -36,6 +37,7 @@ export const getTileEffectStyle = (effect: TileEffect) => {
         case TileEffect.FROZEN: return "bg-cyan-300 opacity-80 shadow-[inset_0_0_5px_rgba(255,255,255,0.8)]";
         case TileEffect.LAVA: return "bg-red-900 animate-pulse shadow-[inset_0_0_15px_rgba(255,100,0,0.5)]";
         case TileEffect.PROMOTION: return "bg-yellow-400 opacity-60 animate-pulse shadow-[inset_0_0_15px_rgba(255,215,0,0.8)]";
+        case TileEffect.TELEPORT: return "bg-purple-600 opacity-60 shadow-[inset_0_0_15px_rgba(147,51,234,0.8)] animate-pulse";
         default: return "";
     }
 };

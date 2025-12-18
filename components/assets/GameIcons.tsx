@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const GAME_ICONS = {
@@ -56,6 +55,7 @@ export const GAME_ICONS = {
   CARD_ASCEND: '👑',
   CARD_PROMOTION: '⏫',
   CARD_CURSE: '🤮',
+  CARD_TELEPORT: '🌀',
   CARD_DEFAULT: '✨',
   
   // Relics
@@ -97,5 +97,6 @@ export const GAME_ICONS = {
   TILE_FROZEN: "❄️",
   TILE_LAVA: "🔥",
   TILE_PROMOTION: "⏫",
+  TILE_TELEPORT: "🌀",
   TILE_GRASS: "🌱"
 };

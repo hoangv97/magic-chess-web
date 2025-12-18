@@ -73,7 +73,7 @@ export const vi = {
         gameplay: { title: "Cách Chơi", desc: "Trò chơi theo lượt. Trong lượt của bạn, bạn có thể di chuyển MỘT quân cờ VÀ sử dụng tối đa 3 thẻ bài. Thẻ bài tốn Vàng trong chế độ chiến dịch." },
         economy: { title: "Kinh Tế", desc: "Trong chế độ Chiến Dịch, bạn kiếm Vàng bằng cách tiêu diệt quân địch. Vàng được dùng trong Trại Thương Nhân để mua Thẻ và Cổ Vật mới." },
         movement: { title: "Di Chuyển", desc: "Các quân cờ di chuyển theo loại của chúng. Quy tắc cờ vua tiêu chuẩn được áp dụng, cùng với một số quân cờ biến thể như Rồng, Voi hoặc Tể Tướng." },
-        elements: { title: "Nguyên Tố", desc: "Một số đơn vị và ô có tính chất nguyên tố. Băng đóng băng đơn vị. Dung nham tiêu diệt đơn vị không bay. Vực thẳm chặn di chuyển trên mặt đất." }
+        elements: { title: "Nguyên Tố", desc: "Một số đơn vị và ô có tính chất nguyên tố. Băng đóng băng đơn vị. Dung nham tiêu diệt đơn vị không bay. Vực thẳm chặn di chuyển trên mặt đất. Ô Dịch Chuyển đưa đơn vị tới vị trí tương ứng." }
       },
       ability: "KỸ NĂNG",
       baseCost: "Giá Gốc"
@@ -182,6 +182,7 @@ export const vi = {
       [CardType.EFFECT_ASCEND]: { title: "Thăng Hoa", desc: `Biến Tốt thành quân cấp cao. Chết sau ${ASCEND_DURATION} lượt.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Bảo Hộ Vĩnh Cửu", desc: `Bất tử trong ${IMMORTAL_LONG_DURATION} lượt.` },
       [CardType.EFFECT_PROMOTION_TILE]: { title: "Cổ Ngữ Thăng Cấp", desc: "Biến một ô trống ngẫu nhiên bên địch thành Ô Thăng Cấp." },
+      [CardType.EFFECT_TELEPORT]: { title: "Cổng Dịch Chuyển", desc: "Tạo một cặp ô Dịch Chuyển: một bên sân bạn, một bên sân địch." },
 
       // Curse Cards
       [CardType.CURSE_LAZY]: { title: "Lười Biếng", desc: "KHÔNG THỂ DÙNG. Khi cầm: Mất 10 vàng nếu di chuyển mà không giết địch." },
@@ -207,7 +208,8 @@ export const vi = {
       [TileEffect.WALL]: { name: "Tường Đá", desc: "Vật cản không thể đi qua." },
       [TileEffect.FROZEN]: { name: "Ô Băng", desc: "Trơn trượt. Đi vào sẽ bị đóng băng lượt sau." },
       [TileEffect.LAVA]: { name: "Dung Nham", desc: "Đi vào sẽ bị tiêu diệt ngay lập tức." },
-      [TileEffect.PROMOTION]: { name: "Ô Thăng Cấp", desc: "Cổ ngữ thần bí. Thăng cấp Tốt/Xe/Tượng thành Hậu, Mã thành Amazon." }
+      [TileEffect.PROMOTION]: { name: "Ô Thăng Cấp", desc: "Cổ ngữ thần bí. Thăng cấp Tốt/Xe/Tượng thành Hậu, Mã thành Amazon." },
+      [TileEffect.TELEPORT]: { name: "Ô Dịch Chuyển", desc: "Cổng không gian. Landing ở đây sẽ đưa bạn tới ô tương ứng nếu trống." }
     },
     bosses: {
       [BossType.NONE]: { name: "Không", desc: "Không có trùm." },

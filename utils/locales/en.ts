@@ -73,7 +73,7 @@ export const en = {
         gameplay: { title: "Gameplay", desc: "The game is turn-based. On your turn, you can move ONE piece AND play up to 3 cards. Cards cost Gold to play in campaign mode, or are free in custom mode depending on settings." },
         economy: { title: "Economy", desc: "In Campaign Mode, you earn Gold by defeating enemy pieces. Gold is used in the Merchant's Camp between levels to buy new Cards and Relics." },
         movement: { title: "Movement", desc: "Pieces move according to their type. Standard chess moves apply, with some custom fairy chess pieces like the Dragon, Elephant, or Chancellor." },
-        elements: { title: "Elements", desc: "Some units and tiles have elemental properties. Ice freezes units. Lava destroys non-flying units. Abyss blocks ground movement." }
+        elements: { title: "Elements", desc: "Some units and tiles have elemental properties. Ice freezes units. Lava destroys non-flying units. Abyss blocks ground movement. Teleport tiles move units between paired locations." }
       },
       ability: "ABILITY",
       baseCost: "Base Cost"
@@ -182,6 +182,7 @@ export const en = {
       [CardType.EFFECT_ASCEND]: { title: "Heroic Ascension", desc: `Promote a Pawn to a random major piece. It dies in ${ASCEND_DURATION} turns.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Aegis of Ages", desc: `Make a piece immortal for ${IMMORTAL_LONG_DURATION} turns.` },
       [CardType.EFFECT_PROMOTION_TILE]: { title: "Promotion Rune", desc: "Turn a random empty tile on the enemy side into a Promotion Tile." },
+      [CardType.EFFECT_TELEPORT]: { title: "Warp Gate", desc: "Generate a pair of Teleport tiles: one in your side, one in enemy side." },
 
       // Curse Cards
       [CardType.CURSE_LAZY]: { title: "Sloth", desc: "UNPLAYABLE. While in hand: Lose 10 gold if you move a piece without killing an enemy." },
@@ -207,7 +208,8 @@ export const en = {
       [TileEffect.WALL]: { name: "Stone Wall", desc: "A solid obstacle. Pieces cannot enter or pass through." },
       [TileEffect.FROZEN]: { name: "Frozen Ground", desc: "Slippery ice. Entering this tile freezes piece for next turn." },
       [TileEffect.LAVA]: { name: "Magma Pool", desc: "Deadly heat. Entering this tile destroys the piece." },
-      [TileEffect.PROMOTION]: { name: "Promotion Tile", desc: "Magic rune. Promotes Pawn/Rook/Bishop to Queen, Knight to Amazon." }
+      [TileEffect.PROMOTION]: { name: "Promotion Tile", desc: "Magic rune. Promotes Pawn/Rook/Bishop to Queen, Knight to Amazon." },
+      [TileEffect.TELEPORT]: { name: "Teleport Tile", desc: "A gateway. Landing here transports you to its paired tile if empty." }
     },
     bosses: {
       [BossType.NONE]: { name: "None", desc: "No boss." },

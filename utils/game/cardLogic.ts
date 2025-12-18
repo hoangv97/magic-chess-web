@@ -74,6 +74,43 @@ export const getBoardAfterInstantCard = (
           error = 'No empty tiles on enemy side.';
       }
 
+    } else if (card.type === CardType.EFFECT_TELEPORT) {
+        const size = newBoard.length;
+        const playerSideRows = Math.floor(size / 2);
+        const playerCandidates: Position[] = [];
+        const enemyCandidates: Position[] = [];
+
+        for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+                if (!newBoard[r][c].piece && newBoard[r][c].tileEffect === TileEffect.NONE) {
+                    if (r >= size - playerSideRows) playerCandidates.push({ row: r, col: c });
+                    if (r < playerSideRows) enemyCandidates.push({ row: r, col: c });
+                }
+            }
+        }
+
+        if (playerCandidates.length > 0 && enemyCandidates.length > 0) {
+            // Find unique ID for this pair
+            let maxId = 0;
+            newBoard.forEach(row => row.forEach(cell => {
+                if (cell.teleportId && cell.teleportId > maxId) maxId = cell.teleportId;
+            }));
+            const nextId = maxId + 1;
+
+            const pTarget = playerCandidates[Math.floor(Math.random() * playerCandidates.length)];
+            const eTarget = enemyCandidates[Math.floor(Math.random() * enemyCandidates.length)];
+
+            newBoard[pTarget.row][pTarget.col].tileEffect = TileEffect.TELEPORT;
+            newBoard[pTarget.row][pTarget.col].teleportId = nextId;
+            newBoard[eTarget.row][eTarget.col].tileEffect = TileEffect.TELEPORT;
+            newBoard[eTarget.row][eTarget.col].teleportId = nextId;
+
+            played = true;
+            sound = 'spawn';
+        } else {
+            error = 'Not enough empty space on both sides for teleport gates.';
+        }
+
     } else if (card.type === CardType.SPAWN_REVIVE) {
       if (deadPieces.length === 0) { 
           error = 'No dead pieces to revive!';
