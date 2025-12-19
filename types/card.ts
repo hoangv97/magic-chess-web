@@ -41,6 +41,7 @@ export enum CardType {
   
   EFFECT_CONVERT_ENEMY = 'EFFECT_CONVERT_ENEMY',
   EFFECT_DUPLICATE = 'EFFECT_DUPLICATE',
+  EFFECT_SELECT_DRAW = 'EFFECT_SELECT_DRAW',
 
   // Curses
   CURSE_LAZY = 'CURSE_LAZY', // -10g if move without kill

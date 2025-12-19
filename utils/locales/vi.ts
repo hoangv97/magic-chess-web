@@ -156,6 +156,7 @@ export const vi = {
 
       [CardType.EFFECT_CONVERT_ENEMY]: { title: "Lời Gọi Kẻ Phản Bội", desc: "Hồi sinh một quân địch đã chết thành quân mình ở phần sân địch. Yêu cầu đã diệt 1 quân địch." },
       [CardType.EFFECT_DUPLICATE]: { title: "Tiếng Vang Hư Ảo", desc: "Nhân bản một thẻ ngẫu nhiên trên tay và đưa vào bộ bài." },
+      [CardType.EFFECT_SELECT_DRAW]: { title: "Mưu Kế Thâm Sâu", desc: "Chọn một thẻ bài bất kỳ từ bộ bài của bạn và đưa lên tay." },
 
       [CardType.SPAWN_CHANCELLOR]: { title: "Tể Tướng", desc: "Di chuyển như Xe + Mã." },
       [CardType.SPAWN_ARCHBISHOP]: { title: "Giám Mục", desc: "Di chuyển như Tượng + Mã." },
@@ -182,7 +183,7 @@ export const vi = {
       [CardType.EFFECT_ASCEND]: { title: "Thăng Hoa", desc: `Biến Tốt thành quân cấp cao. Chết sau ${ASCEND_DURATION} lượt.` },
       [CardType.EFFECT_IMMORTAL_LONG]: { title: "Bảo Hộ Vĩnh Cửu", desc: `Bất tử trong ${IMMORTAL_LONG_DURATION} lượt.` },
       [CardType.EFFECT_PROMOTION_TILE]: { title: "Cổ Ngữ Thăng Cấp", desc: "Biến một ô trống ngẫu nhiên bên địch thành Ô Thăng Cấp." },
-      [CardType.EFFECT_TELEPORT]: { title: "Cổng Dịch Chuyển", desc: "Tạo một cặp ô Dịch Chuyển: một bên sân bạn, một bên sân địch." },
+      [CardType.EFFECT_TELEPORT]: { title: "Ô Dịch Chuyển", desc: "Tạo một cặp ô Dịch Chuyển: một bên sân bạn, một bên sân địch." },
 
       // Curse Cards
       [CardType.CURSE_LAZY]: { title: "Lười Biếng", desc: "KHÔNG THỂ DÙNG. Khi cầm: Mất 10 vàng nếu di chuyển mà không giết địch." },
@@ -372,7 +373,8 @@ export const vi = {
         remaining: "Bộ Bài Còn Lại",
         list: "Danh Sách Bài",
         empty: "Bộ bài trống.",
-        close: "Đóng"
+        close: "Đóng",
+        pick: "CHỌN MỘT THẺ"
       },
       options: {
         title: "Tùy Chọn",

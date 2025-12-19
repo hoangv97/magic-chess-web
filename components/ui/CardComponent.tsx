@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, PieceSetId, PieceType, Side, CardType } from '../../types';
 import { getCardIcon, getCardTheme, PIECE_VARIANT_STYLES } from '../../constants';
@@ -102,7 +101,8 @@ export const CardComponent: React.FC<CardComponentProps> = ({
             {isHidden ? "?" : (
                 pieceInfo ? (
                     <div className={`w-14 h-14 ${pieceInfo.variant ? PIECE_VARIANT_STYLES[pieceInfo.variant] : ''}`} style={{ filter: pieceInfo.variant ? undefined : 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}>
-                        {getPieceIcon(pieceSet, Side.WHITE, pieceInfo.type)}
+                        {/* Fix: Explicitly cast pieceSet to PieceSetId to avoid 'string' is not assignable to 'PieceSetId' error */}
+                        {getPieceIcon(pieceSet as PieceSetId, Side.WHITE, pieceInfo.type)}
                     </div>
                 ) : (
                     getCardIcon(card.type)

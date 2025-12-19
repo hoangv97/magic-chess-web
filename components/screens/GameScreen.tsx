@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { GameHeader } from '../game/GameHeader';
 import { GameBoard } from '../game/GameBoard';
@@ -109,8 +108,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             onClose={() => actions.setShowDeckModal(false)} 
             activeBoss={gameState.activeBoss}
             pieceSet={settings.pieceSet}
-            shouldShuffle={true}
+            shouldShuffle={!gameState.isDeckPickMode}
             settings={settings}
+            isPickMode={gameState.isDeckPickMode}
+            onSelect={actions.handleDeckCardSelect}
           />
       )}
 

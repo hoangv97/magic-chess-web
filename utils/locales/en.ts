@@ -156,6 +156,7 @@ export const en = {
 
       [CardType.EFFECT_CONVERT_ENEMY]: { title: "Traitor's Call", desc: "Respawn a random dead enemy piece as your own on the enemy's side. Requires 1 enemy kill." },
       [CardType.EFFECT_DUPLICATE]: { title: "Ethereal Echo", desc: "Duplicate a random card in your hand and push it into the deck." },
+      [CardType.EFFECT_SELECT_DRAW]: { title: "Strategic Planning", desc: "Select one card from your remaining deck and add it to your hand." },
 
       [CardType.SPAWN_CHANCELLOR]: { title: "Chancellor", desc: "Moves like Rook + Knight." },
       [CardType.SPAWN_ARCHBISHOP]: { title: "Archbishop", desc: "Moves like Bishop + Knight." },
@@ -372,7 +373,8 @@ export const en = {
         remaining: "Remaining Deck",
         list: "Deck List",
         empty: "Deck is empty.",
-        close: "Close"
+        close: "Close",
+        pick: "SELECT A CARD"
       },
       options: {
         title: "Options",

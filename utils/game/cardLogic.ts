@@ -9,6 +9,7 @@ interface InstantCardResult {
     played: boolean;
     sound?: 'spawn' | 'frozen';
     error?: string;
+    requestDeckSelect?: boolean;
 }
 
 export const getBoardAfterInstantCard = (
@@ -19,12 +20,14 @@ export const getBoardAfterInstantCard = (
     setIsEnemyMoveLimited: (v: boolean) => void,
     killedEnemyPieces: PieceType[] = [],
     hand: Card[] = [],
-    addCardToDeck: (c: Card) => void = () => {}
+    addCardToDeck: (c: Card) => void = () => {},
+    deck: Card[] = []
 ): InstantCardResult => {
     const newBoard = board.map((row) => row.map((cell) => ({...cell, piece: cell.piece ? {...cell.piece} : null})));
     let played = false;
     let sound: 'spawn' | 'frozen' | undefined = undefined;
     let error: string | undefined = undefined;
+    let requestDeckSelect = false;
 
     if (card.type === CardType.EFFECT_FREEZE) {
       const enemies: Position[] = [];
@@ -41,6 +44,13 @@ export const getBoardAfterInstantCard = (
       setIsEnemyMoveLimited(true); 
       played = true; 
       sound = 'frozen';
+    } else if (card.type === CardType.EFFECT_SELECT_DRAW) {
+      if (deck.length === 0) {
+          error = 'Your deck is empty!';
+      } else {
+          requestDeckSelect = true;
+          played = true;
+      }
     } else if (card.type === CardType.EFFECT_TRAP) {
       const friends: Position[] = [];
       newBoard.forEach((row, r) => row.forEach((cell, c) => { if (cell.piece?.side === Side.WHITE && !cell.piece.trapped) friends.push({ row: r, col: c }); }));
@@ -172,7 +182,7 @@ export const getBoardAfterInstantCard = (
       }
     }
 
-    return { newBoard, played, sound, error };
+    return { newBoard, played, sound, error, requestDeckSelect };
 };
 
 interface TargetCardResult {

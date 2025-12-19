@@ -60,6 +60,7 @@ export const useGameLogic = ({
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [cardTargetMode, setCardTargetMode] = useState<{ type: CardType; step: string; sourcePos?: Position; } | null>(null);
   const [showDeckModal, setShowDeckModal] = useState(false);
+  const [isDeckPickMode, setIsDeckPickMode] = useState(false);
   const [selectedRelic, setSelectedRelic] = useState<Relic | null>(null);
   const [infoModalContent, setInfoModalContent] = useState<{ title: string; content: React.ReactNode; } | null>(null);
   
@@ -97,6 +98,7 @@ export const useGameLogic = ({
       setKilledEnemyPieces([]);
       setLastPlayerSpawnedType(null);
       setAnimatingCards([]);
+      setIsDeckPickMode(false);
       tempTileEffects.current = [];
   };
 
@@ -738,7 +740,7 @@ export const useGameLogic = ({
       else setCardTargetMode({ type: card.type, step: 'SELECT_SQUARE' });
     } else if (['EFFECT_SWITCH', 'EFFECT_IMMORTAL', 'EFFECT_MIMIC', 'EFFECT_ASCEND', 'EFFECT_IMMORTAL_LONG', 'EFFECT_AREA_FREEZE'].includes(card.type) || card.type.includes('BORROW')) {
       setCardTargetMode({ type: card.type, step: 'SELECT_PIECE_1' });
-    } else if (card.type === CardType.EFFECT_PROMOTION_TILE || card.type === CardType.EFFECT_CONVERT_ENEMY || card.type === CardType.EFFECT_DUPLICATE || card.type === CardType.EFFECT_TELEPORT) {
+    } else if (card.type === CardType.EFFECT_PROMOTION_TILE || card.type === CardType.EFFECT_CONVERT_ENEMY || card.type === CardType.EFFECT_DUPLICATE || card.type === CardType.EFFECT_TELEPORT || card.type === CardType.EFFECT_SELECT_DRAW) {
       playInstantCard(card);
     } else {
       playInstantCard(card);
@@ -746,7 +748,7 @@ export const useGameLogic = ({
   };
 
   const playInstantCard = (card: Card) => {
-    const result = getBoardAfterInstantCard(board, card, deadPieces, setDeadPieces, setIsEnemyMoveLimited, killedEnemyPieces, hand, addCardToDeck);
+    const result = getBoardAfterInstantCard(board, card, deadPieces, setDeadPieces, setIsEnemyMoveLimited, killedEnemyPieces, hand, addCardToDeck, deck);
     
     if (result.error) {
         alert(result.error);
@@ -756,8 +758,28 @@ export const useGameLogic = ({
     if (result.played) {
         setBoard(result.newBoard);
         if (result.sound) soundManager.playSfx(result.sound);
-        consumeCard(card.id);
+        
+        if (result.requestDeckSelect) {
+            setIsDeckPickMode(true);
+            setShowDeckModal(true);
+            // We don't call consumeCard(card.id) yet because we want to wait for user to select from deck.
+            // But actually, we should consume the 'EFFECT_SELECT_DRAW' card now.
+            consumeCard(card.id);
+        } else {
+            consumeCard(card.id);
+        }
     }
+  };
+
+  const handleDeckCardSelect = (card: Card) => {
+    if (!isDeckPickMode) return;
+    
+    setDeck(prev => prev.filter(c => c.id !== card.id));
+    setHand(prev => [...prev, card]);
+    soundManager.playSfx('draw');
+    
+    setIsDeckPickMode(false);
+    setShowDeckModal(false);
   };
 
   const handleCardTargeting = (r: number, c: number, piece: Piece | null) => {
@@ -797,10 +819,10 @@ export const useGameLogic = ({
 
   return {
     gameState: {
-      board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, selectedRelic, infoModalContent, selectedEnemyPos, enemyValidMoves, checkState, activeBoss, lastEnemyMoveType, animatingCards
+      board, turn, turnCount, selectedPiecePos, validMoves, lastMoveFrom, lastMoveTo, deck, hand, cardsPlayed, selectedCardId, cardTargetMode, showDeckModal, isDeckPickMode, selectedRelic, infoModalContent, selectedEnemyPos, enemyValidMoves, checkState, activeBoss, lastEnemyMoveType, animatingCards
     },
     actions: {
-      initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, setShowDeckModal, setSelectedRelic, setInfoModalContent, handleAnimationComplete
+      initGame, handleSquareClick, handleSquareDoubleClick, handleCardClick, setShowDeckModal, setSelectedRelic, setInfoModalContent, handleAnimationComplete, handleDeckCardSelect
     },
   };
 };

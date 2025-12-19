@@ -20,6 +20,7 @@ export const DECK_TEMPLATE: Omit<Card, 'id'|'title'|'description'>[] = [
 
   { type: CardType.EFFECT_CONVERT_ENEMY, cost: 80 },
   { type: CardType.EFFECT_DUPLICATE, cost: 40 },
+  { type: CardType.EFFECT_SELECT_DRAW, cost: 50 },
 
   { type: CardType.SPAWN_CHANCELLOR, cost: 85 },
   { type: CardType.SPAWN_ARCHBISHOP, cost: 85 },
@@ -119,6 +120,7 @@ export const getCardIcon = (type: string) => {
   if (type.includes('CURSE')) return GAME_ICONS.CARD_CURSE;
   if (type.includes('PROMOTION')) return GAME_ICONS.CARD_PROMOTION;
   if (type.includes('TELEPORT')) return GAME_ICONS.CARD_TELEPORT;
+  if (type.includes('SELECT_DRAW')) return '🔍';
   return GAME_ICONS.CARD_DEFAULT;
 };
 
